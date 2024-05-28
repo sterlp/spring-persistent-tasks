@@ -2,6 +2,7 @@ package org.sterl.spring.task;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -93,13 +94,16 @@ class TaskSchedulerServiceTest {
         TaskId<String> task = subject.<String>register("foo", c -> {
             throw new RuntimeException("Nope!");
         });
-        subject.trigger(task);
+        final var triggerId = subject.trigger(task);
         
         // WHEN
         subject.triggerNexTask().get();
+        subject.triggerNexTask(OffsetDateTime.now().plusDays(1)).get();
+        subject.triggerNexTask(OffsetDateTime.now().plusDays(1)).get();
         
         // THEN
         assertThat(taskInstanceRepository.countByStatus(TaskStatus.FAILED)).isOne();
+        assertThat(subject.get(triggerId).get().getExecutionCount()).isEqualTo(3);
     }
     
     @Test

@@ -12,10 +12,9 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.sterl.spring.task.api.AbstractTask;
 import org.sterl.spring.task.api.RetryStrategy;
-import org.sterl.spring.task.api.SimpleTask;
 import org.sterl.spring.task.api.Task;
-import org.sterl.spring.task.api.TaskResult;
 import org.sterl.spring.task.api.TaskId.TaskTriggerBuilder;
+import org.sterl.spring.task.api.TaskResult;
 import org.sterl.spring.task.person.PersonBE;
 import org.sterl.spring.task.person.PersonRepository;
 
@@ -73,16 +72,17 @@ class TaskTransactionTest {
         final var trigger = TaskTriggerBuilder.newTrigger("savePerson").state("Paul").build();
         sendError.set(true);
         // WHEN
-        subject.trigger(trigger);
+        final var triggerId = subject.trigger(trigger);
         subject.triggerNexTask().get();
         // THEN
         assertThat(personRepository.count()).isZero();
-        
+
         // WHEN
         sendError.set(false);
         subject.triggerNexTask().get();
         // THEN
         assertThat(personRepository.count()).isOne();
+        assertThat(subject.get(triggerId).get().getExecutionCount()).isEqualTo(2);
     }
 
 }

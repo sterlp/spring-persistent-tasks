@@ -32,7 +32,6 @@ public class TaskSchedulerService {
     private final EditTaskInstanceComponent editTaskInstanceComponent;
     private final TaskRepository taskRepository;
     private final TransactionalTaskExecutorComponent taskExecutor;
-    
 
     /**
      * Checks if any job is still running or waiting for it's execution.
@@ -46,15 +45,23 @@ public class TaskSchedulerService {
         return editTaskInstanceComponent.get(id);
     }
 
+    /**
+     * A way to manually register a task, usually not needed as spring beans will be added anyway.
+     */
     public <T extends Serializable> TaskId<T> register(String name, SimpleTask<T> task) {
         ClosureTask<T> t = new ClosureTask<>(name, task);
         return register(t);
     }
-    
+    /**
+     * A way to manually register a task, usually not needed as spring beans will be added anyway.
+     */
     public <T extends Serializable> TaskId<T> register(Task<T> task) {
         return taskRepository.addTask(task);
     }
 
+    /**
+     * Just triggers the given task to be executed using <code>null</code> as state.
+     */
     public <T extends Serializable> TaskTriggerId trigger(TaskId<T> taskId) {
         return trigger(taskId, null);
     }
@@ -86,13 +93,27 @@ public class TaskSchedulerService {
     }
 
     //@Scheduled(initialDelay = 10, fixedDelay = 5)
+    /**
+     * Simply triggers the next task which is now due to be executed
+     */
     public Future<?> triggerNexTask() {
-        final var trigger = lockNextTriggerComponent.loadNext(name);
+        return triggerNexTask(OffsetDateTime.now());
+    }
+    
+    /**
+     * Like {@link #triggerNexTask()} but allows to set the time e.g. to the future to trigger
+     * tasks which wouldn't be triggered now.
+     */
+    public Future<?> triggerNexTask(OffsetDateTime timeDue) {
+        final var trigger = lockNextTriggerComponent.loadNext(name, timeDue);
         if (trigger == null) return CompletableFuture.completedFuture(null);
         return taskExecutor.execute(trigger);
     }
 
+    /**
+     * If you changed your mind, cancel the task
+     */
     public void cancel(TaskTriggerId id) {
-        editTaskInstanceComponent.setStatus(id, TaskStatus.CANCELED, null);
+        editTaskInstanceComponent.completeTaskWithStatus(id, TaskStatus.CANCELED, null);
     }
 }

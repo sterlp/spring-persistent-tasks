@@ -25,7 +25,7 @@ public class EditTaskInstanceComponent {
     private final StateSerializer stateSerializer = new StateSerializer();
     private final TaskInstanceRepository taskInstanceRepository;
 
-    public void retryTrigger(TaskTriggerId id, Exception e, OffsetDateTime when) {
+    public void completeWithRetry(TaskTriggerId id, Exception e, OffsetDateTime when) {
         taskInstanceRepository.findById(id).ifPresent(t -> {
             t.complete(TaskStatus.NEW, e);
             t.setStart(when);
@@ -33,7 +33,7 @@ public class EditTaskInstanceComponent {
         });
     }
     
-    public void setStatus(TaskTriggerId id, TaskStatus newStatus, Exception e) {
+    public void completeTaskWithStatus(TaskTriggerId id, TaskStatus newStatus, Exception e) {
         taskInstanceRepository.findById(id).ifPresent(t -> {
             t.complete(newStatus, e);
             log.debug("Setting task={} to status={} {}", id, newStatus, 

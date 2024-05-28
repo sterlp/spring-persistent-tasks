@@ -20,8 +20,8 @@ public class LockNextTriggerComponent {
     private static final Pageable SELECT_ONE = PageRequest.of(0, 1);
     private final TaskInstanceRepository taskInstanceRepository;
     
-    public TaskTriggerEntity loadNext(String name) {
-        final var tasks = taskInstanceRepository.loadNextTasks(OffsetDateTime.now(), TaskStatus.NEW, SELECT_ONE);
+    public TaskTriggerEntity loadNext(String name, OffsetDateTime since) {
+        final var tasks = taskInstanceRepository.loadNextTasks(since, TaskStatus.NEW, SELECT_ONE);
         if (tasks.isEmpty()) return null;
 
         final TaskTriggerEntity taskInstance = tasks.get(0);
