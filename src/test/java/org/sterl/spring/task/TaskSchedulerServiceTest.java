@@ -1,0 +1,216 @@
+package org.sterl.spring.task;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+
+import org.awaitility.Awaitility;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.sterl.spring.task.api.AbstractTask;
+import org.sterl.spring.task.api.RetryStrategy;
+import org.sterl.spring.task.api.TaskId;
+import org.sterl.spring.task.api.TaskResult;
+import org.sterl.spring.task.model.TaskStatus;
+import org.sterl.spring.task.model.TaskTriggerId;
+import org.sterl.spring.task.repository.TaskInstanceRepository;
+import org.sterl.spring.task.repository.TaskRepository;
+
+@SpringBootTest
+class TaskSchedulerServiceTest {
+    
+    @Autowired TaskSchedulerService subject;
+    @Autowired TaskRepository taskRepository;
+    @Autowired TaskInstanceRepository taskInstanceRepository;
+    @Autowired TransactionTemplate trx;
+    private final AsyncAsserts asserts = new AsyncAsserts();
+    
+    @BeforeEach
+    void setup() {
+        taskInstanceRepository.deleteAllInBatch();
+        while (subject.hasTriggers()) subject.triggerNexTask();
+        taskRepository.clear();
+        asserts.clear();
+    }
+
+    @Test
+    void runSimpleTask() throws Exception {
+        // GIVEN
+        TaskId<String> taskId = subject.register("foo", c -> asserts.info("foo"));
+        subject.<String>register("bar", c -> asserts.info("bar"));
+        TaskTriggerId triggerId = subject.trigger(taskId);
+
+        // WHEN
+        subject.triggerNexTask().get();
+        
+        // THEN
+        assertThat(taskInstanceRepository.countByStatus(TaskStatus.SUCCESS)).isOne();
+        assertThat(subject.get(triggerId).get().getExecutionCount()).isEqualTo(1);
+        asserts.assertValue("foo");
+        asserts.assertMissing("bar");
+    }
+    
+    @Test
+    void runSimpleTaskWithState() throws Exception {
+        // GIVEN
+        TaskId<String> task = subject.register("foo", c -> asserts.info(c));
+        subject.trigger(task, "Hello");
+        
+        // WHEN
+        subject.triggerNexTask().get();
+        
+        // THEN
+        asserts.assertValue("Hello");
+        assertThat(taskInstanceRepository.countByStatus(TaskStatus.SUCCESS)).isOne();
+        assertThat(subject.hasTriggers()).isFalse();
+    }
+    
+    @Test
+    void runSimpleTaskMultipleTimes() throws Exception {
+        // GIVEN
+        TaskId<String> task = subject.register("foo", c -> asserts.info(c));
+        for (int i = 1; i < 5; ++i) subject.trigger(task, i + " state");
+        
+        // WHEN
+        for (int i = 1; i < 5; ++i) subject.triggerNexTask().get();
+
+        // THEN
+        for (int i = 1; i < 5; ++i) asserts.assertValue(i + " state");
+        assertThat(taskInstanceRepository.countByStatus(TaskStatus.SUCCESS)).isEqualTo(4);
+        assertThat(subject.hasTriggers()).isFalse();
+    }
+    
+    @Test
+    void failedTasksAreFailed() throws Exception {
+        // GIVEN
+        TaskId<String> task = subject.<String>register("foo", c -> {
+            throw new RuntimeException("Nope!");
+        });
+        subject.trigger(task);
+        
+        // WHEN
+        subject.triggerNexTask().get();
+        
+        // THEN
+        assertThat(taskInstanceRepository.countByStatus(TaskStatus.FAILED)).isOne();
+    }
+    
+    @Test
+    void failedTasksAreRetried() throws Exception {
+        // GIVEN
+        TaskId<String> task = subject.register(
+            new AbstractTask<String>() {
+                @Override
+                public TaskResult execute(String state) {
+                    asserts.info(state);
+                    throw new RuntimeException("NOPE!");
+                }
+                public RetryStrategy retryStrategy() {
+                    return RetryStrategy.TRY_THREE_TIMES_IMMEDIATELY;
+                };
+            }
+        );
+        var id = subject.trigger(task.newTrigger().state("hallo").build());
+        
+        // WHEN
+        Awaitility.await().until(() -> {
+            subject.triggerNexTask().get();
+            return asserts.getCount("hallo") >= 3;
+        });
+        
+        // THEN
+        assertThat(asserts.getCount("hallo")).isEqualTo(3);
+        assertThat(taskInstanceRepository.countByStatus(TaskStatus.FAILED)).isOne();
+        assertThat(subject.get(id).get().getExecutionCount()).isEqualTo(3);
+    }
+    
+    @Test
+    void testTaskPriority() throws Exception {
+        // GIVEN
+        TaskId<String> task = subject.register("aha", s -> asserts.info(s));
+        List<TaskTriggerId> triggers = subject.triggerAll(Arrays.asList(
+                task.newTrigger().state("mid").priority(5).build(),
+                task.newTrigger().state("low").priority(4).build(),
+                task.newTrigger().state("high").priority(6).build()
+            )
+        );
+        // WHEN
+        while (subject.hasTriggers()) subject.triggerNexTask().get();
+
+        // THEN
+        assertThat(subject.get(triggers.get(0)).get().getPriority()).isEqualTo(5);
+        assertThat(subject.get(triggers.get(1)).get().getPriority()).isEqualTo(4);
+        assertThat(subject.get(triggers.get(2)).get().getPriority()).isEqualTo(6);
+        asserts.awaitOrdered("high", "mid", "low");
+        assertThat(taskInstanceRepository.countByStatus(TaskStatus.SUCCESS)).isEqualTo(3);
+    }
+    
+    @Test
+    void testCreationJoinTransaction() throws Exception {
+        // GIVEN
+        final var taskId = subject.register("aha", s -> asserts.info("should not trigger"));
+        
+        // WHEN
+        try {
+            trx.executeWithoutResult(t -> {
+                subject.trigger(taskId);
+                subject.trigger(taskId);
+                throw new RuntimeException("we are doomed!");
+            });
+        } catch (Exception idc) {}
+        
+        subject.triggerNexTask().get();
+        
+        // THEN
+        asserts.assertMissing("should not trigger");
+        assertThat(taskInstanceRepository.count()).isZero();
+    }
+    
+    @Test
+    void testOverrideTriggerUsingSame() throws Exception {
+        // GIVEN
+        final TaskId<String> taskId = subject.register("send_email", s -> asserts.info(s));
+        
+        // WHEN
+        subject.trigger(taskId.newTrigger()
+                .id("paul@sterl.org")
+                .state("pau@sterl.org") // bad state
+                .build());
+        subject.trigger(taskId.newTrigger()
+                .id("paul@sterl.org")
+                .state("paul@sterl.org") // fixed state
+                .build());
+
+        subject.triggerNexTask().get();
+        subject.triggerNexTask().get();
+        
+        // THEN
+        asserts.awaitValueOnce("paul@sterl.org");
+        assertThat(taskInstanceRepository.countByStatus(TaskStatus.SUCCESS)).isEqualTo(1);
+    }
+    
+    @Test
+    void testMultithreading() throws Exception {
+        // GIVEN
+        final var executor = Executors.newFixedThreadPool(100);
+        final TaskId<String> taskId = subject.register("multi-threading", s -> asserts.info(s));
+        for (int i = 1; i <= 100; ++i) subject.trigger(taskId, "t" + i);
+        
+        final List<Callable<?>> tasks = new ArrayList<>(100);
+        for (int i = 1; i <= 100; ++i) tasks.add(() -> subject.triggerNexTask().get());
+        
+        // WHEN
+        executor.invokeAll(tasks);
+
+        // THEN
+        for (int i = 1; i <= 100; ++i) asserts.awaitValueOnce("t" + i);
+        assertThat(taskInstanceRepository.countByStatus(TaskStatus.SUCCESS)).isEqualTo(100);
+    }
+}
