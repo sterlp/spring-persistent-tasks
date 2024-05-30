@@ -44,13 +44,13 @@ public class EditTaskInstanceComponent {
     public <T extends Serializable> TaskTriggerId addTrigger(TaskTrigger<T> tigger) {
         var t = toTriggerEntity(tigger);
         taskInstanceRepository.save(t);
-        return t.newInstanceId();
+        return t.getId();
     }
 
     public <T extends Serializable> List<TaskTriggerId> addTriggers(Collection<TaskTrigger<T>> newTriggers) {
         return taskInstanceRepository
             .saveAll(newTriggers.stream().map(this::toTriggerEntity).toList())
-            .stream().map(TaskTriggerEntity::newInstanceId)
+            .stream().map(TaskTriggerEntity::getId)
             .toList();
     }
     public void triggerAll(Collection<TaskTrigger<?>> newTriggers) {
@@ -58,12 +58,9 @@ public class EditTaskInstanceComponent {
     }
 
     private <T extends Serializable> TaskTriggerEntity toTriggerEntity(TaskTrigger<T> trigger) {
-        var id = trigger.taskId();
         byte[] state = stateSerializer.serialize(trigger.state());
         var t = TaskTriggerEntity.builder()
-            .id(trigger.id())
-            .name(id.name())
-            .taskGroup(id.group())
+            .id(trigger.toTaskTriggerId())
             .start(trigger.when())
             .state(state)
             .priority(trigger.priority())

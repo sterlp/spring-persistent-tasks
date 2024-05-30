@@ -15,9 +15,8 @@ public class TaskTriggerId implements Serializable {
 
     private String id; 
     private String name; 
-    private String taskGroup;
 
     public TaskId<Serializable> toTaskId() {
-        return new TaskId<Serializable>(name, taskGroup);
+        return new TaskId<Serializable>(name);
     }
 }

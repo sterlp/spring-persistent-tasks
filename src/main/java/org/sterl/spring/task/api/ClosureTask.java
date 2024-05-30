@@ -11,7 +11,7 @@ public class ClosureTask<T extends Serializable> implements Task<T> {
 
     public ClosureTask(String name, Function<T, TaskResult> fun) {
         super();
-        this.id = new TaskId<>(name, TaskId.DEFAULT_GROUP);
+        this.id = new TaskId<>(name);
         this.fun = fun;
     }
 

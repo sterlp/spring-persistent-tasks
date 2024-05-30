@@ -59,6 +59,6 @@ public class TaskRepository {
     }
 
     public boolean contains(String name) {
-        return tasks.containsKey(new TaskId<>(name, TaskId.DEFAULT_GROUP));
+        return tasks.containsKey(new TaskId<>(name));
     }
 }

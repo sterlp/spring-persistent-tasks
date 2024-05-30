@@ -42,11 +42,11 @@ public class TransactionalTaskExecutorComponent {
     private void runInTransaction(TaskTriggerEntity trigger) {
             int count = runningTasks.incrementAndGet();
             log.debug("Running task={} - totalActive={}", trigger, count);
-            Task<Serializable> task = taskRepository.get(trigger.newId());
+            Task<Serializable> task = taskRepository.get(trigger.newTaskId());
             try {
                 trx.executeWithoutResult(t -> {
                     final var result = task.execute(serializer.deserialize(trigger.getState()));
-                    success(trigger.newInstanceId());
+                    success(trigger.getId());
                     triggerAllNoResult(result.triggers());
                 });
             } catch (Exception e) {
@@ -58,12 +58,12 @@ public class TransactionalTaskExecutorComponent {
 
     private void handleTaskException(TaskTriggerEntity trigger, Task<Serializable> task, Exception e) {
         if (task.retryStrategy().shouldRetry(trigger.getExecutionCount(), e)) {
-            log.warn("Task={} failed, retry will be done!", trigger.newInstanceId(), e);
+            log.warn("Task={} failed, retry will be done!", trigger.getId(), e);
             editTaskInstanceComponent.completeWithRetry(
-                    trigger.newInstanceId(), e, task.retryStrategy().retryAt(trigger.getExecutionCount(), e));
+                    trigger.getId(), e, task.retryStrategy().retryAt(trigger.getExecutionCount(), e));
         } else {
-            log.error("Task={} failed", trigger.newInstanceId(), e);
-            editTaskInstanceComponent.completeTaskWithStatus(trigger.newInstanceId(), TaskStatus.FAILED, e);
+            log.error("Task={} failed", trigger.getId(), e);
+            editTaskInstanceComponent.completeTaskWithStatus(trigger.getId(), TaskStatus.FAILED, e);
         }
     }
 

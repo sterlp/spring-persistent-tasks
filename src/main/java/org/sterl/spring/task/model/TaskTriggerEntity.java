@@ -6,11 +6,10 @@ import java.time.OffsetDateTime;
 import org.sterl.spring.task.api.TaskId;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
 import jakarta.persistence.Index;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
@@ -22,7 +21,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-@IdClass(TaskTriggerId.class)
 @Entity
 @Table(name = "TASK_TRIGGERS", indexes = {
         @Index(name = "IDX_TASK_TRIGGERS_PRIORITY", columnList = "priority"),
@@ -32,25 +30,15 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(of = {"id", "name", "taskGroup", "status", "created", "priority", "start", "end"})
-@EqualsAndHashCode(of = {"id", "name", "taskGroup"})
+@ToString(of = {"id", "status", "created", "priority", "start", "end"})
+@EqualsAndHashCode(of = "id")
 public class TaskTriggerEntity {
 
-    @Id
-    @Column(nullable = false, updatable = false, length = 50)
-    private String id;
-    @Id
-    @Column(nullable = false, updatable = false, length = 100)
-    private String name;
-    @Id
-    @Column(nullable = false, updatable = false, length = 100)
-    private String taskGroup;
-    
-    public TaskTriggerId newInstanceId() {
-        return new TaskTriggerId(id, name, taskGroup);
-    }
-    public TaskId<Serializable> newId() {
-        return new TaskId<Serializable>(name, taskGroup);
+    @EmbeddedId
+    private TaskTriggerId id;
+
+    public TaskId<Serializable> newTaskId() {
+        return id.toTaskId();
     }
 
     @Default

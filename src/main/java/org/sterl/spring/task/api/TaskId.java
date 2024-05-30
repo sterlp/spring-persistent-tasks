@@ -10,8 +10,7 @@ import lombok.RequiredArgsConstructor;
 /**
  * Represents the ID of a task, which is currently not running.
  */
-public record TaskId<T extends Serializable>(String name, String group) implements Serializable {
-    public static final String DEFAULT_GROUP = "none";
+public record TaskId<T extends Serializable>(String name) implements Serializable {
 
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class TaskTriggerBuilder<T extends Serializable> {
@@ -22,7 +21,7 @@ public record TaskId<T extends Serializable>(String name, String group) implemen
         private int priority = TaskTrigger.DEFAULT_PRIORITY;
         
         public static <T extends Serializable> TaskTriggerBuilder<T> newTrigger(String name) {
-            return new TaskTriggerBuilder<>(new TaskId<T>(name, DEFAULT_GROUP));
+            return new TaskTriggerBuilder<>(new TaskId<T>(name));
         }
         public TaskTrigger<T> build() {
             return new TaskTrigger<T>(
