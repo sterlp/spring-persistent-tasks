@@ -1,6 +1,6 @@
 package org.sterl.spring.task.model;
 
-public enum TaskStatus {
+public enum TriggerStatus {
 
     NEW,
     RUNNING,

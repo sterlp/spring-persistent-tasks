@@ -11,15 +11,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
-import org.sterl.spring.task.model.TaskTriggerEntity;
-import org.sterl.spring.task.model.TaskTriggerId;
+import org.sterl.spring.task.model.TriggerEntity;
+import org.sterl.spring.task.model.TriggerId;
 
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
 
-import org.sterl.spring.task.model.TaskStatus;
+import org.sterl.spring.task.model.TriggerStatus;
 
-public interface TaskInstanceRepository extends JpaRepository<TaskTriggerEntity, TaskTriggerId> {
+public interface TriggerRepository extends JpaRepository<TriggerEntity, TriggerId> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     // https://jakarta.ee/specifications/persistence/3.0/jakarta-persistence-spec-3.0.html#a2132
@@ -33,7 +33,7 @@ public interface TaskInstanceRepository extends JpaRepository<TaskTriggerEntity,
             AND status = :status
             ORDER BY priority DESC, executionCount ASC
             """)
-    List<TaskTriggerEntity> loadNextTasks(OffsetDateTime start, TaskStatus status, Pageable page);
+    List<TriggerEntity> loadNextTasks(OffsetDateTime start, TriggerStatus status, Pageable page);
     
-    int countByStatus(TaskStatus status);
+    int countByStatus(TriggerStatus status);
 }

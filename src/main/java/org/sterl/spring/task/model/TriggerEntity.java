@@ -2,7 +2,6 @@ package org.sterl.spring.task.model;
 
 import java.io.Serializable;
 import java.time.OffsetDateTime;
-import java.util.function.IntPredicate;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.sterl.spring.task.api.TaskId;
@@ -12,8 +11,10 @@ import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Index;
 import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,14 +31,17 @@ import lombok.ToString;
 })
 @Data
 @NoArgsConstructor
+@Builder(toBuilder = true)
 @AllArgsConstructor
-@Builder
 @ToString(of = {"id", "status", "created", "priority", "start", "end"})
 @EqualsAndHashCode(of = "id")
-public class TaskTriggerEntity {
+public class TriggerEntity {
 
     @EmbeddedId
-    private TaskTriggerId id;
+    private TriggerId id;
+    
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY, optional = true)
+    private TaskSchedulerEntity runningOn;
 
     public TaskId<Serializable> newTaskId() {
         return id.toTaskId();
@@ -63,9 +67,7 @@ public class TaskTriggerEntity {
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
     @Default
-    private TaskStatus status = TaskStatus.NEW;
-
-    private String runningOn;
+    private TriggerStatus status = TriggerStatus.NEW;
 
     @Lob
     private byte[] state;
@@ -75,25 +77,25 @@ public class TaskTriggerEntity {
     @Lob
     private String lastException;
 
-    public TaskTriggerEntity cancel() {
+    public TriggerEntity cancel() {
         end = OffsetDateTime.now();
-        status = TaskStatus.CANCELED;
+        status = TriggerStatus.CANCELED;
         return this;
     }
 
-    public void runOn(String runningOn) {
+    public void runOn(TaskSchedulerEntity runningOn) {
         this.start = OffsetDateTime.now();
         this.executionCount += 1;
         this.runningOn = runningOn;
-        this.status = TaskStatus.RUNNING;
+        this.status = TriggerStatus.RUNNING;
     }
-    public void complete(TaskStatus newStatus, Exception e) {
+    public void complete(TriggerStatus newStatus, Exception e) {
         fail(e);
         this.status = newStatus;
     }
     public void fail(Exception e) {
         this.end = OffsetDateTime.now();
-        this.status = TaskStatus.FAILED;
+        this.status = TriggerStatus.FAILED;
         this.exceptionName = e == null ? "" : e.getClass().getName();
         this.lastException = ExceptionUtils.getStackTrace(e);
     }

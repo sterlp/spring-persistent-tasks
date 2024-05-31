@@ -19,9 +19,9 @@ import org.sterl.spring.task.api.AbstractTask;
 import org.sterl.spring.task.api.RetryStrategy;
 import org.sterl.spring.task.api.TaskId;
 import org.sterl.spring.task.api.TaskResult;
-import org.sterl.spring.task.model.TaskStatus;
-import org.sterl.spring.task.model.TaskTriggerId;
-import org.sterl.spring.task.repository.TaskInstanceRepository;
+import org.sterl.spring.task.model.TriggerStatus;
+import org.sterl.spring.task.model.TriggerId;
+import org.sterl.spring.task.repository.TriggerRepository;
 import org.sterl.spring.task.repository.TaskRepository;
 
 @SpringBootTest
@@ -29,13 +29,14 @@ class TaskSchedulerServiceTest {
     
     @Autowired TaskSchedulerService subject;
     @Autowired TaskRepository taskRepository;
-    @Autowired TaskInstanceRepository taskInstanceRepository;
+    @Autowired TriggerRepository triggerRepository;
     @Autowired TransactionTemplate trx;
     private final AsyncAsserts asserts = new AsyncAsserts();
     
     @BeforeEach
     void setup() {
-        taskInstanceRepository.deleteAllInBatch();
+        triggerRepository.deleteAllInBatch();
+        subject.start();
         while (subject.hasTriggers()) subject.triggerNexTask();
         taskRepository.clear();
         asserts.clear();
@@ -46,13 +47,13 @@ class TaskSchedulerServiceTest {
         // GIVEN
         TaskId<String> taskId = subject.register("foo", c -> asserts.info("foo"));
         subject.<String>register("bar", c -> asserts.info("bar"));
-        TaskTriggerId triggerId = subject.trigger(taskId);
+        TriggerId triggerId = subject.trigger(taskId);
 
         // WHEN
         subject.triggerNexTask().get();
         
         // THEN
-        assertThat(taskInstanceRepository.countByStatus(TaskStatus.SUCCESS)).isOne();
+        assertThat(triggerRepository.countByStatus(TriggerStatus.SUCCESS)).isOne();
         assertThat(subject.get(triggerId).get().getExecutionCount()).isEqualTo(1);
         asserts.assertValue("foo");
         asserts.assertMissing("bar");
@@ -69,7 +70,7 @@ class TaskSchedulerServiceTest {
         
         // THEN
         asserts.assertValue("Hello");
-        assertThat(taskInstanceRepository.countByStatus(TaskStatus.SUCCESS)).isOne();
+        assertThat(triggerRepository.countByStatus(TriggerStatus.SUCCESS)).isOne();
         assertThat(subject.hasTriggers()).isFalse();
     }
     
@@ -84,7 +85,7 @@ class TaskSchedulerServiceTest {
 
         // THEN
         for (int i = 1; i < 5; ++i) asserts.assertValue(i + " state");
-        assertThat(taskInstanceRepository.countByStatus(TaskStatus.SUCCESS)).isEqualTo(4);
+        assertThat(triggerRepository.countByStatus(TriggerStatus.SUCCESS)).isEqualTo(4);
         assertThat(subject.hasTriggers()).isFalse();
     }
     
@@ -102,7 +103,7 @@ class TaskSchedulerServiceTest {
         subject.triggerNexTask(OffsetDateTime.now().plusDays(1)).get();
         
         // THEN
-        assertThat(taskInstanceRepository.countByStatus(TaskStatus.FAILED)).isOne();
+        assertThat(triggerRepository.countByStatus(TriggerStatus.FAILED)).isOne();
         assertThat(subject.get(triggerId).get().getExecutionCount()).isEqualTo(3);
     }
     
@@ -148,7 +149,7 @@ class TaskSchedulerServiceTest {
         
         // THEN
         assertThat(asserts.getCount("hallo")).isEqualTo(3);
-        assertThat(taskInstanceRepository.countByStatus(TaskStatus.FAILED)).isOne();
+        assertThat(triggerRepository.countByStatus(TriggerStatus.FAILED)).isOne();
         assertThat(subject.get(id).get().getExecutionCount()).isEqualTo(3);
     }
     
@@ -156,7 +157,7 @@ class TaskSchedulerServiceTest {
     void taskPriorityTest() throws Exception {
         // GIVEN
         TaskId<String> task = subject.register("aha", s -> asserts.info(s));
-        List<TaskTriggerId> triggers = subject.triggerAll(Arrays.asList(
+        List<TriggerId> triggers = subject.triggerAll(Arrays.asList(
                 task.newTrigger().state("mid").priority(5).build(),
                 task.newTrigger().state("low").priority(4).build(),
                 task.newTrigger().state("high").priority(6).build()
@@ -170,7 +171,7 @@ class TaskSchedulerServiceTest {
         assertThat(subject.get(triggers.get(1)).get().getPriority()).isEqualTo(4);
         assertThat(subject.get(triggers.get(2)).get().getPriority()).isEqualTo(6);
         asserts.awaitOrdered("high", "mid", "low");
-        assertThat(taskInstanceRepository.countByStatus(TaskStatus.SUCCESS)).isEqualTo(3);
+        assertThat(triggerRepository.countByStatus(TriggerStatus.SUCCESS)).isEqualTo(3);
     }
     
     @Test
@@ -191,7 +192,7 @@ class TaskSchedulerServiceTest {
         
         // THEN
         asserts.assertMissing("should not trigger");
-        assertThat(taskInstanceRepository.count()).isZero();
+        assertThat(triggerRepository.count()).isZero();
     }
     
     @Test
@@ -214,7 +215,7 @@ class TaskSchedulerServiceTest {
         
         // THEN
         asserts.awaitValueOnce("paul@sterl.org");
-        assertThat(taskInstanceRepository.countByStatus(TaskStatus.SUCCESS)).isEqualTo(1);
+        assertThat(triggerRepository.countByStatus(TriggerStatus.SUCCESS)).isEqualTo(1);
     }
     
     @Test
@@ -232,6 +233,6 @@ class TaskSchedulerServiceTest {
 
         // THEN
         for (int i = 1; i <= 100; ++i) asserts.awaitValueOnce("t" + i);
-        assertThat(taskInstanceRepository.countByStatus(TaskStatus.SUCCESS)).isEqualTo(100);
+        assertThat(triggerRepository.countByStatus(TriggerStatus.SUCCESS)).isEqualTo(100);
     }
 }

@@ -1,10 +1,12 @@
 package org.sterl.spring.task.component;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -12,46 +14,66 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.task.api.Task;
 import org.sterl.spring.task.api.TaskTrigger;
-import org.sterl.spring.task.model.TaskStatus;
-import org.sterl.spring.task.model.TaskTriggerEntity;
-import org.sterl.spring.task.model.TaskTriggerId;
+import org.sterl.spring.task.model.TriggerStatus;
+import org.sterl.spring.task.model.TriggerEntity;
+import org.sterl.spring.task.model.TriggerId;
 import org.sterl.spring.task.repository.TaskRepository;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class TransactionalTaskExecutorComponent {
-    private final ExecutorService executor = Executors.newFixedThreadPool(10);
-    private final AtomicInteger maxTasks = new AtomicInteger(10);
+    @Getter @Setter
+    private int maxTasks = 10;
+    @Getter @Setter
+    private Duration maxShutdownWaitTime = Duration.ofSeconds(10);
+    private ExecutorService executor = Executors.newFixedThreadPool(maxTasks);
     private final AtomicInteger runningTasks = new AtomicInteger(0);
     private final StateSerializer serializer = new StateSerializer();
     private final AtomicBoolean stopped = new AtomicBoolean(false);
 
     private final TaskRepository taskRepository;
-    private final EditTaskInstanceComponent editTaskInstanceComponent;
+    private final EditTaskTriggerComponent editTaskTriggerComponent;
     private final TransactionTemplate trx;
     
-    public Future<?> execute(TaskTriggerEntity trigger) {
+    public Future<?> execute(TriggerEntity trigger) {
         return executor.submit(() -> runInTransaction(trigger));
     }
 
     @PostConstruct
     public void start() {
         stopped.set(false);
+        executor = Executors.newFixedThreadPool(maxTasks);
     }
     @PreDestroy
     public void stop() {
         stopped.set(true);
+        executor.shutdown();
+        
+        if (runningTasks.get() > 0) {
+            log.info("Schutdown executor with {} running tasks, waiting for {}.", 
+                    runningTasks.get(), maxShutdownWaitTime);
+            
+            try {
+                executor.awaitTermination(maxShutdownWaitTime.getSeconds(), TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                log.warn("Failed to complete runnings tasks.", e.getCause());
+            } finally {
+                executor.shutdownNow();
+            }
+        }
     }
     
     public int getFreeThreads() {
         if (stopped.get()) return 0;
-        return Math.max(maxTasks.get() - runningTasks.get(), 0);
+        return Math.max(maxTasks - runningTasks.get(), 0);
     }
 
     public int getRunningTasks() {
@@ -59,10 +81,10 @@ public class TransactionalTaskExecutorComponent {
     }
     
     public boolean isStopped() {
-        return stopped.get() || maxTasks.get() <= 0;
+        return stopped.get() || maxTasks <= 0;
     }
 
-    private void runInTransaction(TaskTriggerEntity trigger) {
+    private void runInTransaction(TriggerEntity trigger) {
         final int count = runningTasks.incrementAndGet();
         log.debug("Running task={} - totalActive={}", trigger, count);
         final Task<Serializable> task = taskRepository.get(trigger.newTaskId());
@@ -79,24 +101,24 @@ public class TransactionalTaskExecutorComponent {
         }
     }
 
-    private void handleTaskException(TaskTriggerEntity trigger, Task<Serializable> task, Exception e) {
+    private void handleTaskException(TriggerEntity trigger, Task<Serializable> task, Exception e) {
         if (task.retryStrategy().shouldRetry(trigger.getExecutionCount(), e)) {
             log.warn("Task={} failed, retry will be done!", trigger.getId(), e);
-            editTaskInstanceComponent.completeWithRetry(
+            editTaskTriggerComponent.completeWithRetry(
                     trigger.getId(), e, task.retryStrategy().retryAt(trigger.getExecutionCount(), e));
         } else {
             log.error("Task={} failed", trigger.getId(), e);
-            editTaskInstanceComponent.completeTaskWithStatus(trigger.getId(), TaskStatus.FAILED, e);
+            editTaskTriggerComponent.completeTaskWithStatus(trigger.getId(), TriggerStatus.FAILED, e);
         }
     }
 
     private void triggerAllNoResult(Collection<TaskTrigger<?>> triggers) {
         triggers.forEach(t -> taskRepository.assertIsKnown(t.taskId()));
-        editTaskInstanceComponent.triggerAll(triggers);
+        editTaskTriggerComponent.triggerAll(triggers);
     }
     
-    private void success(TaskTriggerId id) {
-        editTaskInstanceComponent.completeTaskWithStatus(id, TaskStatus.SUCCESS, null);
+    private void success(TriggerId id) {
+        editTaskTriggerComponent.completeTaskWithStatus(id, TriggerStatus.SUCCESS, null);
     }
 
 }

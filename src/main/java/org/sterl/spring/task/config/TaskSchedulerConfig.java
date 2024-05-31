@@ -11,18 +11,21 @@ import org.springframework.context.annotation.Configuration;
 import org.sterl.spring.task.TaskSchedulerService;
 import org.sterl.spring.task.api.ClosureTask;
 import org.sterl.spring.task.api.SimpleTask;
-import org.sterl.spring.task.component.EditTaskInstanceComponent;
+import org.sterl.spring.task.component.EditSchedulerStatusComponent;
+import org.sterl.spring.task.component.EditTaskTriggerComponent;
 import org.sterl.spring.task.component.LockNextTriggerComponent;
 import org.sterl.spring.task.component.TransactionalTaskExecutorComponent;
 import org.sterl.spring.task.repository.TaskRepository;
+import org.sterl.spring.task.repository.TaskSchedulerRepository;
 
 @Configuration
 public class TaskSchedulerConfig {
     @Bean
     TaskSchedulerService taskSchedulerService(
+            TaskSchedulerRepository schedulerRepository,
             TaskRepository taskRepository,
             LockNextTriggerComponent lockNextTrigger,
-            EditTaskInstanceComponent editTasks,
+            EditTaskTriggerComponent editTasks,
             TransactionalTaskExecutorComponent taskExecutor) throws UnknownHostException {
         String name = null;
         if (name == null) {
@@ -32,7 +35,9 @@ public class TaskSchedulerConfig {
             if (hostname == null) name = ip.toString();
             else name = hostname;
         }
-        return new TaskSchedulerService(name, lockNextTrigger, editTasks, taskRepository, taskExecutor);
+        return new TaskSchedulerService(name, lockNextTrigger, editTasks, 
+                new EditSchedulerStatusComponent(name, schedulerRepository, taskExecutor), 
+                taskRepository, taskExecutor);
     }
 
     @Autowired

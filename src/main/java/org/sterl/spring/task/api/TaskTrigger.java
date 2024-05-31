@@ -3,7 +3,7 @@ package org.sterl.spring.task.api;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 
-import org.sterl.spring.task.model.TaskTriggerId;
+import org.sterl.spring.task.model.TriggerId;
 
 /**
  * For any registered task a task trigger represent one unit of work, executing this task once.
@@ -17,7 +17,7 @@ public record TaskTrigger<T extends Serializable>(
 
     public static final int DEFAULT_PRIORITY = 4;
     
-    public TaskTriggerId toTaskTriggerId() {
-        return new TaskTriggerId(id, taskId.name());
+    public TriggerId toTaskTriggerId() {
+        return new TriggerId(id, taskId.name());
     }
 }

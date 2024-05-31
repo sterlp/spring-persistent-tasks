@@ -14,14 +14,18 @@ import org.sterl.spring.task.api.SimpleTask;
 import org.sterl.spring.task.api.Task;
 import org.sterl.spring.task.api.TaskId;
 import org.sterl.spring.task.api.TaskTrigger;
-import org.sterl.spring.task.component.EditTaskInstanceComponent;
+import org.sterl.spring.task.component.EditSchedulerStatusComponent;
+import org.sterl.spring.task.component.EditTaskTriggerComponent;
 import org.sterl.spring.task.component.LockNextTriggerComponent;
 import org.sterl.spring.task.component.TransactionalTaskExecutorComponent;
-import org.sterl.spring.task.model.TaskStatus;
-import org.sterl.spring.task.model.TaskTriggerEntity;
-import org.sterl.spring.task.model.TaskTriggerId;
+import org.sterl.spring.task.model.TaskSchedulerEntity.TaskSchedulerStatus;
+import org.sterl.spring.task.model.TriggerStatus;
+import org.sterl.spring.task.model.TriggerEntity;
+import org.sterl.spring.task.model.TriggerId;
 import org.sterl.spring.task.repository.TaskRepository;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,20 +35,32 @@ public class TaskSchedulerService {
 
     private final String name;
     private final LockNextTriggerComponent lockNextTriggerComponent;
-    private final EditTaskInstanceComponent editTaskInstanceComponent;
+    private final EditTaskTriggerComponent editTaskTriggerComponent;
+    private final EditSchedulerStatusComponent editSchedulerStatusComponent;
     private final TaskRepository taskRepository;
     private final TransactionalTaskExecutorComponent taskExecutor;
+    
+    @PostConstruct
+    public void start() {
+        editSchedulerStatusComponent.checkinToRegistry(TaskSchedulerStatus.ONLINE);
+        taskExecutor.start();
+    }
+    @PreDestroy
+    public void stop() {
+        editSchedulerStatusComponent.checkinToRegistry(TaskSchedulerStatus.OFFLINE);
+        taskExecutor.stop();
+    }
 
     /**
      * Checks if any job is still running or waiting for it's execution.
      */
     public boolean hasTriggers() {
         if (taskExecutor.getRunningTasks() > 0) return true;
-        return editTaskInstanceComponent.hasTriggers();
+        return editTaskTriggerComponent.hasTriggers();
     }
     
-    public Optional<TaskTriggerEntity> get(TaskTriggerId id) {
-        return editTaskInstanceComponent.get(id);
+    public Optional<TriggerEntity> get(TriggerId id) {
+        return editTaskTriggerComponent.get(id);
     }
 
     /**
@@ -64,19 +80,19 @@ public class TaskSchedulerService {
     /**
      * Just triggers the given task to be executed using <code>null</code> as state.
      */
-    public <T extends Serializable> TaskTriggerId trigger(TaskId<T> taskId) {
+    public <T extends Serializable> TriggerId trigger(TaskId<T> taskId) {
         return trigger(taskId, null);
     }
 
-    public <T extends Serializable> TaskTriggerId trigger(TaskId<T> taskId, T state) {
+    public <T extends Serializable> TriggerId trigger(TaskId<T> taskId, T state) {
         return trigger(UUID.randomUUID().toString(), taskId, state);
     }
     
-    public <T extends Serializable> TaskTriggerId trigger(String id, TaskId<T> taskId, T state) {
+    public <T extends Serializable> TriggerId trigger(String id, TaskId<T> taskId, T state) {
         return trigger(id, taskId, state, OffsetDateTime.now());
     }
     
-    public <T extends Serializable> TaskTriggerId trigger(String id, TaskId<T> taskId, T state, OffsetDateTime when) {
+    public <T extends Serializable> TriggerId trigger(String id, TaskId<T> taskId, T state, OffsetDateTime when) {
         return trigger(taskId.newTrigger()
                 .id(id)
                 .state(state)
@@ -84,14 +100,14 @@ public class TaskSchedulerService {
                 .build());
     }
 
-    public <T extends Serializable> TaskTriggerId trigger(TaskTrigger<T> tigger) {
+    public <T extends Serializable> TriggerId trigger(TaskTrigger<T> tigger) {
         taskRepository.assertIsKnown(tigger.taskId());
-        return editTaskInstanceComponent.addTrigger(tigger);
+        return editTaskTriggerComponent.addTrigger(tigger);
     }
     
-    public <T extends Serializable> List<TaskTriggerId>  triggerAll(Collection<TaskTrigger<T>> triggers) {
+    public <T extends Serializable> List<TriggerId>  triggerAll(Collection<TaskTrigger<T>> triggers) {
         triggers.forEach(t -> taskRepository.assertIsKnown(t.taskId()));
-        return editTaskInstanceComponent.addTriggers(triggers);
+        return editTaskTriggerComponent.addTriggers(triggers);
     }
 
     //@Scheduled(initialDelay = 10, fixedDelay = 5)
@@ -120,7 +136,9 @@ public class TaskSchedulerService {
     /**
      * If you changed your mind, cancel the task
      */
-    public void cancel(TaskTriggerId id) {
-        editTaskInstanceComponent.completeTaskWithStatus(id, TaskStatus.CANCELED, null);
+    public void cancel(TriggerId id) {
+        editTaskTriggerComponent.completeTaskWithStatus(id, TriggerStatus.CANCELED, null);
     }
+    
+    
 }
