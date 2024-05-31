@@ -23,8 +23,10 @@ import org.sterl.spring.task.model.TaskTriggerId;
 import org.sterl.spring.task.repository.TaskRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
+@Slf4j
 public class TaskSchedulerService {
 
     private final String name;
@@ -105,9 +107,14 @@ public class TaskSchedulerService {
      * tasks which wouldn't be triggered now.
      */
     public Future<?> triggerNexTask(OffsetDateTime timeDue) {
-        final var trigger = lockNextTriggerComponent.loadNext(name, timeDue);
-        if (trigger == null) return CompletableFuture.completedFuture(null);
-        return taskExecutor.execute(trigger);
+        if (taskExecutor.getFreeThreads() > 0) {
+            final var trigger = lockNextTriggerComponent.loadNext(name, timeDue);
+            if (trigger == null) return CompletableFuture.completedFuture(null);
+            return taskExecutor.execute(trigger);
+        } else {
+            log.debug("triggerNexTask={} skipped as no free threads are available.", timeDue);
+            return CompletableFuture.completedFuture(null);
+        }
     }
 
     /**

@@ -42,7 +42,7 @@ class TaskSchedulerServiceTest {
     }
 
     @Test
-    void runSimpleTask() throws Exception {
+    void runSimpleTaskTest() throws Exception {
         // GIVEN
         TaskId<String> taskId = subject.register("foo", c -> asserts.info("foo"));
         subject.<String>register("bar", c -> asserts.info("bar"));
@@ -59,7 +59,7 @@ class TaskSchedulerServiceTest {
     }
     
     @Test
-    void runSimpleTaskWithState() throws Exception {
+    void runSimpleTaskWithStateTest() throws Exception {
         // GIVEN
         TaskId<String> task = subject.register("foo", c -> asserts.info(c));
         subject.trigger(task, "Hello");
@@ -74,7 +74,7 @@ class TaskSchedulerServiceTest {
     }
     
     @Test
-    void runSimpleTaskMultipleTimes() throws Exception {
+    void runSimpleTaskMultipleTimesTest() throws Exception {
         // GIVEN
         TaskId<String> task = subject.register("foo", c -> asserts.info(c));
         for (int i = 1; i < 5; ++i) subject.trigger(task, i + " state");
@@ -89,7 +89,7 @@ class TaskSchedulerServiceTest {
     }
     
     @Test
-    void failedTasksAreFailed() throws Exception {
+    void failedTasksAreFailedTest() throws Exception {
         // GIVEN
         TaskId<String> task = subject.<String>register("foo", c -> {
             throw new RuntimeException("Nope!");
@@ -107,7 +107,24 @@ class TaskSchedulerServiceTest {
     }
     
     @Test
-    void failedTasksAreRetried() throws Exception {
+    void failedSavingExceptionTest() throws Exception {
+        // GIVEN
+        TaskId<String> task = subject.<String>register("foo", c -> {
+            throw new IllegalArgumentException("Nope! " + c);
+        });
+        
+        // WHEN
+        final var triggerId = subject.trigger(task.newTrigger().state("Hallo :-)").build());
+        subject.triggerNexTask().get();
+        
+        // THEN
+        final var trigger = subject.get(triggerId).get();
+        assertThat(trigger.getExceptionName()).isEqualTo(IllegalArgumentException.class.getName());
+        assertThat(trigger.getLastException()).contains("Nope! Hallo :-)");
+    }
+    
+    @Test
+    void failedTasksAreRetriedTest() throws Exception {
         // GIVEN
         TaskId<String> task = subject.register(
             new AbstractTask<String>() {
@@ -136,7 +153,7 @@ class TaskSchedulerServiceTest {
     }
     
     @Test
-    void testTaskPriority() throws Exception {
+    void taskPriorityTest() throws Exception {
         // GIVEN
         TaskId<String> task = subject.register("aha", s -> asserts.info(s));
         List<TaskTriggerId> triggers = subject.triggerAll(Arrays.asList(
@@ -157,7 +174,7 @@ class TaskSchedulerServiceTest {
     }
     
     @Test
-    void testCreationJoinTransaction() throws Exception {
+    void creationJoinTransactionTest() throws Exception {
         // GIVEN
         final var taskId = subject.register("aha", s -> asserts.info("should not trigger"));
         
@@ -178,7 +195,7 @@ class TaskSchedulerServiceTest {
     }
     
     @Test
-    void testOverrideTriggerUsingSame() throws Exception {
+    void overrideTriggerUsingSameTest() throws Exception {
         // GIVEN
         final TaskId<String> taskId = subject.register("send_email", s -> asserts.info(s));
         
@@ -201,7 +218,7 @@ class TaskSchedulerServiceTest {
     }
     
     @Test
-    void testMultithreading() throws Exception {
+    void multithreadingTest() throws Exception {
         // GIVEN
         final var executor = Executors.newFixedThreadPool(100);
         final TaskId<String> taskId = subject.register("multi-threading", s -> asserts.info(s));

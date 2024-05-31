@@ -2,7 +2,9 @@ package org.sterl.spring.task.model;
 
 import java.io.Serializable;
 import java.time.OffsetDateTime;
+import java.util.function.IntPredicate;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.sterl.spring.task.api.TaskId;
 
 import jakarta.persistence.Column;
@@ -67,10 +69,11 @@ public class TaskTriggerEntity {
 
     @Lob
     private byte[] state;
-    /*
+    
+    @Column(length = 512)
+    private String exceptionName;
     @Lob
-    private byte[] lastError;
-    */
+    private String lastException;
 
     public TaskTriggerEntity cancel() {
         end = OffsetDateTime.now();
@@ -85,7 +88,13 @@ public class TaskTriggerEntity {
         this.status = TaskStatus.RUNNING;
     }
     public void complete(TaskStatus newStatus, Exception e) {
-        this.end = OffsetDateTime.now();
+        fail(e);
         this.status = newStatus;
+    }
+    public void fail(Exception e) {
+        this.end = OffsetDateTime.now();
+        this.status = TaskStatus.FAILED;
+        this.exceptionName = e == null ? "" : e.getClass().getName();
+        this.lastException = ExceptionUtils.getStackTrace(e);
     }
 }

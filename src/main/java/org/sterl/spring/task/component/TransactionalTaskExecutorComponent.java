@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.stereotype.Component;
@@ -16,6 +17,8 @@ import org.sterl.spring.task.model.TaskTriggerEntity;
 import org.sterl.spring.task.model.TaskTriggerId;
 import org.sterl.spring.task.repository.TaskRepository;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,8 +27,10 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class TransactionalTaskExecutorComponent {
     private final ExecutorService executor = Executors.newFixedThreadPool(10);
+    private final AtomicInteger maxTasks = new AtomicInteger(10);
     private final AtomicInteger runningTasks = new AtomicInteger(0);
     private final StateSerializer serializer = new StateSerializer();
+    private final AtomicBoolean stopped = new AtomicBoolean(false);
 
     private final TaskRepository taskRepository;
     private final EditTaskInstanceComponent editTaskInstanceComponent;
@@ -34,26 +39,44 @@ public class TransactionalTaskExecutorComponent {
     public Future<?> execute(TaskTriggerEntity trigger) {
         return executor.submit(() -> runInTransaction(trigger));
     }
+
+    @PostConstruct
+    public void start() {
+        stopped.set(false);
+    }
+    @PreDestroy
+    public void stop() {
+        stopped.set(true);
+    }
     
+    public int getFreeThreads() {
+        if (stopped.get()) return 0;
+        return Math.max(maxTasks.get() - runningTasks.get(), 0);
+    }
+
     public int getRunningTasks() {
         return runningTasks.get();
     }
+    
+    public boolean isStopped() {
+        return stopped.get() || maxTasks.get() <= 0;
+    }
 
     private void runInTransaction(TaskTriggerEntity trigger) {
-            int count = runningTasks.incrementAndGet();
-            log.debug("Running task={} - totalActive={}", trigger, count);
-            Task<Serializable> task = taskRepository.get(trigger.newTaskId());
-            try {
-                trx.executeWithoutResult(t -> {
-                    final var result = task.execute(serializer.deserialize(trigger.getState()));
-                    success(trigger.getId());
-                    triggerAllNoResult(result.triggers());
-                });
-            } catch (Exception e) {
-                handleTaskException(trigger, task, e);
-            } finally {
-                runningTasks.decrementAndGet();
-            }
+        final int count = runningTasks.incrementAndGet();
+        log.debug("Running task={} - totalActive={}", trigger, count);
+        final Task<Serializable> task = taskRepository.get(trigger.newTaskId());
+        try {
+            trx.executeWithoutResult(t -> {
+                final var result = task.execute(serializer.deserialize(trigger.getState()));
+                success(trigger.getId());
+                triggerAllNoResult(result.triggers());
+            });
+        } catch (Exception e) {
+            handleTaskException(trigger, task, e);
+        } finally {
+            runningTasks.decrementAndGet();
+        }
     }
 
     private void handleTaskException(TaskTriggerEntity trigger, Task<Serializable> task, Exception e) {
