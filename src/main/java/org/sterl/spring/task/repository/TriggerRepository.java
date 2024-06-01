@@ -13,11 +13,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.sterl.spring.task.model.TriggerEntity;
 import org.sterl.spring.task.model.TriggerId;
+import org.sterl.spring.task.model.TriggerStatus;
 
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
-
-import org.sterl.spring.task.model.TriggerStatus;
 
 public interface TriggerRepository extends JpaRepository<TriggerEntity, TriggerId> {
 
@@ -36,4 +35,11 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, TriggerI
     List<TriggerEntity> loadNextTasks(OffsetDateTime start, TriggerStatus status, Pageable page);
     
     int countByStatus(TriggerStatus status);
+
+    @Query("""
+           SELECT e FROM #{#entityName} e
+           WHERE start <= :timeout
+           AND status = :status
+           """)
+    List<TriggerEntity> findByTimeout(OffsetDateTime timeout, TriggerStatus status);
 }

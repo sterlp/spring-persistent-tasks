@@ -1,6 +1,7 @@
 package org.sterl.spring.task;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
+import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.task.api.ClosureTask;
 import org.sterl.spring.task.api.SimpleTask;
 import org.sterl.spring.task.api.Task;
@@ -18,6 +20,7 @@ import org.sterl.spring.task.component.EditSchedulerStatusComponent;
 import org.sterl.spring.task.component.EditTaskTriggerComponent;
 import org.sterl.spring.task.component.LockNextTriggerComponent;
 import org.sterl.spring.task.component.TransactionalTaskExecutorComponent;
+import org.sterl.spring.task.model.TaskSchedulerEntity;
 import org.sterl.spring.task.model.TaskSchedulerEntity.TaskSchedulerStatus;
 import org.sterl.spring.task.model.TriggerStatus;
 import org.sterl.spring.task.model.TriggerEntity;
@@ -26,6 +29,7 @@ import org.sterl.spring.task.repository.TaskRepository;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TaskSchedulerService {
 
+    @Getter
     private final String name;
     private final LockNextTriggerComponent lockNextTriggerComponent;
     private final EditTaskTriggerComponent editTaskTriggerComponent;
@@ -42,13 +47,18 @@ public class TaskSchedulerService {
     
     @PostConstruct
     public void start() {
-        editSchedulerStatusComponent.checkinToRegistry(TaskSchedulerStatus.ONLINE);
         taskExecutor.start();
+        pingRegisgtry();
+        log.info("Started {} with {} threads", name, taskExecutor.getMaxTasks());
     }
     @PreDestroy
     public void stop() {
-        editSchedulerStatusComponent.checkinToRegistry(TaskSchedulerStatus.OFFLINE);
+        editSchedulerStatusComponent.checkinToRegistry(name, TaskSchedulerStatus.OFFLINE);
         taskExecutor.stop();
+    }
+    
+    public TaskSchedulerEntity pingRegisgtry() {
+        return editSchedulerStatusComponent.checkinToRegistry(name, TaskSchedulerStatus.ONLINE);
     }
 
     /**
@@ -124,8 +134,11 @@ public class TaskSchedulerService {
      */
     public Future<?> triggerNexTask(OffsetDateTime timeDue) {
         if (taskExecutor.getFreeThreads() > 0) {
-            final var trigger = lockNextTriggerComponent.loadNext(name, timeDue);
-            if (trigger == null) return CompletableFuture.completedFuture(null);
+            final var runningOn = pingRegisgtry();
+            final var trigger = lockNextTriggerComponent.loadNext(runningOn, timeDue);
+            if (trigger == null) {
+                return CompletableFuture.completedFuture(null);
+            }
             return taskExecutor.execute(trigger);
         } else {
             log.debug("triggerNexTask={} skipped as no free threads are available.", timeDue);
@@ -140,5 +153,18 @@ public class TaskSchedulerService {
         editTaskTriggerComponent.completeTaskWithStatus(id, TriggerStatus.CANCELED, null);
     }
     
-    
+    @Transactional
+    public List<TriggerEntity> rescheduleAbandonedTasks(Duration timeout) {
+        final var offlineScheduler = editSchedulerStatusComponent.setSchedulersOffline(timeout);
+        if (offlineScheduler > 0) log.info("Found {} offline scheduler.", offlineScheduler);
+        final var tasks = editTaskTriggerComponent.findTasksInTimeout(timeout);
+        tasks.forEach(t -> {
+            t.setRunningOn(null);
+            t.setStatus(TriggerStatus.NEW);
+            t.setExceptionName("Abandoned tasks");
+        });
+        log.info("Reschedule {} abandoned tasks.", tasks.size());
+        return tasks;
+        
+    }
 }

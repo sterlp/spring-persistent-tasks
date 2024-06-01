@@ -49,16 +49,26 @@ public class TransactionalTaskExecutorComponent {
 
     @PostConstruct
     public void start() {
-        stopped.set(false);
-        executor = Executors.newFixedThreadPool(maxTasks);
+        if (stopped.compareAndExchange(true, false)) {
+            synchronized(stopped) {
+                executor = Executors.newFixedThreadPool(maxTasks);
+            }
+        }
     }
+
     @PreDestroy
     public void stop() {
-        stopped.set(true);
-        executor.shutdown();
-        
+        if (stopped.compareAndExchange(false, true)) {
+            synchronized (stopped) {
+                executor.shutdown();
+                waitForRunningTasks();
+            }
+        }
+    }
+
+    private void waitForRunningTasks() {
         if (runningTasks.get() > 0) {
-            log.info("Schutdown executor with {} running tasks, waiting for {}.", 
+            log.info("Shutdown executor with {} running tasks, waiting for {}.", 
                     runningTasks.get(), maxShutdownWaitTime);
             
             try {

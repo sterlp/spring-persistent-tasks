@@ -1,6 +1,7 @@
 package org.sterl.spring.task.component;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -78,5 +79,10 @@ public class EditTaskTriggerComponent {
 
     public Optional<TriggerEntity> get(TriggerId id) {
         return triggerRepository.findById(id);
+    }
+
+    public List<TriggerEntity> findTasksInTimeout(Duration timeout) {
+        final var startTime = OffsetDateTime.now().minus(timeout);
+        return triggerRepository.findByTimeout(startTime, TriggerStatus.RUNNING);
     }
 }

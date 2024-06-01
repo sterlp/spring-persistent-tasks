@@ -2,17 +2,20 @@ package org.sterl.spring.task.model;
 
 import java.time.OffsetDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "TASK_SCHEDULER_STATUS")
+@Table(name = "TASK_SCHEDULER", 
+       indexes = @Index(name = "IDX_TASK_SCHEDULER_STATUS", columnList = "status"))
 @Data
-@EqualsAndHashCode(of = "name")
+@EqualsAndHashCode(of = "id")
 @NoArgsConstructor
 public class TaskSchedulerEntity {
     public enum TaskSchedulerStatus {
@@ -21,7 +24,8 @@ public class TaskSchedulerEntity {
     }
 
     @Id
-    private String name;
+    @Column(updatable = false)
+    private String id;
     
     private int tasksSlotCount;
     
@@ -39,6 +43,6 @@ public class TaskSchedulerEntity {
 
     public TaskSchedulerEntity(String name) {
         super();
-        this.name = name;
+        this.id = name;
     }
 }

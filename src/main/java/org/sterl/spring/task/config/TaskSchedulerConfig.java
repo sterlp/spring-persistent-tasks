@@ -20,13 +20,13 @@ import org.sterl.spring.task.repository.TaskSchedulerRepository;
 
 @Configuration
 public class TaskSchedulerConfig {
-    @Bean
+    @Bean(destroyMethod = "stop", initMethod = "start")
     TaskSchedulerService taskSchedulerService(
-            TaskSchedulerRepository schedulerRepository,
             TaskRepository taskRepository,
             LockNextTriggerComponent lockNextTrigger,
             EditTaskTriggerComponent editTasks,
-            TransactionalTaskExecutorComponent taskExecutor) throws UnknownHostException {
+            TransactionalTaskExecutorComponent taskExecutor,
+            EditSchedulerStatusComponent editSchedulerStatusComponent) throws UnknownHostException {
         String name = null;
         if (name == null) {
             final var ip = InetAddress.getLocalHost();
@@ -35,9 +35,16 @@ public class TaskSchedulerConfig {
             if (hostname == null) name = ip.toString();
             else name = hostname;
         }
-        return new TaskSchedulerService(name, lockNextTrigger, editTasks, 
-                new EditSchedulerStatusComponent(name, schedulerRepository, taskExecutor), 
-                taskRepository, taskExecutor);
+        return new TaskSchedulerService(name, lockNextTrigger, editTasks,
+                editSchedulerStatusComponent, taskRepository, taskExecutor);
+    }
+    @Bean
+    EditSchedulerStatusComponent editSchedulerStatusComponent(
+            TaskSchedulerRepository schedulerRepository,
+            TransactionalTaskExecutorComponent taskExecutor) throws UnknownHostException {
+        
+
+        return new EditSchedulerStatusComponent(schedulerRepository, taskExecutor);
     }
 
     @Autowired
