@@ -98,9 +98,9 @@ class TaskFailoverTest {
         final var id = schedulerA.trigger(trigger);
         
         // WHEN
-        schedulerA.triggerNexTask();
+        schedulerA.triggerNextTask();
         schedulerA.stop();
-        schedulerB.triggerNexTask().get();
+        schedulerB.triggerNextTask().get();
         
         Thread.sleep(60);
         // AND simulate the scheduler died

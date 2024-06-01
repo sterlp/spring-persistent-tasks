@@ -60,7 +60,7 @@ class TaskTransactionTest {
         
         // WHEN
         subject.trigger(trigger);
-        subject.triggerNexTask().get();
+        subject.triggerNextTask().get();
         
         // THEN
         assertThat(personRepository.count()).isOne();
@@ -73,13 +73,13 @@ class TaskTransactionTest {
         sendError.set(true);
         // WHEN
         final var triggerId = subject.trigger(trigger);
-        subject.triggerNexTask().get();
+        subject.triggerNextTask().get();
         // THEN
         assertThat(personRepository.count()).isZero();
 
         // WHEN
         sendError.set(false);
-        subject.triggerNexTask().get();
+        subject.triggerNextTask().get();
         // THEN
         assertThat(personRepository.count()).isOne();
         assertThat(subject.get(triggerId).get().getExecutionCount()).isEqualTo(2);

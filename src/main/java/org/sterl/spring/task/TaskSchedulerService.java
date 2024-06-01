@@ -123,12 +123,12 @@ public class TaskSchedulerService {
     /**
      * Simply triggers the next task which is now due to be executed
      */
-    public Future<?> triggerNexTask() {
+    public Future<?> triggerNextTask() {
         return triggerNexTask(OffsetDateTime.now());
     }
     
     /**
-     * Like {@link #triggerNexTask()} but allows to set the time e.g. to the future to trigger
+     * Like {@link #triggerNextTask()} but allows to set the time e.g. to the future to trigger
      * tasks which wouldn't be triggered now.
      */
     public Future<?> triggerNexTask(OffsetDateTime timeDue) {

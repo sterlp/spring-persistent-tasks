@@ -37,7 +37,7 @@ class TaskSchedulerServiceTest {
     void setup() {
         triggerRepository.deleteAllInBatch();
         subject.start();
-        while (subject.hasTriggers()) subject.triggerNexTask();
+        while (subject.hasTriggers()) subject.triggerNextTask();
         taskRepository.clear();
         asserts.clear();
     }
@@ -50,7 +50,7 @@ class TaskSchedulerServiceTest {
         TriggerId triggerId = subject.trigger(taskId);
 
         // WHEN
-        subject.triggerNexTask().get();
+        subject.triggerNextTask().get();
         
         // THEN
         assertThat(triggerRepository.countByStatus(TriggerStatus.SUCCESS)).isOne();
@@ -66,7 +66,7 @@ class TaskSchedulerServiceTest {
         subject.trigger(task, "Hello");
         
         // WHEN
-        subject.triggerNexTask().get();
+        subject.triggerNextTask().get();
         
         // THEN
         asserts.assertValue("Hello");
@@ -81,7 +81,7 @@ class TaskSchedulerServiceTest {
         for (int i = 1; i < 5; ++i) subject.trigger(task, i + " state");
         
         // WHEN
-        for (int i = 1; i < 5; ++i) subject.triggerNexTask().get();
+        for (int i = 1; i < 5; ++i) subject.triggerNextTask().get();
 
         // THEN
         for (int i = 1; i < 5; ++i) asserts.assertValue(i + " state");
@@ -98,7 +98,7 @@ class TaskSchedulerServiceTest {
         final var triggerId = subject.trigger(task);
         
         // WHEN
-        subject.triggerNexTask().get();
+        subject.triggerNextTask().get();
         subject.triggerNexTask(OffsetDateTime.now().plusDays(1)).get();
         subject.triggerNexTask(OffsetDateTime.now().plusDays(1)).get();
         
@@ -116,7 +116,7 @@ class TaskSchedulerServiceTest {
         
         // WHEN
         final var triggerId = subject.trigger(task.newTrigger().state("Hallo :-)").build());
-        subject.triggerNexTask().get();
+        subject.triggerNextTask().get();
         
         // THEN
         final var trigger = subject.get(triggerId).get();
@@ -143,7 +143,7 @@ class TaskSchedulerServiceTest {
         
         // WHEN
         Awaitility.await().until(() -> {
-            subject.triggerNexTask().get();
+            subject.triggerNextTask().get();
             return asserts.getCount("hallo") >= 3;
         });
         
@@ -164,7 +164,7 @@ class TaskSchedulerServiceTest {
             )
         );
         // WHEN
-        while (subject.hasTriggers()) subject.triggerNexTask().get();
+        while (subject.hasTriggers()) subject.triggerNextTask().get();
 
         // THEN
         assertThat(subject.get(triggers.get(0)).get().getPriority()).isEqualTo(5);
@@ -188,7 +188,7 @@ class TaskSchedulerServiceTest {
             });
         } catch (Exception idc) {}
         
-        subject.triggerNexTask().get();
+        subject.triggerNextTask().get();
         
         // THEN
         asserts.assertMissing("should not trigger");
@@ -210,8 +210,8 @@ class TaskSchedulerServiceTest {
                 .state("paul@sterl.org") // fixed state
                 .build());
 
-        subject.triggerNexTask().get();
-        subject.triggerNexTask().get();
+        subject.triggerNextTask().get();
+        subject.triggerNextTask().get();
         
         // THEN
         asserts.awaitValueOnce("paul@sterl.org");
@@ -226,7 +226,7 @@ class TaskSchedulerServiceTest {
         for (int i = 1; i <= 100; ++i) subject.trigger(taskId, "t" + i);
         
         final List<Callable<?>> tasks = new ArrayList<>(100);
-        for (int i = 1; i <= 100; ++i) tasks.add(() -> subject.triggerNexTask().get());
+        for (int i = 1; i <= 100; ++i) tasks.add(() -> subject.triggerNextTask().get());
         
         // WHEN
         executor.invokeAll(tasks);

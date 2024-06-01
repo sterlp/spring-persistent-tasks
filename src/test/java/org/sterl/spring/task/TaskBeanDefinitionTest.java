@@ -71,8 +71,8 @@ class TaskBeanDefinitionTest {
         
         // WHEN
         subject.trigger(trigger);
-        subject.triggerNexTask().get();
-        subject.triggerNexTask().get();
+        subject.triggerNextTask().get();
+        subject.triggerNextTask().get();
         
         // THEN
         asserts.awaitOrdered("task1::aa", "task2::task1::aa");
@@ -85,7 +85,7 @@ class TaskBeanDefinitionTest {
         
         // WHEN
         subject.trigger(trigger);
-        subject.triggerNexTask().get();
+        subject.triggerNextTask().get();
         
         // THEN
         assertThat(taskRepository.contains("task3")).isTrue();

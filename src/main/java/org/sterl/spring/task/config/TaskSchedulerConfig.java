@@ -46,7 +46,6 @@ public class TaskSchedulerConfig {
     EditSchedulerStatusComponent editSchedulerStatusComponent(
             TaskSchedulerRepository schedulerRepository,
             TransactionalTaskExecutorComponent taskExecutor) throws UnknownHostException {
-        
 
         return new EditSchedulerStatusComponent(schedulerRepository, taskExecutor);
     }
