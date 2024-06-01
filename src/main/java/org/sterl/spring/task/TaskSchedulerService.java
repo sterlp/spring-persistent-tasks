@@ -120,7 +120,6 @@ public class TaskSchedulerService {
         return editTaskTriggerComponent.addTriggers(triggers);
     }
 
-    //@Scheduled(initialDelay = 10, fixedDelay = 5)
     /**
      * Simply triggers the next task which is now due to be executed
      */

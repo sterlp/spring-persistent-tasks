@@ -14,3 +14,6 @@ org:
 logging:
   level:
     org.sterl.spring.task: debug
+    
+persistent-timer:
+  poll-rate: 120

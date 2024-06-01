@@ -1,0 +1,5 @@
+{"properties": [{
+  "name": "persistent-timer.poll-rate",
+  "type": "java.lang.Integer",
+  "description": "The rate in which the scheduler should check for new tasks."
+}]}

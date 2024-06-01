@@ -11,7 +11,7 @@
     </parent>
     <groupId>org.sterl.spring</groupId>
     <artifactId>spring-persistent-tasks</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.1.0-SNAPSHOT</version>
     <name>spring-persistent-tasks</name>
 
     <properties>
@@ -37,12 +37,6 @@
             <artifactId>liquibase-core</artifactId>
         </dependency>
         -->
-
-        <dependency>
-            <groupId>org.jobrunr</groupId>
-            <artifactId>jobrunr-spring-boot-3-starter</artifactId>
-            <version>7.1.1</version>
-        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

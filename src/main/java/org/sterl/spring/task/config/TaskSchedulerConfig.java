@@ -5,6 +5,7 @@ import java.net.UnknownHostException;
 import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +21,8 @@ import org.sterl.spring.task.repository.TaskSchedulerRepository;
 
 @Configuration
 public class TaskSchedulerConfig {
+
+    @DependsOnDatabaseInitialization
     @Bean(destroyMethod = "stop", initMethod = "start")
     TaskSchedulerService taskSchedulerService(
             TaskRepository taskRepository,
@@ -27,6 +30,7 @@ public class TaskSchedulerConfig {
             EditTaskTriggerComponent editTasks,
             TransactionalTaskExecutorComponent taskExecutor,
             EditSchedulerStatusComponent editSchedulerStatusComponent) throws UnknownHostException {
+        
         String name = null;
         if (name == null) {
             final var ip = InetAddress.getLocalHost();
