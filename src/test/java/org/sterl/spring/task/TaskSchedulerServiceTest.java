@@ -13,33 +13,33 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.task.api.AbstractTask;
 import org.sterl.spring.task.api.RetryStrategy;
 import org.sterl.spring.task.api.TaskId;
 import org.sterl.spring.task.api.TaskResult;
-import org.sterl.spring.task.model.TriggerStatus;
+import org.sterl.spring.task.model.TaskSchedulerEntity.TaskSchedulerStatus;
 import org.sterl.spring.task.model.TriggerId;
-import org.sterl.spring.task.repository.TriggerRepository;
-import org.sterl.spring.task.repository.TaskRepository;
+import org.sterl.spring.task.model.TriggerStatus;
 
-@SpringBootTest
-class TaskSchedulerServiceTest {
+class TaskSchedulerServiceTest extends AbstractSpringTest {
     
     @Autowired TaskSchedulerService subject;
-    @Autowired TaskRepository taskRepository;
-    @Autowired TriggerRepository triggerRepository;
-    @Autowired TransactionTemplate trx;
-    private final AsyncAsserts asserts = new AsyncAsserts();
     
     @BeforeEach
-    void setup() {
-        triggerRepository.deleteAllInBatch();
-        subject.start();
-        while (subject.hasTriggers()) subject.triggerNextTask();
-        taskRepository.clear();
-        asserts.clear();
+    void before() throws Exception {
+        while (subject.hasTriggers()) subject.triggerNextTask().get();
+        subject.pingRegistry();
+    }
+    
+    @Test
+    void schedulerShouldBeOnlineTest() {
+        // GIVEN
+        
+        // WHEN spring started
+
+        // THEN
+        assertThat(taskSchedulerRepository.count()).isOne();
+        assertThat(taskSchedulerRepository.findAll().get(0).getStatus()).isEqualTo(TaskSchedulerStatus.ONLINE);
     }
 
     @Test

@@ -14,6 +14,7 @@ import org.springframework.data.jpa.repository.QueryHints;
 import org.sterl.spring.task.model.TriggerEntity;
 import org.sterl.spring.task.model.TriggerId;
 import org.sterl.spring.task.model.TriggerStatus;
+import org.sterl.spring.task.model.TaskSchedulerEntity.TaskSchedulerStatus;
 
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
@@ -38,8 +39,10 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, TriggerI
 
     @Query("""
            SELECT e FROM #{#entityName} e
-           WHERE start <= :timeout
-           AND status = :status
+           WHERE e.start <= :timeout
+           AND e.status = :status
+           AND (e.runningOn.status <> :schedulerStatus OR e.runningOn.lastPing <= :timeout)
            """)
-    List<TriggerEntity> findByTimeout(OffsetDateTime timeout, TriggerStatus status);
+    List<TriggerEntity> findByTimeout(OffsetDateTime timeout, 
+            TriggerStatus status, TaskSchedulerStatus schedulerStatus);
 }

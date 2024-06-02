@@ -62,7 +62,8 @@ class TaskFailoverTest {
             return new TaskSchedulerService("schedulerA", lockNextTrigger, editTasks, 
                     new EditSchedulerStatusComponent(schedulerRepository, taskExecutor), 
                     taskRepository, 
-                    taskExecutor);
+                    taskExecutor,
+                    trx);
         }
         @Bean(destroyMethod = "stop", initMethod = "start")
         TaskSchedulerService schedulerB(
@@ -78,7 +79,8 @@ class TaskFailoverTest {
             return new TaskSchedulerService("schedulerB", lockNextTrigger, editTasks, 
                     new EditSchedulerStatusComponent(schedulerRepository, taskExecutor), 
                     taskRepository, 
-                    taskExecutor);
+                    taskExecutor,
+                    trx);
         }
     }
     
@@ -106,10 +108,10 @@ class TaskFailoverTest {
         // AND simulate the scheduler died
         trx.executeWithoutResult(t -> {
             assertThat(triggerRepository.findById(id)).isPresent();
-            triggerRepository.findById(id).ifPresent(e -> e.setStatus(TriggerStatus.RUNNING));
+            triggerRepository.findById(id).ifPresent(e -> e.setStatus(TriggerStatus.OPEN));
         });
         // AND re-run abandoned tasks
-        schedulerB.pingRegisgtry();
+        schedulerB.pingRegistry();
         final var tasks = schedulerB.rescheduleAbandonedTasks(Duration.ofMillis(49));
         
         // THEN

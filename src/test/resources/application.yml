@@ -2,7 +2,7 @@ spring:
   jpa:
     generate-ddl: true
     open-in-view: false
-    show-sql: true
+    show-sql: false
   datasource:
     hikari:
       maximum-pool-size: 200

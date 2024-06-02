@@ -27,13 +27,14 @@ import lombok.ToString;
 @Entity
 @Table(name = "TASK_TRIGGERS", indexes = {
         @Index(name = "IDX_TASK_TRIGGERS_PRIORITY", columnList = "priority"),
-        @Index(name = "IDX_TASK_TRIGGERS_START", columnList = "start_time")
+        @Index(name = "IDX_TASK_TRIGGERS_START", columnList = "start_time"),
+        @Index(name = "IDX_TASK_TRIGGERS_STATUS", columnList = "status"),
 })
 @Data
 @NoArgsConstructor
 @Builder(toBuilder = true)
 @AllArgsConstructor
-@ToString(of = {"id", "status", "created", "priority", "start", "end"})
+@ToString(of = {"id", "status", "created", "executionCount", "priority", "start", "end"})
 @EqualsAndHashCode(of = "id")
 public class TriggerEntity {
 
@@ -80,14 +81,16 @@ public class TriggerEntity {
     public TriggerEntity cancel() {
         end = OffsetDateTime.now();
         status = TriggerStatus.CANCELED;
+        exceptionName = "Task canceled";
         return this;
     }
 
     public void runOn(TaskSchedulerEntity runningOn) {
         this.start = OffsetDateTime.now();
+        this.end = null;
         this.executionCount += 1;
         this.runningOn = runningOn;
-        this.status = TriggerStatus.RUNNING;
+        this.status = TriggerStatus.OPEN;
     }
     public void complete(TriggerStatus newStatus, Exception e) {
         fail(e);

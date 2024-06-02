@@ -3,6 +3,7 @@ package org.sterl.spring.task.component;
 import java.io.Serializable;
 import java.time.Duration;
 import java.util.Collection;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -10,13 +11,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.task.api.Task;
 import org.sterl.spring.task.api.TaskTrigger;
-import org.sterl.spring.task.model.TriggerStatus;
 import org.sterl.spring.task.model.TriggerEntity;
 import org.sterl.spring.task.model.TriggerId;
+import org.sterl.spring.task.model.TriggerStatus;
 import org.sterl.spring.task.repository.TaskRepository;
 
 import jakarta.annotation.PostConstruct;
@@ -43,7 +45,10 @@ public class TransactionalTaskExecutorComponent {
     private final EditTaskTriggerComponent editTaskTriggerComponent;
     private final TransactionTemplate trx;
     
+    @NonNull
     public Future<?> execute(TriggerEntity trigger) {
+        if (trigger == null) return CompletableFuture.completedFuture(null);
+        runningTasks.incrementAndGet();
         return executor.submit(() -> runInTransaction(trigger));
     }
 
@@ -95,8 +100,7 @@ public class TransactionalTaskExecutorComponent {
     }
 
     private void runInTransaction(TriggerEntity trigger) {
-        final int count = runningTasks.incrementAndGet();
-        log.debug("Running task={} - totalActive={}", trigger, count);
+        log.debug("Running task={} - totalActive={}", trigger, runningTasks.get());
         final Task<Serializable> task = taskRepository.get(trigger.newTaskId());
         try {
             trx.executeWithoutResult(t -> {
@@ -113,11 +117,12 @@ public class TransactionalTaskExecutorComponent {
 
     private void handleTaskException(TriggerEntity trigger, Task<Serializable> task, Exception e) {
         if (task.retryStrategy().shouldRetry(trigger.getExecutionCount(), e)) {
-            log.warn("Task={} failed, retry will be done!", trigger.getId(), e);
+            log.warn("Task={} failed, retry will be done!", 
+                    trigger, e);
             editTaskTriggerComponent.completeWithRetry(
                     trigger.getId(), e, task.retryStrategy().retryAt(trigger.getExecutionCount(), e));
         } else {
-            log.error("Task={} failed", trigger.getId(), e);
+            log.error("Task={} failed, no retry!", trigger, e);
             editTaskTriggerComponent.completeTaskWithStatus(trigger.getId(), TriggerStatus.FAILED, e);
         }
     }

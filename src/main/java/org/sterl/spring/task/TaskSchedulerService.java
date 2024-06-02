@@ -7,10 +7,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
+import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.task.api.ClosureTask;
 import org.sterl.spring.task.api.SimpleTask;
 import org.sterl.spring.task.api.Task;
@@ -22,9 +23,9 @@ import org.sterl.spring.task.component.LockNextTriggerComponent;
 import org.sterl.spring.task.component.TransactionalTaskExecutorComponent;
 import org.sterl.spring.task.model.TaskSchedulerEntity;
 import org.sterl.spring.task.model.TaskSchedulerEntity.TaskSchedulerStatus;
-import org.sterl.spring.task.model.TriggerStatus;
 import org.sterl.spring.task.model.TriggerEntity;
 import org.sterl.spring.task.model.TriggerId;
+import org.sterl.spring.task.model.TriggerStatus;
 import org.sterl.spring.task.repository.TaskRepository;
 
 import jakarta.annotation.PostConstruct;
@@ -44,12 +45,13 @@ public class TaskSchedulerService {
     private final EditSchedulerStatusComponent editSchedulerStatusComponent;
     private final TaskRepository taskRepository;
     private final TransactionalTaskExecutorComponent taskExecutor;
+    private final TransactionTemplate trx;
     
     @PostConstruct
     public void start() {
         taskExecutor.start();
-        pingRegisgtry();
-        log.info("Started {} with {} threads", name, taskExecutor.getMaxTasks());
+        final var s = pingRegistry();
+        log.info("Started {}", s);
     }
     @PreDestroy
     public void stop() {
@@ -57,7 +59,7 @@ public class TaskSchedulerService {
         taskExecutor.stop();
     }
     
-    public TaskSchedulerEntity pingRegisgtry() {
+    public TaskSchedulerEntity pingRegistry() {
         return editSchedulerStatusComponent.checkinToRegistry(name, TaskSchedulerStatus.ONLINE);
     }
 
@@ -114,7 +116,8 @@ public class TaskSchedulerService {
         taskRepository.assertIsKnown(tigger.taskId());
         return editTaskTriggerComponent.addTrigger(tigger);
     }
-    
+
+    @NonNull
     public <T extends Serializable> List<TriggerId>  triggerAll(Collection<TaskTrigger<T>> triggers) {
         triggers.forEach(t -> taskRepository.assertIsKnown(t.taskId()));
         return editTaskTriggerComponent.addTriggers(triggers);
@@ -123,6 +126,7 @@ public class TaskSchedulerService {
     /**
      * Simply triggers the next task which is now due to be executed
      */
+    @NonNull
     public Future<?> triggerNextTask() {
         return triggerNexTask(OffsetDateTime.now());
     }
@@ -131,18 +135,23 @@ public class TaskSchedulerService {
      * Like {@link #triggerNextTask()} but allows to set the time e.g. to the future to trigger
      * tasks which wouldn't be triggered now.
      */
+    @NonNull
     public Future<?> triggerNexTask(OffsetDateTime timeDue) {
-        if (taskExecutor.getFreeThreads() > 0) {
-            final var runningOn = pingRegisgtry();
-            final var trigger = lockNextTriggerComponent.loadNext(runningOn, timeDue);
-            if (trigger == null) {
-                return CompletableFuture.completedFuture(null);
+        var trigger = trx.execute(t -> {
+            final var runningOn = pingRegistry();
+            TriggerEntity result;
+            if (taskExecutor.getFreeThreads() > 0) {
+                result = lockNextTriggerComponent.loadNext(runningOn, timeDue);
+            } else {
+                result = null;
+                log.debug("triggerNexTask({}) skipped as no free thread is available.", timeDue);
             }
-            return taskExecutor.execute(trigger);
-        } else {
-            log.debug("triggerNexTask={} skipped as no free threads are available.", timeDue);
-            return CompletableFuture.completedFuture(null);
-        }
+            if (result != null) {
+                runningOn.setRunnungTasks(taskExecutor.getRunningTasks() + 1);
+            }
+            return result;
+        });
+        return this.taskExecutor.execute(trigger);
     }
 
     /**

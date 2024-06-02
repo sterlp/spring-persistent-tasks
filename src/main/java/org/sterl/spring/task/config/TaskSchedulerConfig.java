@@ -9,6 +9,7 @@ import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitializat
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.task.TaskSchedulerService;
 import org.sterl.spring.task.api.ClosureTask;
 import org.sterl.spring.task.api.SimpleTask;
@@ -29,7 +30,8 @@ public class TaskSchedulerConfig {
             LockNextTriggerComponent lockNextTrigger,
             EditTaskTriggerComponent editTasks,
             TransactionalTaskExecutorComponent taskExecutor,
-            EditSchedulerStatusComponent editSchedulerStatusComponent) throws UnknownHostException {
+            EditSchedulerStatusComponent editSchedulerStatusComponent,
+            TransactionTemplate trx) throws UnknownHostException {
         
         String name = null;
         if (name == null) {
@@ -40,7 +42,7 @@ public class TaskSchedulerConfig {
             else name = hostname;
         }
         return new TaskSchedulerService(name, lockNextTrigger, editTasks,
-                editSchedulerStatusComponent, taskRepository, taskExecutor);
+                editSchedulerStatusComponent, taskRepository, taskExecutor, trx);
     }
     @Bean
     EditSchedulerStatusComponent editSchedulerStatusComponent(

@@ -7,10 +7,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.task.api.TaskTrigger;
 import org.sterl.spring.task.model.TriggerStatus;
+import org.sterl.spring.task.model.TaskSchedulerEntity.TaskSchedulerStatus;
 import org.sterl.spring.task.model.TriggerEntity;
 import org.sterl.spring.task.model.TriggerId;
 import org.sterl.spring.task.repository.TriggerRepository;
@@ -48,6 +50,7 @@ public class EditTaskTriggerComponent {
         return t.getId();
     }
 
+    @NonNull
     public <T extends Serializable> List<TriggerId> addTriggers(Collection<TaskTrigger<T>> newTriggers) {
         return triggerRepository
             .saveAll(newTriggers.stream().map(this::toTriggerEntity).toList())
@@ -74,7 +77,7 @@ public class EditTaskTriggerComponent {
      */
     public boolean hasTriggers() {
         if (triggerRepository.countByStatus(TriggerStatus.NEW) > 0) return true;
-        return triggerRepository.countByStatus(TriggerStatus.RUNNING) > 0;
+        return triggerRepository.countByStatus(TriggerStatus.OPEN) > 0;
     }
 
     public Optional<TriggerEntity> get(TriggerId id) {
@@ -83,6 +86,7 @@ public class EditTaskTriggerComponent {
 
     public List<TriggerEntity> findTasksInTimeout(Duration timeout) {
         final var startTime = OffsetDateTime.now().minus(timeout);
-        return triggerRepository.findByTimeout(startTime, TriggerStatus.RUNNING);
+        return triggerRepository.findByTimeout(startTime, 
+                TriggerStatus.OPEN, TaskSchedulerStatus.ONLINE);
     }
 }
