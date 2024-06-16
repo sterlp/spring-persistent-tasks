@@ -28,7 +28,7 @@ public class EditSchedulerStatusComponent {
 
         result.setStatus(status);
         result.setRunnungTasks(taskExecutor.getRunningTasks());
-        result.setTasksSlotCount(taskExecutor.getMaxTasks());
+        result.setTasksSlotCount(taskExecutor.getMaxThreads());
         
         result.setSystemLoadAverage(os.getSystemLoadAverage());
         result.setMaxHeap(memory.getHeapMemoryUsage().getMax());

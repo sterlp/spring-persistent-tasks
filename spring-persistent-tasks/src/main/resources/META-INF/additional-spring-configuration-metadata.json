@@ -2,4 +2,10 @@
   "name": "persistent-timer.poll-rate",
   "type": "java.lang.Integer",
   "description": "The rate in which the scheduler should check for new tasks."
-}]}
+},
+{
+  "name": "persistent-timer.max-threads",
+  "type": "java.lang.Integer",
+  "description": "The amount of threads to use, use 0 to disable the task processing."
+}
+]}

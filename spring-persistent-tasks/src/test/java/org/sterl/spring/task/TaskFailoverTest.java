@@ -21,6 +21,7 @@ import org.sterl.spring.task.model.TriggerStatus;
 import org.sterl.spring.task.repository.TaskRepository;
 import org.sterl.spring.task.repository.TaskSchedulerRepository;
 import org.sterl.spring.task.repository.TriggerRepository;
+import org.sterl.test.AsyncAsserts;
 
 @SpringBootTest
 class TaskFailoverTest {

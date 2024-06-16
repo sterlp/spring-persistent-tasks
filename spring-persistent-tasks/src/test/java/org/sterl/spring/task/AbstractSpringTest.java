@@ -7,6 +7,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.task.repository.TaskRepository;
 import org.sterl.spring.task.repository.TaskSchedulerRepository;
 import org.sterl.spring.task.repository.TriggerRepository;
+import org.sterl.test.AsyncAsserts;
 
 @SpringBootTest
 public class AbstractSpringTest {

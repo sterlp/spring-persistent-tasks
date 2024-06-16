@@ -14,9 +14,9 @@ import org.sterl.spring.task.api.AbstractTask;
 import org.sterl.spring.task.api.RetryStrategy;
 import org.sterl.spring.task.api.Task;
 import org.sterl.spring.task.api.TaskId.TaskTriggerBuilder;
+import org.sterl.spring.task.sample_app.person.PersonBE;
+import org.sterl.spring.task.sample_app.person.PersonRepository;
 import org.sterl.spring.task.api.TaskResult;
-import org.sterl.spring.task.person.PersonBE;
-import org.sterl.spring.task.person.PersonRepository;
 
 @SpringBootTest
 class TaskTransactionTest {

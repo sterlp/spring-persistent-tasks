@@ -14,6 +14,7 @@ import org.sterl.spring.task.api.Task;
 import org.sterl.spring.task.api.TaskId.TaskTriggerBuilder;
 import org.sterl.spring.task.api.TaskResult;
 import org.sterl.spring.task.repository.TaskRepository;
+import org.sterl.test.AsyncAsserts;
 
 @SpringBootTest
 class TaskBeanDefinitionTest {

@@ -3,7 +3,9 @@ package org.sterl.spring.task;
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -121,6 +123,29 @@ public class TaskSchedulerService {
     public <T extends Serializable> List<TriggerId>  triggerAll(Collection<TaskTrigger<T>> triggers) {
         triggers.forEach(t -> taskRepository.assertIsKnown(t.taskId()));
         return editTaskTriggerComponent.addTriggers(triggers);
+    }
+    
+    /**
+     * Consumes triggers as long as we find any or the threads are all busy.
+     */
+    @NonNull
+    public List<Future<?>> triggerTasksForAllThreads() {
+        final var now = OffsetDateTime.now();
+        final TaskSchedulerEntity runningOn = pingRegistry();
+        if (taskExecutor.getFreeThreads() <= 0) return Collections.emptyList();
+
+        List<Future<?>> result = new ArrayList<>();
+        TriggerEntity task = null;
+        do {
+            task = lockNextTriggerComponent.loadNext(runningOn, now);
+            if (task != null) {
+                result.add(this.taskExecutor.execute(task));
+            }
+        } while(taskExecutor.getFreeThreads() > 0 && task != null);
+        
+        // only if we triggered anything
+        if (!result.isEmpty()) pingRegistry();
+        return result;
     }
 
     /**

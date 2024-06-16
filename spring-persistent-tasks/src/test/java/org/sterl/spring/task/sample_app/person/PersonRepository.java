@@ -1,4 +1,4 @@
-package org.sterl.spring.task.person;
+package org.sterl.spring.task.sample_app.person;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

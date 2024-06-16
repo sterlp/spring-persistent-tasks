@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -21,6 +22,7 @@ import org.sterl.spring.task.model.TriggerId;
 import org.sterl.spring.task.model.TriggerStatus;
 import org.sterl.spring.task.repository.TaskRepository;
 
+import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.Getter;
@@ -32,21 +34,22 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 public class TransactionalTaskExecutorComponent {
+    @Value("${persistent-timer.max-threads:10}")
     @Getter @Setter
-    private int maxTasks = 10;
+    private int maxThreads = 10;
     @Getter @Setter
     private Duration maxShutdownWaitTime = Duration.ofSeconds(10);
-    private ExecutorService executor = Executors.newFixedThreadPool(maxTasks);
+    private ExecutorService executor = Executors.newFixedThreadPool(maxThreads);
     private final AtomicInteger runningTasks = new AtomicInteger(0);
     private final StateSerializer serializer = new StateSerializer();
-    private final AtomicBoolean stopped = new AtomicBoolean(false);
+    private final AtomicBoolean stopped = new AtomicBoolean(true);
 
     private final TaskRepository taskRepository;
     private final EditTaskTriggerComponent editTaskTriggerComponent;
     private final TransactionTemplate trx;
     
     @NonNull
-    public Future<?> execute(TriggerEntity trigger) {
+    public Future<?> execute(@Nullable TriggerEntity trigger) {
         if (trigger == null) return CompletableFuture.completedFuture(null);
         runningTasks.incrementAndGet();
         return executor.submit(() -> runInTransaction(trigger));
@@ -56,7 +59,8 @@ public class TransactionalTaskExecutorComponent {
     public void start() {
         if (stopped.compareAndExchange(true, false)) {
             synchronized(stopped) {
-                executor = Executors.newFixedThreadPool(maxTasks);
+                log.info("Starting with {} threads", maxThreads);
+                executor = Executors.newFixedThreadPool(maxThreads);
             }
         }
     }
@@ -88,7 +92,7 @@ public class TransactionalTaskExecutorComponent {
     
     public int getFreeThreads() {
         if (stopped.get()) return 0;
-        return Math.max(maxTasks - runningTasks.get(), 0);
+        return Math.max(maxThreads - runningTasks.get(), 0);
     }
 
     public int getRunningTasks() {
@@ -96,7 +100,7 @@ public class TransactionalTaskExecutorComponent {
     }
     
     public boolean isStopped() {
-        return stopped.get() || maxTasks <= 0;
+        return stopped.get() || maxThreads <= 0;
     }
 
     private void runInTransaction(TriggerEntity trigger) {
