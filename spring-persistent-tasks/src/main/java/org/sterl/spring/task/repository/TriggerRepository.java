@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
+import org.springframework.data.repository.query.Param;
 import org.sterl.spring.task.model.TriggerEntity;
 import org.sterl.spring.task.model.TriggerId;
 import org.sterl.spring.task.model.TriggerStatus;
@@ -33,7 +34,10 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, TriggerI
             AND status = :status
             ORDER BY priority DESC, executionCount ASC
             """)
-    List<TriggerEntity> loadNextTasks(OffsetDateTime start, TriggerStatus status, Pageable page);
+    List<TriggerEntity> loadNextTasks(
+            @Param("start") OffsetDateTime start, 
+            @Param("status") TriggerStatus status, 
+            Pageable page);
     
     int countByStatus(TriggerStatus status);
 
@@ -43,6 +47,8 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, TriggerI
            AND e.status = :status
            AND (e.runningOn.status <> :schedulerStatus OR e.runningOn.lastPing <= :timeout)
            """)
-    List<TriggerEntity> findByTimeout(OffsetDateTime timeout, 
-            TriggerStatus status, TaskSchedulerStatus schedulerStatus);
+    List<TriggerEntity> findByTimeout(
+            @Param("timeout") OffsetDateTime timeout, 
+            @Param("status") TriggerStatus status, 
+            @Param("schedulerStatus") TaskSchedulerStatus schedulerStatus);
 }
