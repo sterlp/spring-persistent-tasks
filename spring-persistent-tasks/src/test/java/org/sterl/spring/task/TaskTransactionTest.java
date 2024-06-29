@@ -7,45 +7,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.sterl.spring.task.api.AbstractTask;
-import org.sterl.spring.task.api.RetryStrategy;
-import org.sterl.spring.task.api.Task;
+import org.springframework.context.annotation.Import;
 import org.sterl.spring.task.api.TaskId.TaskTriggerBuilder;
-import org.sterl.spring.task.sample_app.person.PersonBE;
 import org.sterl.spring.task.sample_app.person.PersonRepository;
-import org.sterl.spring.task.api.TaskResult;
 
-@SpringBootTest
-class TaskTransactionTest {
+@Import(TaskTransactionConfig.class)
+class TaskTransactionTest extends AbstractSpringTest {
 
-    @TestConfiguration
-    static class Config {
-        @Bean
-        AtomicBoolean sendError() {
-            return new AtomicBoolean(false);
-        }
-        @Bean
-        Task<String> savePerson(PersonRepository personRepository, AtomicBoolean sendError) {
-            return new AbstractTask<String>("savePerson") {
-                @Override
-                public TaskResult execute(String name) {
-                    personRepository.save(new PersonBE(name));
-                    if (sendError.get()) throw new RuntimeException("Error requested for " + name);
-                    return TaskResult.DONE;
-                }
-                public RetryStrategy retryStrategy() {
-                    return RetryStrategy.TRY_THREE_TIMES_IMMEDIATELY;
-                }
-            };
-        }
-    }
-    
-    @Autowired TaskSchedulerService subject;
-    @Autowired AtomicBoolean sendError;
-    @Autowired PersonRepository personRepository;
+    @Autowired private TaskSchedulerService subject;
+    @Autowired private AtomicBoolean sendError;
+    @Autowired private PersonRepository personRepository;
     
     @BeforeEach
     void setup() {

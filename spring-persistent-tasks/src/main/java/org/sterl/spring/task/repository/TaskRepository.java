@@ -31,14 +31,6 @@ public class TaskRepository {
                 + task.getId() + " is already used!");
         return task.getId();
     }
-    
-    @Deprecated
-    public <T extends Serializable> TaskId<T> addIfUnknown(Task<T> task) {
-        if (!tasks.containsKey(task.getId())) {
-            addTask(task);
-        }
-        return task.getId();
-    }
 
     public <T extends Serializable> Task<T> assertIsKnown(TaskId<T> id) {
         Task<T> r = (Task<T>)tasks.get(id);

@@ -1,16 +1,18 @@
-package org.sterl.spring.task.config;
+package org.sterl.spring.task;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.sterl.spring.task.TaskSchedulerService;
 import org.sterl.spring.task.api.ClosureTask;
 import org.sterl.spring.task.api.SimpleTask;
 import org.sterl.spring.task.component.EditSchedulerStatusComponent;
@@ -21,6 +23,9 @@ import org.sterl.spring.task.repository.TaskRepository;
 import org.sterl.spring.task.repository.TaskSchedulerRepository;
 
 @Configuration
+@ComponentScan
+@EnableJpaRepositories
+@EntityScan
 public class TaskSchedulerConfig {
 
     @DependsOnDatabaseInitialization
