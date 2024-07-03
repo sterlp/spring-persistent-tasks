@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: example
+  jpa:
+    open-in-view: false
+    
+springdoc:
+  swagger-ui:
+    use-root-path: true
+
+
+logging:
+  level:
+    org.sterl.spring.task: DEBUG

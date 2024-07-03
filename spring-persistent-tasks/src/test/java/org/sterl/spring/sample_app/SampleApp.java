@@ -1,4 +1,4 @@
-package org.sterl.spring.task.sample_app;
+package org.sterl.spring.sample_app;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

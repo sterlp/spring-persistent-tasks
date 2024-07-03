@@ -6,23 +6,21 @@ import java.time.Duration;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Import;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.task.api.TaskId.TaskTriggerBuilder;
 import org.sterl.spring.task.model.TriggerStatus;
 import org.sterl.spring.task.repository.TriggerRepository;
-import org.sterl.spring.task.sample_app.SampleApp;
 
-@SpringBootTest(classes = SampleApp.class)
 @Import(TaskFailoverConfig.class)
-class TaskFailoverTest {
+class TaskFailoverTest extends AbstractSpringTest {
 
     @Autowired private TriggerRepository triggerRepository;
     @Autowired private TransactionTemplate trx;
 
-    @Autowired private TaskSchedulerService schedulerA;
-    @Autowired private TaskSchedulerService schedulerB;
+    @Autowired @Qualifier("schedulerA") private TaskSchedulerService schedulerA;
+    @Autowired @Qualifier("schedulerB") private TaskSchedulerService schedulerB;
     
     @Test
     void nameTest() throws Exception {
@@ -53,9 +51,6 @@ class TaskFailoverTest {
         
         // THEN
         assertThat(tasks).hasSize(1);
-        
-        System.err.println(schedulerB.get(id));
-        System.err.println(schedulerA == schedulerB);
     }
 
 }

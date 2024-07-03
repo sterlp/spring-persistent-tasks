@@ -8,11 +8,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Future;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.task.api.ClosureTask;
 import org.sterl.spring.task.api.SimpleTask;
@@ -64,7 +69,7 @@ public class TaskSchedulerService {
     public TaskSchedulerEntity pingRegistry() {
         return editSchedulerStatusComponent.checkinToRegistry(name, TaskSchedulerStatus.ONLINE);
     }
-
+    
     /**
      * Checks if any job is still running or waiting for it's execution.
      */
@@ -114,6 +119,7 @@ public class TaskSchedulerService {
                 .build());
     }
 
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public <T extends Serializable> TriggerId trigger(TaskTrigger<T> tigger) {
         taskRepository.assertIsKnown(tigger.taskId());
         return editTaskTriggerComponent.addTrigger(tigger);
@@ -199,5 +205,14 @@ public class TaskSchedulerService {
         log.info("Reschedule {} abandoned tasks.", tasks.size());
         return tasks;
         
+    }
+    public Set<TaskId<? extends Serializable>> findAllTaskIds() {
+        return this.taskRepository.all();
+    }
+    public Page<TriggerEntity> findAllTriggers(Pageable page) {
+        return this.editTaskTriggerComponent.listTriggers(page);
+    }
+    public void deleteAllTriggers() {
+        this.editTaskTriggerComponent.deleteAll();
     }
 }

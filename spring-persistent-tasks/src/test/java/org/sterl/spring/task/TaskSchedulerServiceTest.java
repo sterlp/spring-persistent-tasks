@@ -20,17 +20,20 @@ import org.sterl.spring.task.api.TaskResult;
 import org.sterl.spring.task.model.TaskSchedulerEntity.TaskSchedulerStatus;
 import org.sterl.spring.task.model.TriggerId;
 import org.sterl.spring.task.model.TriggerStatus;
+import org.sterl.spring.task.repository.TaskRepository;
 
 class TaskSchedulerServiceTest extends AbstractSpringTest {
 
     @Autowired
     private TaskSchedulerService subject;
-
+    @Autowired
+    private TaskRepository taskRepository;
+    
     @BeforeEach
     void before() throws Exception {
-        while (subject.hasTriggers())
-            subject.triggerNextTask().get();
+        subject.deleteAllTriggers();
         subject.pingRegistry();
+        taskRepository.clear();
     }
 
     @Test
@@ -232,13 +235,14 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
             subject.trigger(taskId, "t" + i);
         }
 
-        final List<Callable<?>> tasks = new ArrayList<>(100);
+        final List<Callable<Object>> tasks = new ArrayList<>(100);
         for (int i = 1; i <= 100; ++i) {
             tasks.add(() -> subject.triggerNextTask().get());
         }
 
         // WHEN
         executor.invokeAll(tasks);
+        while (subject.hasTriggers()) subject.triggerNextTask();
 
         // THEN
         for (int i = 1; i <= 100; ++i) {

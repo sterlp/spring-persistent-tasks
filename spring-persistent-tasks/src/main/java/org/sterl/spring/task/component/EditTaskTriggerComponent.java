@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,10 @@ import lombok.extern.slf4j.Slf4j;
 public class EditTaskTriggerComponent {
     private final StateSerializer stateSerializer = new StateSerializer();
     private final TriggerRepository triggerRepository;
+    
+    public Page<TriggerEntity> listTriggers(Pageable page) {
+        return triggerRepository.findAll(page);
+    }
 
     public void completeWithRetry(TriggerId id, Exception e, OffsetDateTime when) {
         triggerRepository.findById(id).ifPresent(t -> {
@@ -47,6 +53,7 @@ public class EditTaskTriggerComponent {
     public <T extends Serializable> TriggerId addTrigger(TaskTrigger<T> tigger) {
         var t = toTriggerEntity(tigger);
         triggerRepository.save(t);
+        log.info("Added trigger={}", t);
         return t.getId();
     }
 
@@ -88,5 +95,10 @@ public class EditTaskTriggerComponent {
         final var startTime = OffsetDateTime.now().minus(timeout);
         return triggerRepository.findByTimeout(startTime, 
                 TriggerStatus.OPEN, TaskSchedulerStatus.ONLINE);
+    }
+
+    public void deleteAll() {
+        log.info("All triggers are removed!");
+        this.triggerRepository.deleteAllInBatch();
     }
 }

@@ -38,7 +38,7 @@ public class TaskFailoverConfig {
 
         final var taskExecutor = new TransactionalTaskExecutorComponent(taskRepository, editTasks, trx);
         taskExecutor.setMaxShutdownWaitTime(Duration.ofSeconds(0));
-
+        
         return new TaskSchedulerService("schedulerA", lockNextTrigger, editTasks, 
                 new EditSchedulerStatusComponent(schedulerRepository, taskExecutor), 
                 taskRepository, 
@@ -55,7 +55,7 @@ public class TaskFailoverConfig {
 
         final var taskExecutor = new TransactionalTaskExecutorComponent(taskRepository, editTasks, trx);
         taskExecutor.setMaxShutdownWaitTime(Duration.ofSeconds(0));
-
+        
         return new TaskSchedulerService("schedulerB", lockNextTrigger, editTasks, 
                 new EditSchedulerStatusComponent(schedulerRepository, taskExecutor), 
                 taskRepository, 

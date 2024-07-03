@@ -5,13 +5,14 @@ import java.net.UnknownHostException;
 import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.task.api.ClosureTask;
 import org.sterl.spring.task.api.SimpleTask;
@@ -23,11 +24,12 @@ import org.sterl.spring.task.repository.TaskRepository;
 import org.sterl.spring.task.repository.TaskSchedulerRepository;
 
 @Configuration
+@EnableScheduling
+@EnableAutoConfiguration
 @ComponentScan
-@EnableJpaRepositories
-@EntityScan
 public class TaskSchedulerConfig {
 
+    @Primary
     @DependsOnDatabaseInitialization
     @Bean(destroyMethod = "stop", initMethod = "start")
     TaskSchedulerService taskSchedulerService(
@@ -46,6 +48,7 @@ public class TaskSchedulerConfig {
             if (hostname == null) name = ip.toString();
             else name = hostname;
         }
+
         return new TaskSchedulerService(name, lockNextTrigger, editTasks,
                 editSchedulerStatusComponent, taskRepository, taskExecutor, trx);
     }
@@ -58,7 +61,7 @@ public class TaskSchedulerConfig {
     }
 
     @Autowired
-    void configureSimpleTasks(AnnotationConfigApplicationContext context,
+    void configureSimpleTasks(GenericApplicationContext context,
             TaskRepository taskRepository) {
         final var simpleTasks = context.getBeansOfType(SimpleTask.class);
         for(Entry<String, SimpleTask> t : simpleTasks.entrySet()) {

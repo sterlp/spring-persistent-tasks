@@ -8,8 +8,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
+import org.sterl.spring.sample_app.person.PersonRepository;
 import org.sterl.spring.task.api.TaskId.TaskTriggerBuilder;
-import org.sterl.spring.task.sample_app.person.PersonRepository;
 
 @Import(TaskTransactionConfig.class)
 class TaskTransactionTest extends AbstractSpringTest {

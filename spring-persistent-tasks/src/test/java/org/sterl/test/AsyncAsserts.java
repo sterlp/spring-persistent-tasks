@@ -27,7 +27,7 @@ public class AsyncAsserts {
         counts.clear();
     }
 
-    public synchronized int add(String value) {
+    public int add(String value) {
         values.add(value);
         final int count = getCount(value) + 1;
         counts.put(value, count);

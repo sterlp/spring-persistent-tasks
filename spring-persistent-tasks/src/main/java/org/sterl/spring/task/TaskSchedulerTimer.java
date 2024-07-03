@@ -20,7 +20,8 @@ public class TaskSchedulerTimer {
     void pollTriggerNexTask() {
         for (TaskSchedulerService s : schedulerServices) {
             try {
-                s.triggerNextTask();
+                final var count = s.triggerTasksForAllThreads();
+                log.debug("Triggered {} tasks for {}.", count.size(), s.getName());
             } catch (Exception e) {
                 log.error("Scheduler {} failed to trigger next tasks", s.getClass(), e);
             }

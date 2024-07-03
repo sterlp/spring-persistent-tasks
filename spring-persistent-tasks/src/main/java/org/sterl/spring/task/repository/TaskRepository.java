@@ -3,6 +3,7 @@ package org.sterl.spring.task.repository;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Component;
@@ -47,10 +48,15 @@ public class TaskRepository {
      * Removes all tasks, should only be used for testing!
      */
     public void clear() {
+        log.warn("*** All tasks {} will be removed now! ***", tasks.size());
         tasks.clear();
     }
 
     public boolean contains(String name) {
         return tasks.containsKey(new TaskId<>(name));
+    }
+
+    public Set<TaskId<? extends Serializable>> all() {
+        return tasks.keySet();
     }
 }
