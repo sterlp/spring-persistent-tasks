@@ -14,12 +14,12 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.sterl.spring.task.api.ClosureTask;
 import org.sterl.spring.task.api.SimpleTask;
 import org.sterl.spring.task.component.EditSchedulerStatusComponent;
 import org.sterl.spring.task.component.EditTaskTriggerComponent;
 import org.sterl.spring.task.component.LockNextTriggerComponent;
 import org.sterl.spring.task.component.TransactionalTaskExecutorComponent;
+import org.sterl.spring.task.model.RegisteredTask;
 import org.sterl.spring.task.repository.TaskRepository;
 import org.sterl.spring.task.repository.TaskSchedulerRepository;
 
@@ -65,7 +65,7 @@ public class TaskSchedulerConfig {
             TaskRepository taskRepository) {
         final var simpleTasks = context.getBeansOfType(SimpleTask.class);
         for(Entry<String, SimpleTask> t : simpleTasks.entrySet()) {
-            taskRepository.addTask(new ClosureTask<>(t.getKey(), t.getValue()));
+            taskRepository.addTask(new RegisteredTask<>(t.getKey(), t.getValue()));
         }
     }
 }

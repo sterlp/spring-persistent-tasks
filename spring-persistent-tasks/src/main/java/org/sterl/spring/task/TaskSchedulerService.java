@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.sterl.spring.task.api.ClosureTask;
 import org.sterl.spring.task.api.SimpleTask;
 import org.sterl.spring.task.api.Task;
 import org.sterl.spring.task.api.TaskId;
@@ -28,6 +27,7 @@ import org.sterl.spring.task.component.EditSchedulerStatusComponent;
 import org.sterl.spring.task.component.EditTaskTriggerComponent;
 import org.sterl.spring.task.component.LockNextTriggerComponent;
 import org.sterl.spring.task.component.TransactionalTaskExecutorComponent;
+import org.sterl.spring.task.model.RegisteredTask;
 import org.sterl.spring.task.model.TaskSchedulerEntity;
 import org.sterl.spring.task.model.TaskSchedulerEntity.TaskSchedulerStatus;
 import org.sterl.spring.task.model.TriggerEntity;
@@ -86,7 +86,7 @@ public class TaskSchedulerService {
      * A way to manually register a task, usually not needed as spring beans will be added anyway.
      */
     public <T extends Serializable> TaskId<T> register(String name, SimpleTask<T> task) {
-        ClosureTask<T> t = new ClosureTask<>(name, task);
+        RegisteredTask<T> t = new RegisteredTask<>(name, task);
         return register(t);
     }
     /**

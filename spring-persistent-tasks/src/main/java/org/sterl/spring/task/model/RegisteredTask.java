@@ -1,21 +1,31 @@
-package org.sterl.spring.task.api;
+package org.sterl.spring.task.model;
 
 import java.io.Serializable;
 import java.util.function.Function;
 
-public class ClosureTask<T extends Serializable> implements Task<T> {
+import org.sterl.spring.task.api.RetryStrategy;
+import org.sterl.spring.task.api.SimpleTask;
+import org.sterl.spring.task.api.Task;
+import org.sterl.spring.task.api.TaskId;
+import org.sterl.spring.task.api.TaskResult;
 
+import lombok.Getter;
+
+public class RegisteredTask<T extends Serializable> implements Task<T> {
+
+    @Getter
     private final TaskId<T> id;
     private final Function<T, TaskResult> fun;
+    @Getter
     private RetryStrategy retryStrategy = RetryStrategy.TRY_THREE_TIMES;
 
-    public ClosureTask(String name, Function<T, TaskResult> fun) {
+    public RegisteredTask(String name, Function<T, TaskResult> fun) {
         super();
         this.id = new TaskId<>(name);
         this.fun = fun;
     }
 
-    public ClosureTask(String name, SimpleTask<T> consumer) {
+    public RegisteredTask(String name, SimpleTask<T> consumer) {
         this(name, s -> {
             consumer.accept(s);
             return TaskResult.DONE;
@@ -26,15 +36,5 @@ public class ClosureTask<T extends Serializable> implements Task<T> {
     @Override
     public TaskResult execute(T state) {
         return fun.apply(state);
-    }
-
-    @Override
-    public TaskId<T> getId() {
-        return id;
-    }
-    
-    @Override
-    public RetryStrategy retryStrategy() {
-        return retryStrategy;
     }
 }
