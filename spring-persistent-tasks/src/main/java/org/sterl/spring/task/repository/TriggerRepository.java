@@ -30,12 +30,12 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, TriggerI
     })
     @Query("""
             SELECT e FROM #{#entityName} e
-            WHERE start <= :start
+            WHERE triggerTime <= :triggerTime
             AND status = :status
             ORDER BY priority DESC, executionCount ASC
             """)
     List<TriggerEntity> loadNextTasks(
-            @Param("start") OffsetDateTime start, 
+            @Param("triggerTime") OffsetDateTime triggerTime, 
             @Param("status") TriggerStatus status, 
             Pageable page);
     

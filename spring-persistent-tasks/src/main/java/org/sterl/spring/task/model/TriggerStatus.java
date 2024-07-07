@@ -3,7 +3,7 @@ package org.sterl.spring.task.model;
 public enum TriggerStatus {
 
     NEW,
-    OPEN,
+    RUNNING,
     SUCCESS,
     FAILED,
     CANCELED

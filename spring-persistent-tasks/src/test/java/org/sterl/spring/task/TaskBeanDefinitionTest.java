@@ -2,6 +2,8 @@ package org.sterl.spring.task;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.OffsetDateTime;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,7 @@ class TaskBeanDefinitionTest extends AbstractSpringTest {
     @BeforeEach
     void setup() {
         asserts.clear();
+        subject.deleteAllTriggers();
     }
     
     @Test
@@ -34,18 +37,44 @@ class TaskBeanDefinitionTest extends AbstractSpringTest {
     }
     
     @Test
+    void testAddTrigger() throws Exception {
+        // GIVEN
+        final var triggerTime = OffsetDateTime.now().minusMinutes(1);
+        final var trigger = task1Id.newTrigger()
+                    .triggerTime(triggerTime)
+                    .build();
+        
+        // WHEN
+        final var triggerId = subject.trigger(trigger);
+        
+        // THEN
+        final var e = subject.get(triggerId);
+        assertThat(e).isPresent();
+        assertThat(e.get().getTriggerTime()).isEqualTo(triggerTime);
+        assertThat(e.get().getCreated()).isNotNull();
+        assertThat(e.get().getStart()).isNull();
+        assertThat(e.get().getEnd()).isNull();
+        assertThat(e.get().getExecutionCount()).isZero();
+    }
+    
+    @Test
     void testTriggerChainTask() throws Exception {
         // GIVEN
         final var trigger = task1Id.newTrigger().state("aa").build();
-        System.err.println(task1Id);
         
         // WHEN
-        subject.trigger(trigger);
+        final var triggerId = subject.trigger(trigger);
         subject.triggerNextTask().get();
         subject.triggerNextTask().get();
         
         // THEN
         asserts.awaitOrdered("task1::aa", "task2::task1::aa");
+        final var e = subject.get(triggerId);
+        assertThat(e).isPresent();
+        assertThat(e.get().getCreated()).isNotNull();
+        assertThat(e.get().getStart()).isNotNull();
+        assertThat(e.get().getEnd()).isNotNull();
+        assertThat(e.get().getExecutionCount()).isOne();
     }
     
     @Test

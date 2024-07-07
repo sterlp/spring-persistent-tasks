@@ -71,7 +71,7 @@ public class EditTaskTriggerComponent {
         byte[] state = stateSerializer.serialize(trigger.state());
         var t = TriggerEntity.builder()
             .id(trigger.toTaskTriggerId())
-            .start(trigger.when())
+            .triggerTime(trigger.when())
             .state(state)
             .priority(trigger.priority())
             .build();
@@ -83,7 +83,7 @@ public class EditTaskTriggerComponent {
      */
     public boolean hasTriggers() {
         if (triggerRepository.countByStatus(TriggerStatus.NEW) > 0) return true;
-        return triggerRepository.countByStatus(TriggerStatus.OPEN) > 0;
+        return triggerRepository.countByStatus(TriggerStatus.RUNNING) > 0;
     }
 
     public Optional<TriggerEntity> get(TriggerId id) {
@@ -93,7 +93,7 @@ public class EditTaskTriggerComponent {
     public List<TriggerEntity> findTasksInTimeout(Duration timeout) {
         final var startTime = OffsetDateTime.now().minus(timeout);
         return triggerRepository.findByTimeout(startTime, 
-                TriggerStatus.OPEN, TaskSchedulerStatus.ONLINE);
+                TriggerStatus.RUNNING, TaskSchedulerStatus.ONLINE);
     }
 
     public void deleteAll() {

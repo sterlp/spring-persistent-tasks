@@ -40,7 +40,13 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
             this.priority = priority;
             return this;
         }
+        /**
+         * synonym for {@link #triggerTime(OffsetDateTime)}
+         */
         public TaskTriggerBuilder<T> when(OffsetDateTime when) {
+            return triggerTime(when);
+        }
+        public TaskTriggerBuilder<T> triggerTime(OffsetDateTime when) {
             this.when = when;
             return this;
         }

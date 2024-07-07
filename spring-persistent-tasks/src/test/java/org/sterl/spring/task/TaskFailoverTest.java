@@ -40,10 +40,12 @@ class TaskFailoverTest extends AbstractSpringTest {
         schedulerB.triggerNextTask().get();
         
         Thread.sleep(60);
-        // AND simulate the scheduler died
+        // AND check status
         trx.executeWithoutResult(t -> {
-            assertThat(triggerRepository.findById(id)).isPresent();
-            triggerRepository.findById(id).ifPresent(e -> e.setStatus(TriggerStatus.OPEN));
+            final var triggerEntity = triggerRepository.findById(id);
+            assertThat(triggerEntity).isPresent();
+            assertThat(triggerEntity.get().getEnd()).isNull();
+            assertThat(triggerEntity.get().getStatus()).isEqualTo(TriggerStatus.RUNNING);
         });
         // AND re-run abandoned tasks
         schedulerB.pingRegistry();

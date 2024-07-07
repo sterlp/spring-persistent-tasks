@@ -28,14 +28,14 @@ import lombok.ToString;
 @Entity
 @Table(name = "TASK_TRIGGERS", indexes = {
         @Index(name = "IDX_TASK_TRIGGERS_PRIORITY", columnList = "priority"),
-        @Index(name = "IDX_TASK_TRIGGERS_START", columnList = "start_time"),
+        @Index(name = "IDX_TASK_TRIGGERS_TIME", columnList = "trigger_time"),
         @Index(name = "IDX_TASK_TRIGGERS_STATUS", columnList = "status"),
 })
 @Data
 @NoArgsConstructor
 @Builder(toBuilder = true)
 @AllArgsConstructor
-@ToString(of = {"id", "status", "created", "executionCount", "priority", "start", "end"})
+@ToString(of = {"id", "status", "priority", "executionCount", "created", "triggerTime", "start", "end"})
 @EqualsAndHashCode(of = "id")
 public class TriggerEntity {
 
@@ -53,6 +53,9 @@ public class TriggerEntity {
     @Column(updatable = false, name = "created_time")
     private OffsetDateTime created = OffsetDateTime.now();
 
+    @Column(nullable = false)
+    private OffsetDateTime triggerTime;
+    
     @Column(name = "start_time")
     private OffsetDateTime start;
 
@@ -91,7 +94,7 @@ public class TriggerEntity {
         this.end = null;
         this.executionCount += 1;
         this.runningOn = runningOn;
-        this.status = TriggerStatus.OPEN;
+        this.status = TriggerStatus.RUNNING;
     }
     public void complete(TriggerStatus newStatus, Exception e) {
         fail(e);
