@@ -5,6 +5,7 @@ import java.time.OffsetDateTime;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.sterl.spring.task.api.TaskId;
+import org.sterl.spring.task.api.TriggerId;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;

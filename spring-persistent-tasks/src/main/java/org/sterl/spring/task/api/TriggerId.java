@@ -1,8 +1,6 @@
-package org.sterl.spring.task.model;
+package org.sterl.spring.task.api;
 
 import java.io.Serializable;
-
-import org.sterl.spring.task.api.TaskId;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

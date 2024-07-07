@@ -12,8 +12,8 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
+import org.sterl.spring.task.api.TriggerId;
 import org.sterl.spring.task.model.TriggerEntity;
-import org.sterl.spring.task.model.TriggerId;
 import org.sterl.spring.task.model.TriggerStatus;
 import org.sterl.spring.task.model.TaskSchedulerEntity.TaskSchedulerStatus;
 

@@ -2,7 +2,6 @@ package org.sterl.spring.task.component;
 
 import java.io.Serializable;
 import java.time.Duration;
-import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,9 +15,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.task.api.Task;
-import org.sterl.spring.task.api.TaskTrigger;
+import org.sterl.spring.task.api.TriggerId;
 import org.sterl.spring.task.model.TriggerEntity;
-import org.sterl.spring.task.model.TriggerId;
 import org.sterl.spring.task.model.TriggerStatus;
 import org.sterl.spring.task.repository.TaskRepository;
 
@@ -108,9 +106,8 @@ public class TransactionalTaskExecutorComponent {
         final Task<Serializable> task = taskRepository.get(trigger.newTaskId());
         try {
             trx.executeWithoutResult(t -> {
-                final var result = task.execute(serializer.deserialize(trigger.getState()));
+                task.accept(serializer.deserialize(trigger.getState()));
                 success(trigger.getId());
-                triggerAllNoResult(result.triggers());
             });
         } catch (Exception e) {
             handleTaskException(trigger, task, e);
@@ -131,11 +128,6 @@ public class TransactionalTaskExecutorComponent {
         }
     }
 
-    private void triggerAllNoResult(Collection<TaskTrigger<?>> triggers) {
-        triggers.forEach(t -> taskRepository.assertIsKnown(t.taskId()));
-        editTaskTriggerComponent.triggerAll(triggers);
-    }
-    
     private void success(TriggerId id) {
         editTaskTriggerComponent.completeTaskWithStatus(id, TriggerStatus.SUCCESS, null);
     }

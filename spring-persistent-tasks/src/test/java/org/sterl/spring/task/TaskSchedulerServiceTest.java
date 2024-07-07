@@ -13,12 +13,11 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.sterl.spring.task.api.AbstractTask;
 import org.sterl.spring.task.api.RetryStrategy;
+import org.sterl.spring.task.api.SpringBeanTask;
 import org.sterl.spring.task.api.TaskId;
-import org.sterl.spring.task.api.TaskResult;
+import org.sterl.spring.task.api.TriggerId;
 import org.sterl.spring.task.model.TaskSchedulerEntity.TaskSchedulerStatus;
-import org.sterl.spring.task.model.TriggerId;
 import org.sterl.spring.task.model.TriggerStatus;
 import org.sterl.spring.task.repository.TaskRepository;
 
@@ -135,10 +134,10 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
     @Test
     void failedTasksAreRetriedTest() throws Exception {
         // GIVEN
-        TaskId<String> task = subject.register(
-                new AbstractTask<String>() {
+        TaskId<String> task = subject.register("foo",
+                new SpringBeanTask<String>() {
                     @Override
-                    public TaskResult execute(String state) {
+                    public void accept(String state) {
                         asserts.info(state);
                         throw new RuntimeException("NOPE!");
                     }

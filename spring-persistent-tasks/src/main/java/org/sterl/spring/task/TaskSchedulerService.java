@@ -11,27 +11,27 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.sterl.spring.task.api.SimpleTask;
-import org.sterl.spring.task.api.Task;
+import org.sterl.spring.task.api.SpringBeanTask;
 import org.sterl.spring.task.api.TaskId;
-import org.sterl.spring.task.api.TaskTrigger;
+import org.sterl.spring.task.api.Trigger;
+import org.sterl.spring.task.api.TriggerId;
 import org.sterl.spring.task.component.EditSchedulerStatusComponent;
 import org.sterl.spring.task.component.EditTaskTriggerComponent;
 import org.sterl.spring.task.component.LockNextTriggerComponent;
 import org.sterl.spring.task.component.TransactionalTaskExecutorComponent;
+import org.sterl.spring.task.event.TriggerTaskEvent;
 import org.sterl.spring.task.model.RegisteredTask;
 import org.sterl.spring.task.model.TaskSchedulerEntity;
 import org.sterl.spring.task.model.TaskSchedulerEntity.TaskSchedulerStatus;
 import org.sterl.spring.task.model.TriggerEntity;
-import org.sterl.spring.task.model.TriggerId;
 import org.sterl.spring.task.model.TriggerStatus;
 import org.sterl.spring.task.repository.TaskRepository;
 
@@ -83,16 +83,23 @@ public class TaskSchedulerService {
     }
 
     /**
-     * A way to manually register a task, usually not needed as spring beans will be added anyway.
+     * A way to manually register a task, usually better to use {@link SpringBeanTask}.
      */
-    public <T extends Serializable> TaskId<T> register(String name, SimpleTask<T> task) {
+    public <T extends Serializable> TaskId<T> register(String name, Consumer<T> task) {
+        RegisteredTask<T> t = new RegisteredTask<>(name, task);
+        return register(t);
+    }
+    /**
+     * A way to manually register a task, usually not needed as spring beans will be added automatically.
+     */
+    public <T extends Serializable> TaskId<T> register(String name, SpringBeanTask<T> task) {
         RegisteredTask<T> t = new RegisteredTask<>(name, task);
         return register(t);
     }
     /**
      * A way to manually register a task, usually not needed as spring beans will be added anyway.
      */
-    public <T extends Serializable> TaskId<T> register(Task<T> task) {
+    public <T extends Serializable> TaskId<T> register(RegisteredTask<T> task) {
         return taskRepository.addTask(task);
     }
 
@@ -118,15 +125,19 @@ public class TaskSchedulerService {
                 .when(when)
                 .build());
     }
+    
+    @EventListener
+    public void trigger(TriggerTaskEvent<Serializable> event) {
+        triggerAll(event.triggers());
+    }
 
-    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-    public <T extends Serializable> TriggerId trigger(TaskTrigger<T> tigger) {
+    public <T extends Serializable> TriggerId trigger(Trigger<T> tigger) {
         taskRepository.assertIsKnown(tigger.taskId());
         return editTaskTriggerComponent.addTrigger(tigger);
     }
 
     @NonNull
-    public <T extends Serializable> List<TriggerId>  triggerAll(Collection<TaskTrigger<T>> triggers) {
+    public <T extends Serializable> List<TriggerId>  triggerAll(Collection<Trigger<T>> triggers) {
         triggers.forEach(t -> taskRepository.assertIsKnown(t.taskId()));
         return editTaskTriggerComponent.addTriggers(triggers);
     }

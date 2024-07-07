@@ -3,7 +3,7 @@ package org.sterl.spring.persistent_tasks.example.bl.vehicle.task;
 import org.springframework.stereotype.Component;
 import org.sterl.spring.persistent_tasks.example.bl.vehicle.model.Vehicle;
 import org.sterl.spring.persistent_tasks.example.bl.vehicle.repository.VehicleRepository;
-import org.sterl.spring.task.api.SimpleTask;
+import org.sterl.spring.task.api.SpringBeanTask;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component(BuildVehicleTask.NAME)
 @RequiredArgsConstructor
 @Slf4j
-public class BuildVehicleTask implements SimpleTask<String> {
+public class BuildVehicleTask implements SpringBeanTask<String> {
 
     public static final String NAME = "buildVehicleTask";
 

@@ -12,11 +12,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.sterl.spring.task.api.TaskTrigger;
+import org.sterl.spring.task.api.Trigger;
+import org.sterl.spring.task.api.TriggerId;
 import org.sterl.spring.task.model.TriggerStatus;
 import org.sterl.spring.task.model.TaskSchedulerEntity.TaskSchedulerStatus;
 import org.sterl.spring.task.model.TriggerEntity;
-import org.sterl.spring.task.model.TriggerId;
 import org.sterl.spring.task.repository.TriggerRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -50,25 +50,24 @@ public class EditTaskTriggerComponent {
         });
     }
 
-    public <T extends Serializable> TriggerId addTrigger(TaskTrigger<T> tigger) {
-        var t = toTriggerEntity(tigger);
-        triggerRepository.save(t);
-        log.info("Added trigger={}", t);
-        return t.getId();
+    public <T extends Serializable> TriggerId addTrigger(Trigger<T> tigger) {
+        var result = toTriggerEntity(tigger);
+        triggerRepository.save(result);
+        log.debug("Added trigger={}", result);
+        return result.getId();
     }
 
     @NonNull
-    public <T extends Serializable> List<TriggerId> addTriggers(Collection<TaskTrigger<T>> newTriggers) {
-        return triggerRepository
+    public <T extends Serializable> List<TriggerId> addTriggers(Collection<Trigger<T>> newTriggers) {
+        var result = triggerRepository
             .saveAll(newTriggers.stream().map(this::toTriggerEntity).toList())
             .stream().map(TriggerEntity::getId)
             .toList();
-    }
-    public void triggerAll(Collection<TaskTrigger<?>> newTriggers) {
-        triggerRepository.saveAll(newTriggers.stream().map(this::toTriggerEntity).toList());
+        log.debug("Added triggers={}", result);
+        return result;
     }
 
-    private <T extends Serializable> TriggerEntity toTriggerEntity(TaskTrigger<T> trigger) {
+    private <T extends Serializable> TriggerEntity toTriggerEntity(Trigger<T> trigger) {
         byte[] state = stateSerializer.serialize(trigger.state());
         var t = TriggerEntity.builder()
             .id(trigger.toTaskTriggerId())

@@ -5,7 +5,7 @@ import java.time.Duration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.sterl.spring.task.api.SimpleTask;
+import org.sterl.spring.task.api.SpringBeanTask;
 import org.sterl.spring.task.component.EditSchedulerStatusComponent;
 import org.sterl.spring.task.component.EditTaskTriggerComponent;
 import org.sterl.spring.task.component.LockNextTriggerComponent;
@@ -16,7 +16,7 @@ import org.sterl.test.AsyncAsserts;
 
 public class TaskFailoverConfig {
     @Bean
-    SimpleTask<Long> slowTask(AsyncAsserts asserts) {
+    SpringBeanTask<Long> slowTask(AsyncAsserts asserts) {
         return s -> {
             try {
                 Thread.sleep(s.longValue());

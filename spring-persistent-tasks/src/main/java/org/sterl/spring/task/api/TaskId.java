@@ -18,13 +18,13 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
         private String id;
         private T state;
         private OffsetDateTime when = OffsetDateTime.now(); 
-        private int priority = TaskTrigger.DEFAULT_PRIORITY;
+        private int priority = Trigger.DEFAULT_PRIORITY;
         
         public static <T extends Serializable> TaskTriggerBuilder<T> newTrigger(String name) {
             return new TaskTriggerBuilder<>(new TaskId<T>(name));
         }
-        public TaskTrigger<T> build() {
-            return new TaskTrigger<T>(
+        public Trigger<T> build() {
+            return new Trigger<T>(
                     id == null ? UUID.randomUUID().toString() : id, 
                     taskId, state, when, priority);
         }

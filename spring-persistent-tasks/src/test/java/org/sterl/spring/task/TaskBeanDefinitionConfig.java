@@ -1,39 +1,31 @@
 package org.sterl.spring.task;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
-import org.sterl.spring.task.api.AbstractTask;
-import org.sterl.spring.task.api.SimpleTask;
-import org.sterl.spring.task.api.Task;
-import org.sterl.spring.task.api.TaskId.TaskTriggerBuilder;
-import org.sterl.spring.task.api.TaskResult;
+import org.sterl.spring.task.api.SpringBeanTask;
+import org.sterl.spring.task.event.TriggerTaskEvent;
 import org.sterl.test.AsyncAsserts;
 
 public class TaskBeanDefinitionConfig {
     @Bean
-    Task<String> task1(AsyncAsserts asserts) {
-        return new AbstractTask<String>("task1") {
-            @Override
-            public TaskResult execute(String state) {
-                asserts.info("task1::" + state);
-                return TaskResult.of(TaskTriggerBuilder
-                        .newTrigger("task2")
-                        .state("task1::" + state)
-                        .build());
-            }
+    SpringBeanTask<String> task1(ApplicationEventPublisher publisher, AsyncAsserts asserts) {
+    return (String state) -> {
+            asserts.info("task1::" + state);
+            publisher.publishEvent(TriggerTaskEvent.of("task2", "task1::" + state));
         };
     }
+
     @Bean
-    Task<String> task2(AsyncAsserts asserts) {
-        return new AbstractTask<String>("task2") {
+    SpringBeanTask<String> task2(AsyncAsserts asserts) {
+        return new SpringBeanTask<String>() {
             @Override
-            public TaskResult execute(String state) {
+            public void accept(String state) {
                 asserts.info("task2::" + state);
-                return TaskResult.DONE;
             }
         };
     }
     @Bean("task3")
-    SimpleTask<String> task3(AsyncAsserts asserts) {
+    SpringBeanTask<String> task3(AsyncAsserts asserts) {
         return s -> asserts.info("task3::" + s);
     }
 }
