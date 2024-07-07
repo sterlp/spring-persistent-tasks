@@ -1,4 +1,4 @@
-package org.sterl.spring.task;
+package org.sterl.spring.task.config;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -6,7 +6,7 @@ import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -15,6 +15,8 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.sterl.spring.task.EnablePersistentTasks;
+import org.sterl.spring.task.TaskSchedulerService;
 import org.sterl.spring.task.api.SpringBeanTask;
 import org.sterl.spring.task.api.TaskId;
 import org.sterl.spring.task.component.EditSchedulerStatusComponent;
@@ -29,8 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @EnableScheduling
-@EnableAutoConfiguration
-@ComponentScan
+@AutoConfigurationPackage(basePackageClasses = EnablePersistentTasks.class)
+@ComponentScan(basePackageClasses = EnablePersistentTasks.class)
 @Slf4j
 public class TaskSchedulerConfig {
 
