@@ -29,7 +29,7 @@ import org.sterl.spring.task.component.EditSchedulerStatusComponent;
 import org.sterl.spring.task.component.EditTaskTriggerComponent;
 import org.sterl.spring.task.component.LockNextTriggerComponent;
 import org.sterl.spring.task.component.ReadTriggerComponent;
-import org.sterl.spring.task.component.TransactionalTaskExecutorComponent;
+import org.sterl.spring.task.component.TaskExecutorComponent;
 import org.sterl.spring.task.model.RegisteredTask;
 import org.sterl.spring.task.model.TaskSchedulerEntity;
 import org.sterl.spring.task.model.TaskSchedulerEntity.TaskSchedulerStatus;
@@ -54,7 +54,7 @@ public class TaskSchedulerService {
     private final EditTaskTriggerComponent editTaskTriggerComponent;
     private final EditSchedulerStatusComponent editSchedulerStatusComponent;
     private final TaskRepository taskRepository;
-    private final TransactionalTaskExecutorComponent taskExecutor;
+    private final TaskExecutorComponent taskExecutor;
     private final TransactionTemplate trx;
     
     @PostConstruct

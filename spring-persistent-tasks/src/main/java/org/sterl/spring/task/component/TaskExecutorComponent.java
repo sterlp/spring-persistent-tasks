@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class TransactionalTaskExecutorComponent {
+public class TaskExecutorComponent {
     @Value("${persistent-timer.max-threads:10}")
     @Getter @Setter
     private int maxThreads = 10;
@@ -44,7 +44,6 @@ public class TransactionalTaskExecutorComponent {
 
     private final TaskRepository taskRepository;
     private final EditTaskTriggerComponent editTaskTriggerComponent;
-    private final TransactionTemplate trx;
     
     @NonNull
     public Future<?> execute(@Nullable TriggerEntity trigger) {
@@ -105,10 +104,8 @@ public class TransactionalTaskExecutorComponent {
         log.debug("Running task={} - totalActive={}", trigger, runningTasks.get());
         final Task<Serializable> task = taskRepository.get(trigger.newTaskId());
         try {
-            trx.executeWithoutResult(t -> {
-                task.accept(serializer.deserialize(trigger.getData().getState()));
-                success(trigger.getId());
-            });
+            task.accept(serializer.deserialize(trigger.getData().getState()));
+            success(trigger.getId());
         } catch (Exception e) {
             handleTaskException(trigger, task, e);
         } finally {

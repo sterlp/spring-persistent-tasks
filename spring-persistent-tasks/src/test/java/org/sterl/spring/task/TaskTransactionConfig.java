@@ -3,6 +3,7 @@ package org.sterl.spring.task;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.sample_app.person.PersonBE;
 import org.sterl.spring.sample_app.person.PersonRepository;
 import org.sterl.spring.task.api.RetryStrategy;
@@ -16,6 +17,7 @@ public class TaskTransactionConfig {
     @Bean
     SpringBeanTask<String> savePerson(PersonRepository personRepository, AtomicBoolean sendError) {
         return new SpringBeanTask<>() {
+            @Transactional
             @Override
             public void accept(String name) {
                 personRepository.save(new PersonBE(name));

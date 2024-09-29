@@ -10,7 +10,7 @@ import org.sterl.spring.task.component.EditSchedulerStatusComponent;
 import org.sterl.spring.task.component.EditTaskTriggerComponent;
 import org.sterl.spring.task.component.LockNextTriggerComponent;
 import org.sterl.spring.task.component.ReadTriggerComponent;
-import org.sterl.spring.task.component.TransactionalTaskExecutorComponent;
+import org.sterl.spring.task.component.TaskExecutorComponent;
 import org.sterl.spring.task.repository.TaskRepository;
 import org.sterl.spring.task.repository.TaskSchedulerRepository;
 import org.sterl.test.AsyncAsserts;
@@ -38,7 +38,7 @@ public class TaskFailoverConfig {
             EditTaskTriggerComponent editTasks,
             TransactionTemplate trx) throws UnknownHostException {
 
-        final var taskExecutor = new TransactionalTaskExecutorComponent(taskRepository, editTasks, trx);
+        final var taskExecutor = new TaskExecutorComponent(taskRepository, editTasks);
         taskExecutor.setMaxShutdownWaitTime(Duration.ofSeconds(0));
         
         return new TaskSchedulerService("schedulerA", readTriggerComponent, lockNextTrigger, editTasks, 
@@ -56,7 +56,7 @@ public class TaskFailoverConfig {
             EditTaskTriggerComponent editTasks,
             TransactionTemplate trx) throws UnknownHostException {
 
-        final var taskExecutor = new TransactionalTaskExecutorComponent(taskRepository, editTasks, trx);
+        final var taskExecutor = new TaskExecutorComponent(taskRepository, editTasks);
         taskExecutor.setMaxShutdownWaitTime(Duration.ofSeconds(0));
         
         return new TaskSchedulerService("schedulerB", readTriggerComponent, lockNextTrigger, editTasks, 

@@ -19,7 +19,7 @@ public class EditSchedulerStatusComponent {
     private final OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
     private final MemoryMXBean memory = ManagementFactory.getMemoryMXBean();
     private final TaskSchedulerRepository schedulerRepository;
-    private final TransactionalTaskExecutorComponent taskExecutor;
+    private final TaskExecutorComponent taskExecutor;
 
     public TaskSchedulerEntity checkinToRegistry(String name, TaskSchedulerStatus status) {
         

@@ -23,7 +23,7 @@ import org.sterl.spring.task.component.EditSchedulerStatusComponent;
 import org.sterl.spring.task.component.EditTaskTriggerComponent;
 import org.sterl.spring.task.component.LockNextTriggerComponent;
 import org.sterl.spring.task.component.ReadTriggerComponent;
-import org.sterl.spring.task.component.TransactionalTaskExecutorComponent;
+import org.sterl.spring.task.component.TaskExecutorComponent;
 import org.sterl.spring.task.model.RegisteredTask;
 import org.sterl.spring.task.repository.TaskRepository;
 import org.sterl.spring.task.repository.TaskSchedulerRepository;
@@ -45,7 +45,7 @@ public class TaskSchedulerConfig {
             ReadTriggerComponent readTriggerComponent,
             LockNextTriggerComponent lockNextTrigger,
             EditTaskTriggerComponent editTasks,
-            TransactionalTaskExecutorComponent taskExecutor,
+            TaskExecutorComponent taskExecutor,
             EditSchedulerStatusComponent editSchedulerStatusComponent,
             TransactionTemplate trx) throws UnknownHostException {
         
@@ -64,7 +64,7 @@ public class TaskSchedulerConfig {
     @Bean
     EditSchedulerStatusComponent editSchedulerStatusComponent(
             TaskSchedulerRepository schedulerRepository,
-            TransactionalTaskExecutorComponent taskExecutor) throws UnknownHostException {
+            TaskExecutorComponent taskExecutor) throws UnknownHostException {
 
         return new EditSchedulerStatusComponent(schedulerRepository, taskExecutor);
     }
