@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
+import org.sterl.spring.task.TaskBeanDefinitionConfig.Task3;
 import org.sterl.spring.task.api.TaskId;
 import org.sterl.spring.task.api.TaskId.TaskTriggerBuilder;
 import org.sterl.spring.task.repository.TaskRepository;
@@ -23,6 +24,7 @@ class TaskBeanDefinitionTest extends AbstractSpringTest {
     // ensure task in the spring context 
     @Autowired private TaskId<String> task1Id;
     @Autowired private TaskId<String> task2Id;
+    @Autowired private TaskId<String> task3Id;
     
     @BeforeEach
     void setup() {
@@ -34,6 +36,7 @@ class TaskBeanDefinitionTest extends AbstractSpringTest {
     void testTaskId() {
         assertThat(task1Id.name()).isEqualTo("task1");
         assertThat(task2Id.name()).isEqualTo("task2");
+        assertThat(task3Id.name()).isEqualTo("task3");
     }
     
     @Test
@@ -50,11 +53,11 @@ class TaskBeanDefinitionTest extends AbstractSpringTest {
         // THEN
         final var e = subject.get(triggerId);
         assertThat(e).isPresent();
-        assertThat(e.get().getTriggerTime()).isEqualTo(triggerTime);
-        assertThat(e.get().getCreated()).isNotNull();
-        assertThat(e.get().getStart()).isNull();
-        assertThat(e.get().getEnd()).isNull();
-        assertThat(e.get().getExecutionCount()).isZero();
+        assertThat(e.get().getData().getTriggerTime()).isEqualTo(triggerTime);
+        assertThat(e.get().getData().getCreated()).isNotNull();
+        assertThat(e.get().getData().getStart()).isNull();
+        assertThat(e.get().getData().getEnd()).isNull();
+        assertThat(e.get().getData().getExecutionCount()).isZero();
     }
     
     @Test
@@ -71,24 +74,24 @@ class TaskBeanDefinitionTest extends AbstractSpringTest {
         asserts.awaitOrdered("task1::aa", "task2::task1::aa");
         final var e = subject.get(triggerId);
         assertThat(e).isPresent();
-        assertThat(e.get().getCreated()).isNotNull();
-        assertThat(e.get().getStart()).isNotNull();
-        assertThat(e.get().getEnd()).isNotNull();
-        assertThat(e.get().getExecutionCount()).isOne();
+        assertThat(e.get().getData().getCreated()).isNotNull();
+        assertThat(e.get().getData().getStart()).isNotNull();
+        assertThat(e.get().getData().getEnd()).isNotNull();
+        assertThat(e.get().getData().getExecutionCount()).isOne();
     }
     
     @Test
     void testTriggerSpringSimpleTask() throws Exception {
         // GIVEN
-        final var trigger = TaskTriggerBuilder.newTrigger("task3").state("trigger3").build();
+        final var trigger = TaskTriggerBuilder.newTrigger(Task3.NAME).state("trigger3").build();
         
         // WHEN
         subject.trigger(trigger);
         subject.triggerNextTask().get();
         
         // THEN
-        assertThat(taskRepository.contains("task3")).isTrue();
-        asserts.awaitValue("task3::trigger3");
+        assertThat(taskRepository.contains(Task3.NAME)).isTrue();
+        asserts.awaitValue(Task3.NAME + "::trigger3");
     }
 
 }

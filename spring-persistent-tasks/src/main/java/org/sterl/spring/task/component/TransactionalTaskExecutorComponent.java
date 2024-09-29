@@ -106,7 +106,7 @@ public class TransactionalTaskExecutorComponent {
         final Task<Serializable> task = taskRepository.get(trigger.newTaskId());
         try {
             trx.executeWithoutResult(t -> {
-                task.accept(serializer.deserialize(trigger.getState()));
+                task.accept(serializer.deserialize(trigger.getData().getState()));
                 success(trigger.getId());
             });
         } catch (Exception e) {
@@ -117,11 +117,12 @@ public class TransactionalTaskExecutorComponent {
     }
 
     private void handleTaskException(TriggerEntity trigger, Task<Serializable> task, Exception e) {
-        if (task.retryStrategy().shouldRetry(trigger.getExecutionCount(), e)) {
+        if (task.retryStrategy().shouldRetry(trigger.getData().getExecutionCount(), e)) {
             log.warn("Task={} failed, retry will be done!", 
                     trigger, e);
-            editTaskTriggerComponent.completeWithRetry(
-                    trigger.getId(), e, task.retryStrategy().retryAt(trigger.getExecutionCount(), e));
+            editTaskTriggerComponent.failWithRetry(
+                    trigger.getId(), e, 
+                    task.retryStrategy().retryAt(trigger.getData().getExecutionCount(), e));
         } else {
             log.error("Task={} failed, no retry!", trigger, e);
             editTaskTriggerComponent.completeTaskWithStatus(trigger.getId(), TriggerStatus.FAILED, e);

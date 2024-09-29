@@ -9,6 +9,7 @@ import org.sterl.spring.task.api.SpringBeanTask;
 import org.sterl.spring.task.component.EditSchedulerStatusComponent;
 import org.sterl.spring.task.component.EditTaskTriggerComponent;
 import org.sterl.spring.task.component.LockNextTriggerComponent;
+import org.sterl.spring.task.component.ReadTriggerComponent;
 import org.sterl.spring.task.component.TransactionalTaskExecutorComponent;
 import org.sterl.spring.task.repository.TaskRepository;
 import org.sterl.spring.task.repository.TaskSchedulerRepository;
@@ -32,6 +33,7 @@ public class TaskFailoverConfig {
     TaskSchedulerService schedulerA(
             TaskSchedulerRepository schedulerRepository,
             TaskRepository taskRepository,
+            ReadTriggerComponent readTriggerComponent,
             LockNextTriggerComponent lockNextTrigger,
             EditTaskTriggerComponent editTasks,
             TransactionTemplate trx) throws UnknownHostException {
@@ -39,7 +41,7 @@ public class TaskFailoverConfig {
         final var taskExecutor = new TransactionalTaskExecutorComponent(taskRepository, editTasks, trx);
         taskExecutor.setMaxShutdownWaitTime(Duration.ofSeconds(0));
         
-        return new TaskSchedulerService("schedulerA", lockNextTrigger, editTasks, 
+        return new TaskSchedulerService("schedulerA", readTriggerComponent, lockNextTrigger, editTasks, 
                 new EditSchedulerStatusComponent(schedulerRepository, taskExecutor), 
                 taskRepository, 
                 taskExecutor,
@@ -49,6 +51,7 @@ public class TaskFailoverConfig {
     TaskSchedulerService schedulerB(
             TaskSchedulerRepository schedulerRepository,
             TaskRepository taskRepository,
+            ReadTriggerComponent readTriggerComponent,
             LockNextTriggerComponent lockNextTrigger,
             EditTaskTriggerComponent editTasks,
             TransactionTemplate trx) throws UnknownHostException {
@@ -56,7 +59,7 @@ public class TaskFailoverConfig {
         final var taskExecutor = new TransactionalTaskExecutorComponent(taskRepository, editTasks, trx);
         taskExecutor.setMaxShutdownWaitTime(Duration.ofSeconds(0));
         
-        return new TaskSchedulerService("schedulerB", lockNextTrigger, editTasks, 
+        return new TaskSchedulerService("schedulerB", readTriggerComponent, lockNextTrigger, editTasks, 
                 new EditSchedulerStatusComponent(schedulerRepository, taskExecutor), 
                 taskRepository, 
                 taskExecutor,

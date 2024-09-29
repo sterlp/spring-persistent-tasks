@@ -12,7 +12,7 @@ import org.sterl.spring.task.model.TaskSchedulerEntity.TaskSchedulerStatus;
 public interface TaskSchedulerRepository extends JpaRepository<TaskSchedulerEntity, String>{
 
     @Query("""
-            UPDATE #{#entityName} e
+            UPDATE TaskSchedulerEntity e
             SET e.status = :status
             WHERE e.status != :status
             AND e.lastPing < :timeout

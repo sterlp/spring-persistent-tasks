@@ -44,8 +44,8 @@ class TaskFailoverTest extends AbstractSpringTest {
         trx.executeWithoutResult(t -> {
             final var triggerEntity = triggerRepository.findById(id);
             assertThat(triggerEntity).isPresent();
-            assertThat(triggerEntity.get().getEnd()).isNull();
-            assertThat(triggerEntity.get().getStatus()).isEqualTo(TriggerStatus.RUNNING);
+            assertThat(triggerEntity.get().getData().getEnd()).isNull();
+            assertThat(triggerEntity.get().getData().getStatus()).isEqualTo(TriggerStatus.RUNNING);
         });
         // AND re-run abandoned tasks
         schedulerB.pingRegistry();

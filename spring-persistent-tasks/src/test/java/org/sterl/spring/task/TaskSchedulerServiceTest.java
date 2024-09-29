@@ -45,6 +45,20 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
         assertThat(taskSchedulerRepository.count()).isOne();
         assertThat(taskSchedulerRepository.findAll().get(0).getStatus()).isEqualTo(TaskSchedulerStatus.ONLINE);
     }
+    
+    @Test
+    void canCreateAnTrigger() {
+        // GIVEN
+        TaskId<String> taskId = subject.register("foo", c -> asserts.info("foo"));
+        subject.<String>register("bar", c -> asserts.info("bar"));
+
+        // WHEN
+        subject.trigger(taskId);
+        subject.trigger(taskId);
+
+        // THEN
+        assertThat(subject.countTriggers(taskId)).isEqualTo(2);
+    }
 
     @Test
     void runSimpleTaskTest() throws Exception {
@@ -57,8 +71,8 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
         subject.triggerNextTask().get();
 
         // THEN
-        assertThat(triggerRepository.countByStatus(TriggerStatus.SUCCESS)).isOne();
-        assertThat(subject.get(triggerId).get().getExecutionCount()).isEqualTo(1);
+        assertThat(subject.countTriggers(TriggerStatus.SUCCESS)).isOne();
+        assertThat(subject.get(triggerId).get().getData().getExecutionCount()).isEqualTo(1);
         asserts.assertValue("foo");
         asserts.assertMissing("bar");
     }
@@ -74,7 +88,7 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
 
         // THEN
         asserts.assertValue("Hello");
-        assertThat(triggerRepository.countByStatus(TriggerStatus.SUCCESS)).isOne();
+        assertThat(subject.countTriggers(TriggerStatus.SUCCESS)).isOne();
         assertThat(subject.hasTriggers()).isFalse();
     }
 
@@ -82,17 +96,15 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
     void runSimpleTaskMultipleTimesTest() throws Exception {
         // GIVEN
         TaskId<String> task = subject.register("foo", c -> asserts.info(c));
-        for (int i = 1; i < 5; ++i)
-            subject.trigger(task, i + " state");
+        for (int i = 1; i < 5; ++i) subject.trigger(task, i + " state");
 
         // WHEN
-        for (int i = 1; i < 5; ++i)
-            subject.triggerNextTask().get();
+        for (int i = 1; i < 5; ++i) subject.triggerNextTask().get();
 
         // THEN
-        for (int i = 1; i < 5; ++i)
-            asserts.assertValue(i + " state");
-        assertThat(triggerRepository.countByStatus(TriggerStatus.SUCCESS)).isEqualTo(4);
+        for (int i = 1; i < 5; ++i) asserts.assertValue(i + " state");
+
+        assertThat(subject.countTriggers(TriggerStatus.SUCCESS)).isEqualTo(4);
         assertThat(subject.hasTriggers()).isFalse();
     }
 
@@ -106,12 +118,12 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
 
         // WHEN
         subject.triggerNextTask().get();
-        subject.triggerNexTask(OffsetDateTime.now().plusDays(1)).get();
-        subject.triggerNexTask(OffsetDateTime.now().plusDays(1)).get();
+        subject.triggerNextTask(OffsetDateTime.now().plusDays(1)).get();
+        subject.triggerNextTask(OffsetDateTime.now().plusDays(1)).get();
 
         // THEN
-        assertThat(triggerRepository.countByStatus(TriggerStatus.FAILED)).isOne();
-        assertThat(subject.get(triggerId).get().getExecutionCount()).isEqualTo(3);
+        assertThat(subject.countTriggers(TriggerStatus.FAILED)).isOne();
+        assertThat(subject.get(triggerId).get().getData().getExecutionCount()).isEqualTo(3);
     }
 
     @Test
@@ -127,8 +139,8 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
 
         // THEN
         final var trigger = subject.get(triggerId).get();
-        assertThat(trigger.getExceptionName()).isEqualTo(IllegalArgumentException.class.getName());
-        assertThat(trigger.getLastException()).contains("Nope! Hallo :-)");
+        assertThat(trigger.getData().getExceptionName()).isEqualTo(IllegalArgumentException.class.getName());
+        assertThat(trigger.getData().getLastException()).contains("Nope! Hallo :-)");
     }
 
     @Test
@@ -156,8 +168,8 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
 
         // THEN
         assertThat(asserts.getCount("hallo")).isEqualTo(3);
-        assertThat(triggerRepository.countByStatus(TriggerStatus.FAILED)).isOne();
-        assertThat(subject.get(id).get().getExecutionCount()).isEqualTo(3);
+        assertThat(subject.countTriggers(TriggerStatus.FAILED)).isOne();
+        assertThat(subject.get(id).get().getData().getExecutionCount()).isEqualTo(3);
     }
 
     @Test
@@ -173,11 +185,11 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
             subject.triggerNextTask().get();
 
         // THEN
-        assertThat(subject.get(triggers.get(0)).get().getPriority()).isEqualTo(5);
-        assertThat(subject.get(triggers.get(1)).get().getPriority()).isEqualTo(4);
-        assertThat(subject.get(triggers.get(2)).get().getPriority()).isEqualTo(6);
+        assertThat(subject.get(triggers.get(0)).get().getData().getPriority()).isEqualTo(5);
+        assertThat(subject.get(triggers.get(1)).get().getData().getPriority()).isEqualTo(4);
+        assertThat(subject.get(triggers.get(2)).get().getData().getPriority()).isEqualTo(6);
         asserts.awaitOrdered("high", "mid", "low");
-        assertThat(triggerRepository.countByStatus(TriggerStatus.SUCCESS)).isEqualTo(3);
+        assertThat(subject.countTriggers(TriggerStatus.SUCCESS)).isEqualTo(3);
     }
 
     @Test
@@ -222,31 +234,33 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
 
         // THEN
         asserts.awaitValueOnce("paul@sterl.org");
-        assertThat(triggerRepository.countByStatus(TriggerStatus.SUCCESS)).isEqualTo(1);
+        assertThat(subject.countTriggers(TriggerStatus.SUCCESS)).isEqualTo(1);
     }
 
     @Test
     void multithreadingTest() throws Exception {
         // GIVEN
-        final var executor = Executors.newFixedThreadPool(100);
-        final TaskId<String> taskId = subject.register("multi-threading", s -> asserts.info(s));
-        for (int i = 1; i <= 100; ++i) {
-            subject.trigger(taskId, "t" + i);
+        try (final var executor = Executors.newFixedThreadPool(100)) {
+            final TaskId<String> taskId = subject.register("multi-threading", s -> asserts.info(s));
+            for (int i = 1; i <= 100; ++i) {
+                subject.trigger(taskId, "t" + i);
+            }
+            
+            final List<Callable<Object>> tasks = new ArrayList<>(100);
+            for (int i = 1; i <= 100; ++i) {
+                tasks.add(() -> subject.triggerNextTask().get());
+            }
+            
+            // WHEN
+            executor.invokeAll(tasks);
+            while (subject.hasTriggers()) subject.triggerNextTask();
+            
+            // THEN
+            for (int i = 1; i <= 100; ++i) {
+                asserts.awaitValueOnce("t" + i);
+            }
+            assertThat(subject.countTriggers(TriggerStatus.SUCCESS)).isEqualTo(100);
         }
-
-        final List<Callable<Object>> tasks = new ArrayList<>(100);
-        for (int i = 1; i <= 100; ++i) {
-            tasks.add(() -> subject.triggerNextTask().get());
-        }
-
-        // WHEN
-        executor.invokeAll(tasks);
-        while (subject.hasTriggers()) subject.triggerNextTask();
-
-        // THEN
-        for (int i = 1; i <= 100; ++i) {
-            asserts.awaitValueOnce("t" + i);
-        }
-        assertThat(triggerRepository.countByStatus(TriggerStatus.SUCCESS)).isEqualTo(100);
+        
     }
 }

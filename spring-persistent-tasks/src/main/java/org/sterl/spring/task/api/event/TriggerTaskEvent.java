@@ -1,4 +1,4 @@
-package org.sterl.spring.task.event;
+package org.sterl.spring.task.api.event;
 
 import java.io.Serializable;
 import java.util.Arrays;

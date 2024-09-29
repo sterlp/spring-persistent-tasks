@@ -53,7 +53,7 @@ class TaskTransactionTest extends AbstractSpringTest {
         subject.triggerNextTask().get();
         // THEN
         assertThat(personRepository.count()).isOne();
-        assertThat(subject.get(triggerId).get().getExecutionCount()).isEqualTo(2);
+        assertThat(subject.get(triggerId).get().getData().getExecutionCount()).isEqualTo(2);
     }
 
 }

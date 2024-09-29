@@ -22,6 +22,7 @@ import org.sterl.spring.task.api.TaskId;
 import org.sterl.spring.task.component.EditSchedulerStatusComponent;
 import org.sterl.spring.task.component.EditTaskTriggerComponent;
 import org.sterl.spring.task.component.LockNextTriggerComponent;
+import org.sterl.spring.task.component.ReadTriggerComponent;
 import org.sterl.spring.task.component.TransactionalTaskExecutorComponent;
 import org.sterl.spring.task.model.RegisteredTask;
 import org.sterl.spring.task.repository.TaskRepository;
@@ -41,6 +42,7 @@ public class TaskSchedulerConfig {
     @Bean(destroyMethod = "stop", initMethod = "start")
     TaskSchedulerService taskSchedulerService(
             TaskRepository taskRepository,
+            ReadTriggerComponent readTriggerComponent,
             LockNextTriggerComponent lockNextTrigger,
             EditTaskTriggerComponent editTasks,
             TransactionalTaskExecutorComponent taskExecutor,
@@ -56,7 +58,7 @@ public class TaskSchedulerConfig {
             else name = hostname;
         }
 
-        return new TaskSchedulerService(name, lockNextTrigger, editTasks,
+        return new TaskSchedulerService(name, readTriggerComponent, lockNextTrigger, editTasks,
                 editSchedulerStatusComponent, taskRepository, taskExecutor, trx);
     }
     @Bean
@@ -67,6 +69,7 @@ public class TaskSchedulerConfig {
         return new EditSchedulerStatusComponent(schedulerRepository, taskExecutor);
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Autowired
     void configureSimpleTasks(GenericApplicationContext context,
             TaskRepository taskRepository) {
@@ -75,15 +78,17 @@ public class TaskSchedulerConfig {
             final var registeredTask = new RegisteredTask<>(t.getKey(), t.getValue());
             taskRepository.addTask(registeredTask);
 
-            // register Key in Spring Context, if missing
-            final var taskIdContextName = registeredTask.getId().name() + "Id";
-            if (!context.containsBean(taskIdContextName)) {
-                log.info("Adding TaskId={} with name={} to spring context", registeredTask.getId(), taskIdContextName);
-                var beanDefinition = new GenericBeanDefinition();
-                beanDefinition.setBeanClass(registeredTask.getId().getClass());
-                context.registerBean(taskIdContextName, 
-                        TaskId.class, () -> registeredTask.getId());
-            }
+            addTaskIdIfMissing(context, registeredTask);
+        }
+    }
+    private void addTaskIdIfMissing(GenericApplicationContext context, final RegisteredTask<?> registeredTask) {
+        final var taskIdContextName = registeredTask.getId().name() + "Id";
+        if (!context.containsBean(taskIdContextName)) {
+            log.info("Adding TaskId={} with name={} to spring context", registeredTask.getId(), taskIdContextName);
+            var beanDefinition = new GenericBeanDefinition();
+            beanDefinition.setBeanClass(registeredTask.getId().getClass());
+            context.registerBean(taskIdContextName, 
+                    TaskId.class, () -> registeredTask.getId());
         }
     }
 }

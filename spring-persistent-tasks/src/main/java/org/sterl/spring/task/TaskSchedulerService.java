@@ -17,17 +17,19 @@ import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.task.api.SpringBeanTask;
 import org.sterl.spring.task.api.TaskId;
 import org.sterl.spring.task.api.Trigger;
 import org.sterl.spring.task.api.TriggerId;
+import org.sterl.spring.task.api.event.TriggerTaskEvent;
 import org.sterl.spring.task.component.EditSchedulerStatusComponent;
 import org.sterl.spring.task.component.EditTaskTriggerComponent;
 import org.sterl.spring.task.component.LockNextTriggerComponent;
+import org.sterl.spring.task.component.ReadTriggerComponent;
 import org.sterl.spring.task.component.TransactionalTaskExecutorComponent;
-import org.sterl.spring.task.event.TriggerTaskEvent;
 import org.sterl.spring.task.model.RegisteredTask;
 import org.sterl.spring.task.model.TaskSchedulerEntity;
 import org.sterl.spring.task.model.TaskSchedulerEntity.TaskSchedulerStatus;
@@ -47,6 +49,7 @@ public class TaskSchedulerService {
 
     @Getter
     private final String name;
+    private final ReadTriggerComponent readTriggerComponent;
     private final LockNextTriggerComponent lockNextTriggerComponent;
     private final EditTaskTriggerComponent editTaskTriggerComponent;
     private final EditSchedulerStatusComponent editSchedulerStatusComponent;
@@ -79,7 +82,7 @@ public class TaskSchedulerService {
     }
     
     public Optional<TriggerEntity> get(TriggerId id) {
-        return editTaskTriggerComponent.get(id);
+        return readTriggerComponent.get(id);
     }
 
     /**
@@ -170,7 +173,7 @@ public class TaskSchedulerService {
      */
     @NonNull
     public Future<?> triggerNextTask() {
-        return triggerNexTask(OffsetDateTime.now());
+        return triggerNextTask(OffsetDateTime.now());
     }
     
     /**
@@ -178,7 +181,7 @@ public class TaskSchedulerService {
      * tasks which wouldn't be triggered now.
      */
     @NonNull
-    public Future<?> triggerNexTask(OffsetDateTime timeDue) {
+    public Future<?> triggerNextTask(OffsetDateTime timeDue) {
         var trigger = trx.execute(t -> {
             final var runningOn = pingRegistry();
             TriggerEntity result;
@@ -206,12 +209,12 @@ public class TaskSchedulerService {
     @Transactional
     public List<TriggerEntity> rescheduleAbandonedTasks(Duration timeout) {
         final var offlineScheduler = editSchedulerStatusComponent.setSchedulersOffline(timeout);
-        if (offlineScheduler > 0) log.info("Found {} offline scheduler.", offlineScheduler);
+        if (offlineScheduler > 0) log.info("Found {} offline scheduler(s).", offlineScheduler);
         final var tasks = editTaskTriggerComponent.findTasksInTimeout(timeout);
         tasks.forEach(t -> {
             t.setRunningOn(null);
-            t.setStatus(TriggerStatus.NEW);
-            t.setExceptionName("Abandoned tasks");
+            t.getData().setStatus(TriggerStatus.NEW);
+            t.getData().setExceptionName("Abandoned tasks");
         });
         log.info("Reschedule {} abandoned tasks.", tasks.size());
         return tasks;
@@ -225,5 +228,25 @@ public class TaskSchedulerService {
     }
     public void deleteAllTriggers() {
         this.editTaskTriggerComponent.deleteAll();
+    }
+    /**
+     * Counts the trigger using the name only from the {@link TaskId}
+     * 
+     * @param taskId to get the {@link TaskId#name()}
+     * @return the amount of stored tasks
+     */
+    public int countTriggers(@Nullable TaskId<String> taskId) {
+        if (taskId == null || taskId.name() == null) return 0;
+        return this.readTriggerComponent.countByName(taskId.name());
+    }
+    /**
+     * Counts the stored triggers by their status including the history.
+     * 
+     * @param status the status to count
+     * @return the found amount or <code>0</code> if the given status is <code>null</code>
+     */
+    public int countTriggers(TriggerStatus status) {
+        if (status == null) return 0;
+        return readTriggerComponent.countByStatus(status);
     }
 }

@@ -7,5 +7,20 @@
   "name": "persistent-timer.max-threads",
   "type": "java.lang.Integer",
   "description": "The amount of threads to use, use 0 to disable the task processing."
+},
+{
+  "name": "persistent-timer.task-timeout",
+  "type": "java.time.Duration",
+  "description": "The amount of time a task and scheduler has time to finish a task in seconds, default 5min."
+},
+{
+  "name": "persistent-timer.poll-task-timeout",
+  "type": "java.lang.Integer",
+  "description": "How often the system should check for abandond tasks in seconds, default every 5min."
+},
+{
+  "name": "persistent-timer.clean-trigger-rate",
+  "type": "java.lang.Integer",
+  "description": "How often old triggers should be deleted in seconds, default every 2hours."
 }
 ]}

@@ -2,9 +2,12 @@ package org.sterl.spring.task;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 import org.sterl.spring.task.api.SpringBeanTask;
-import org.sterl.spring.task.event.TriggerTaskEvent;
+import org.sterl.spring.task.api.event.TriggerTaskEvent;
 import org.sterl.test.AsyncAsserts;
+
+import lombok.RequiredArgsConstructor;
 
 public class TaskBeanDefinitionConfig {
     @Bean
@@ -24,8 +27,15 @@ public class TaskBeanDefinitionConfig {
             }
         };
     }
-    @Bean("task3")
-    SpringBeanTask<String> task3(AsyncAsserts asserts) {
-        return s -> asserts.info("task3::" + s);
+
+    @Component(Task3.NAME)
+    @RequiredArgsConstructor
+    public static class Task3 implements SpringBeanTask<String> {
+        public static final String NAME = "task3";
+        private final AsyncAsserts asserts;
+        @Override
+        public void accept(String state) {
+            asserts.info(NAME + "::" + state);
+        }
     }
 }

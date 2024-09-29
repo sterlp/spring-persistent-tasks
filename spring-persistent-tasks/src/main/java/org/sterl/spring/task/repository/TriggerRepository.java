@@ -30,21 +30,24 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, TriggerI
     })
     @Query("""
             SELECT e FROM #{#entityName} e
-            WHERE triggerTime <= :triggerTime
-            AND status = :status
-            ORDER BY priority DESC, executionCount ASC
+            WHERE data.triggerTime <= :triggerTime
+            AND data.status = :status
+            ORDER BY data.priority DESC, data.executionCount ASC
             """)
     List<TriggerEntity> loadNextTasks(
             @Param("triggerTime") OffsetDateTime triggerTime, 
             @Param("status") TriggerStatus status, 
             Pageable page);
     
-    int countByStatus(TriggerStatus status);
+    int countByDataStatus(TriggerStatus status);
+    
+    @Query("SELECT count(1) FROM #{#entityName} e WHERE e.id.name = :name")
+    int countByTriggerName(@Param("name") String name);
 
     @Query("""
            SELECT e FROM #{#entityName} e
-           WHERE e.start <= :timeout
-           AND e.status = :status
+           WHERE e.data.start <= :timeout
+           AND e.data.status = :status
            AND (e.runningOn.status <> :schedulerStatus OR e.runningOn.lastPing <= :timeout)
            """)
     List<TriggerEntity> findByTimeout(
