@@ -37,10 +37,18 @@ public class AsyncAsserts {
         return count;
     }
 
+    /**
+     * @return how often this value has been already added ...
+     */
     public int info(String value) {
         if (value == null) value= "[null]";
-        int count = this.add(value);
-        System.err.println(values.size() + ". " + value);
+        int count;
+        int size;
+        synchronized (values) {
+            count = this.add(value);
+            size = values.size();
+        }
+        System.err.println(size + ". " + value);
         return count;
     }
 

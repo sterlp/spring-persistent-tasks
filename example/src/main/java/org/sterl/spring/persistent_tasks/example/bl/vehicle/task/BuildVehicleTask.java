@@ -1,9 +1,9 @@
 package org.sterl.spring.persistent_tasks.example.bl.vehicle.task;
 
 import org.springframework.stereotype.Component;
+import org.sterl.spring.persistent_tasks.api.SpringBeanTask;
 import org.sterl.spring.persistent_tasks.example.bl.vehicle.model.Vehicle;
 import org.sterl.spring.persistent_tasks.example.bl.vehicle.repository.VehicleRepository;
-import org.sterl.spring.task.api.SpringBeanTask;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

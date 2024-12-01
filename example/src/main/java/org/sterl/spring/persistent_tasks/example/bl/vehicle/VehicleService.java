@@ -3,8 +3,8 @@ package org.sterl.spring.persistent_tasks.example.bl.vehicle;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.sterl.spring.persistent_tasks.api.event.TriggerTaskEvent;
 import org.sterl.spring.persistent_tasks.example.bl.vehicle.task.BuildVehicleTask;
-import org.sterl.spring.task.api.event.TriggerTaskEvent;
 
 import lombok.RequiredArgsConstructor;
 

@@ -7,8 +7,8 @@ import java.time.Duration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
 import org.sterl.spring.sample_app.SampleApp;
-import org.sterl.spring.task.component.EditSchedulerStatusComponent;
 
 @SpringBootTest(classes = SampleApp.class)
 class EditSchedulerStatusComponentTest {

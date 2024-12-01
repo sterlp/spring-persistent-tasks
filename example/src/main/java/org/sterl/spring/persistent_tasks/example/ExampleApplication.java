@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode;
-import org.sterl.spring.task.EnablePersistentTasks;
+import org.sterl.spring.persistent_tasks.EnablePersistentTasks;
 
 @SpringBootApplication
 @EnablePersistentTasks

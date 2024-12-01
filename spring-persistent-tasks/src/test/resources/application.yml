@@ -6,14 +6,8 @@ spring:
   datasource:
     hikari:
       maximum-pool-size: 200
-org:
-  jobrunr:
-    background-job-server:
-      enabled: true
+
       
 logging:
   level:
-    org.sterl.spring.task: debug
-
-persistent-timer:
-  poll-rate: 120
+    org.sterl.spring.persistent_tasks: debug

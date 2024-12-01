@@ -11,4 +11,4 @@ springdoc:
 
 logging:
   level:
-    org.sterl.spring.task: DEBUG
+    org.sterl.spring.persistent_tasks: DEBUG
