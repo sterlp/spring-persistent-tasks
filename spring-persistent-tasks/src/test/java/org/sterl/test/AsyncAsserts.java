@@ -41,7 +41,9 @@ public class AsyncAsserts {
      * @return how often this value has been already added ...
      */
     public int info(String value) {
-        if (value == null) value= "[null]";
+        if (value == null) {
+            value= "[null]";
+        }
         int count;
         int size;
         synchronized (values) {
@@ -63,7 +65,9 @@ public class AsyncAsserts {
             try {
                 Thread.sleep(50);
             } catch (InterruptedException e) {
-                if (Thread.interrupted()) break;
+                if (Thread.interrupted()) {
+                    break;
+                }
             }
         }
         assertValue(value);
@@ -81,7 +85,7 @@ public class AsyncAsserts {
             }
         }
     }
-    
+
     public void awaitValueOnce(String value) {
         awaitValue(value);
         assertThat(values).contains(value);

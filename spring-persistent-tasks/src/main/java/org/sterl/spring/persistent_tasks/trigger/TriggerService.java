@@ -39,11 +39,11 @@ public class TriggerService {
     private final ReadTriggerComponent readTrigger;
     private final EditTriggerComponent editTrigger;
     private final LockNextTriggerComponent lockNextTrigger;
-    
+
     /**
      * Executes the given trigger directly in the current thread
      * and handle any errors etc.
-     * 
+     *
      * @param trigger the {@link TriggerEntity} to run
      * @return the reference to the updated {@link TriggerEntity}
      */
@@ -55,7 +55,9 @@ public class TriggerService {
     @Transactional(propagation = Propagation.NEVER)
     public Optional<TriggerEntity> run(TriggerId triggerId) {
         final TriggerEntity trigger = lockNextTrigger.lock(triggerId, MANUAL_TAG);
-        if (trigger == null) return Optional.empty();
+        if (trigger == null) {
+            return Optional.empty();
+        }
         return run(trigger);
     }
 
@@ -92,7 +94,7 @@ public class TriggerService {
     public boolean hasPendingTriggers() {
         return readTrigger.hasPendingTriggers();
     }
-    
+
     @EventListener
     public void trigger(TriggerTaskEvent<? extends Serializable> event) {
         triggerAll(event.triggers());
@@ -108,41 +110,45 @@ public class TriggerService {
         triggers.forEach(t -> taskService.assertIsKnown(t.taskId()));
         return editTrigger.addTriggers(triggers);
     }
-    
+
     /**
      * If you changed your mind, cancel the task
      */
     public Optional<TriggerEntity> cancel(TriggerId id) {
         return editTrigger.cancelTask(id);
     }
-    
+
     /**
      * Counts the trigger using the name only from the {@link TaskId}
-     * 
+     *
      * @param taskId to get the {@link TaskId#name()}
      * @return the amount of stored tasks
      */
     @Transactional(timeout = 5, readOnly = true)
     public long countTriggers(@Nullable TaskId<String> taskId) {
-        if (taskId == null || taskId.name() == null) return 0L;
+        if (taskId == null || taskId.name() == null) {
+            return 0L;
+        }
         return this.readTrigger.countByName(taskId.name());
     }
 
     /**
      * Counts the stored triggers by their status including the history.
-     * 
+     *
      * @param status the status to count
      * @return the found amount or <code>0</code> if the given status is <code>null</code>
      */
     @Transactional(timeout = 5, readOnly = true)
     public long countTriggers(TriggerStatus status) {
-        if (status == null) return 0;
+        if (status == null) {
+            return 0;
+        }
         return readTrigger.countByStatus(status);
     }
 
     /**
      * Marks any tasks which are not on the given executors/schedulers abandoned for .
-     * 
+     *
      * Retry will be triggered based on the set strategy.
      */
     public List<TriggerEntity> rescheduleAbandonedTasks(Set<String> onlineRunner) {

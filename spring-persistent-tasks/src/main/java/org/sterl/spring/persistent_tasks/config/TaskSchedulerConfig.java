@@ -44,14 +44,17 @@ public class TaskSchedulerConfig {
             TaskExecutorComponent taskExecutor,
             EditSchedulerStatusComponent editSchedulerStatus,
             TransactionTemplate trx) throws UnknownHostException {
-        
+
         String name = null;
         if (name == null) {
             final var ip = InetAddress.getLocalHost();
             final var hostname = ip.getHostName();
-            
-            if (hostname == null) name = ip.toString();
-            else name = hostname;
+
+            if (hostname == null) {
+                name = ip.toString();
+            } else {
+                name = hostname;
+            }
         }
         return new SchedulerService(name, triggerService, taskExecutor, editSchedulerStatus, trx);
     }
@@ -74,7 +77,7 @@ public class TaskSchedulerConfig {
             log.info("Adding TaskId={} with name={} to spring context", registeredTask.getId(), taskIdContextName);
             var beanDefinition = new GenericBeanDefinition();
             beanDefinition.setBeanClass(registeredTask.getId().getClass());
-            context.registerBean(taskIdContextName, 
+            context.registerBean(taskIdContextName,
                     TaskId.class, () -> registeredTask.getId());
         }
     }

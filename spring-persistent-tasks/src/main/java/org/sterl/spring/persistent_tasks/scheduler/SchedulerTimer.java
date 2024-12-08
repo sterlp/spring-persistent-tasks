@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.sterl.spring.persistent_tasks.scheduler.config.ConditionalSchedulerServiceByProperty;
@@ -48,7 +47,7 @@ public class SchedulerTimer {
      * }
      * }
      * }
-     * 
+     *
      * @Scheduled(fixedDelayString = "${persistent-tasks.clean-trigger-rate:7200}",
      * timeUnit = TimeUnit.SECONDS)
      * void cleanupFinishedTriggers() {

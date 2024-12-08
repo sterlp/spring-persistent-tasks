@@ -20,7 +20,7 @@ public class TriggerId implements Serializable {
     private String name;
 
     public TaskId<Serializable> toTaskId() {
-        return new TaskId<Serializable>(name);
+        return new TaskId<>(name);
     }
     /**
      * Builds a trigger for the given task name

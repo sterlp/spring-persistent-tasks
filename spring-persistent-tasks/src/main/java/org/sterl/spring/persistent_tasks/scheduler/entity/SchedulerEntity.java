@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Entity
-@Table(name = "SPT_SCHEDULER", 
+@Table(name = "SPT_SCHEDULER",
        indexes = @Index(name = "IDX_TASK_SCHEDULER_STATUS", columnList = "status"))
 @Data
 @ToString(of = {"id", "status", "runnungTasks", "tasksSlotCount"})
@@ -31,19 +31,19 @@ public class SchedulerEntity {
     @Id
     @Column(updatable = false)
     private String id;
-    
+
     private int tasksSlotCount;
-    
+
     private int runnungTasks;
-    
+
     private double systemLoadAverage;
-    
+
     private long maxHeap;
-    
+
     private long usedHeap;
-    
+
     private TaskSchedulerStatus status = TaskSchedulerStatus.ONLINE;
-    
+
     private OffsetDateTime lastPing = OffsetDateTime.now();
 
     public SchedulerEntity(String name) {

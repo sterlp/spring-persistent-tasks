@@ -24,9 +24,10 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
                         throw new RuntimeException("NOPE!");
                     }
 
+                    @Override
                     public RetryStrategy retryStrategy() {
                         return RetryStrategy.TRY_THREE_TIMES_IMMEDIATELY;
-                    };
+                    }
                 });
         var id = triggerService.trigger(task.newTrigger().state("hallo").build());
 
@@ -53,13 +54,13 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
         for (int i = 1; i <= 100; ++i) {
             triggerService.trigger(taskId.newUniqueTrigger("t" + i));
         }
-        
+
         // WHEN
         ArrayList<Callable<?>> lockInvocations = new ArrayList<>();
         for (int i = 1; i <= 100; ++i) {
             lockInvocations.add(() -> runNextTrigger());
         }
-        
+
         while (triggerService.hasPendingTriggers()) {
             schedulerService.triggerNextTasks();
             schedulerB.triggerNextTasks();

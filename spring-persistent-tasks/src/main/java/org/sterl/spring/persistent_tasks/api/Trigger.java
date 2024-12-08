@@ -8,13 +8,13 @@ import java.time.OffsetDateTime;
  */
 public record Trigger<T extends Serializable>(
         String id,
-        TaskId<T> taskId, 
-        T state, 
-        OffsetDateTime when, 
+        TaskId<T> taskId,
+        T state,
+        OffsetDateTime when,
         int priority) {
 
     public static final int DEFAULT_PRIORITY = 4;
-    
+
     public TriggerId toTaskTriggerId() {
         return new TriggerId(id, taskId.name());
     }

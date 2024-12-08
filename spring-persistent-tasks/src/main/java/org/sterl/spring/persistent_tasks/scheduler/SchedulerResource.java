@@ -18,7 +18,7 @@ public class SchedulerResource {
     public Set<TaskId<? extends Serializable>> listTasks() {
         return schedulerService.findAllTaskIds();
     }
-    
+
     @GetMapping("/triggers")
     public Page<TriggerEntity> listTriggers(
              @PageableDefault(size = 20) Pageable pageable) {

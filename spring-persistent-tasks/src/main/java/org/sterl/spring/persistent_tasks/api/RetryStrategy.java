@@ -21,15 +21,15 @@ public interface RetryStrategy {
 
     /**
      * Check if a retry should be done.
-     * 
+     *
      * @param executionCount 0 based counter how often the execution was tried
      * @param error the exception, <code>null</code> on a timeout
      */
     boolean shouldRetry(int executionCount, @Nullable Exception error);
-    
+
     /**
      * By default a linear retry strategy, adding one minute for each failed try.
-     * 
+     *
      * @param executionCount 0 based counter how often the execution was tried
      * @param error the exception, <code>null</code> on a timeout
      */

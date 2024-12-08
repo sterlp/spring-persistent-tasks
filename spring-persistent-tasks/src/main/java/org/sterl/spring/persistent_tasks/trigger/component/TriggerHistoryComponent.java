@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 public class TriggerHistoryComponent {
 
     private final TriggerHistoryRepository historyRepository;
-    
+
     public TriggerHistoryEntity write(TriggerEntity e) {
         var result = new TriggerHistoryEntity();
         result.setData(e.getData().toBuilder().build());

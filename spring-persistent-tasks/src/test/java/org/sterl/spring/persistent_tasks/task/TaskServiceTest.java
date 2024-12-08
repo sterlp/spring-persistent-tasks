@@ -20,7 +20,7 @@ class TaskServiceTest {
 
         // WHEN
         subject.replace(t);
-        
+
         // THEN
         subject.assertIsKnown(t.getId());
         subject.assertIsKnown(new TaskId<String>("foo"));

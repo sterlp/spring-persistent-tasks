@@ -15,7 +15,7 @@ public class PersonBE {
     @Id
     @GeneratedValue
     private Long id;
-    
+
     private String name;
 
     public PersonBE(String name) {

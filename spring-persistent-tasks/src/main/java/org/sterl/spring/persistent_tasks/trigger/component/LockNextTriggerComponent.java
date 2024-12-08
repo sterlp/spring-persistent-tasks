@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class LockNextTriggerComponent {
 
     private final TriggerRepository triggerRepository;
-    
+
     public List<TriggerEntity> loadNext(String runningOn, int count, OffsetDateTime timeDueAt) {
         final var tasks = triggerRepository.loadNextTasks(
                 timeDueAt, TriggerStatus.NEW, PageRequest.of(0, count));
@@ -31,10 +31,12 @@ public class LockNextTriggerComponent {
 
         return tasks;
     }
-    
+
     public TriggerEntity lock(TriggerId id, String runningOn) {
         final TriggerEntity result = triggerRepository.lockById(id);
-        if (result != null) result.runOn(runningOn);
+        if (result != null) {
+            result.runOn(runningOn);
+        }
         return result;
     }
 }

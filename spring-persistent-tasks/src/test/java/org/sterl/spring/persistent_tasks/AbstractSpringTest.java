@@ -93,7 +93,7 @@ public class AbstractSpringTest {
 
         @Bean
         SpringBeanTask<String> task2(AsyncAsserts asserts) {
-            return new SpringBeanTask<String>() {
+            return new SpringBeanTask<>() {
                 @Override
                 public void accept(String state) {
                     asserts.info("task2::" + state);
@@ -117,8 +117,9 @@ public class AbstractSpringTest {
         SpringBeanTask<Long> slowTask(AsyncAsserts asserts) {
             return sleepTime -> {
                 try {
-                    if (sleepTime == null)
+                    if (sleepTime == null) {
                         sleepTime = 1L;
+                    }
                     Thread.sleep(sleepTime.longValue());
                     asserts.info("Complete " + sleepTime);
                 } catch (InterruptedException e) {
@@ -128,7 +129,7 @@ public class AbstractSpringTest {
             };
         }
     }
-    
+
     protected Optional<TriggerEntity> runNextTrigger() {
         return triggerService.run(triggerService.lockNextTrigger());
     }

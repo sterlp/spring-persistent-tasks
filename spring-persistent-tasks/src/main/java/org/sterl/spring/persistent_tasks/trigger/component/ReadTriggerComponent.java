@@ -30,7 +30,9 @@ public class ReadTriggerComponent {
     }
 
     public long countByStatus(@Nullable TriggerStatus status) {
-        if (status == null) triggerRepository.count();
+        if (status == null) {
+            triggerRepository.count();
+        }
         return triggerRepository.countByDataStatus(status);
     }
 
@@ -41,18 +43,22 @@ public class ReadTriggerComponent {
     public Optional<TriggerHistoryEntity> getFromHistory(TriggerId id) {
         final var page = PageRequest.of(0, 1, Sort.by(Direction.DESC, "createDate"));
         final var result = triggerHistoryRepository.findByTriggerId(id, page);
-        if (result.isEmpty()) return Optional.empty();
+        if (result.isEmpty()) {
+            return Optional.empty();
+        }
         return Optional.of(result.get(0));
     }
-    
+
     /**
      * Checks if any job is still running or waiting for it's execution.
      */
     public boolean hasPendingTriggers() {
-        if (triggerRepository.countByDataStatus(TriggerStatus.NEW) > 0) return true;
+        if (triggerRepository.countByDataStatus(TriggerStatus.NEW) > 0) {
+            return true;
+        }
         return triggerRepository.countByDataStatus(TriggerStatus.RUNNING) > 0;
     }
-    
+
     public List<TriggerEntity> findNotRunningOn(Set<String> names) {
         return triggerRepository.findNotRunningOn(names, TriggerStatus.RUNNING);
     }

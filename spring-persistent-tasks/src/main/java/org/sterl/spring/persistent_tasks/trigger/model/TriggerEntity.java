@@ -34,7 +34,7 @@ public class TriggerEntity {
 
     @EmbeddedId
     private TriggerId id;
-    
+
     @Default
     @Embedded
     private BaseTriggerData data = new BaseTriggerData();
@@ -73,7 +73,7 @@ public class TriggerEntity {
 
         return this;
     }
-    
+
     public TriggerEntity failWithMessage(String message) {
         this.data.setStatus(TriggerStatus.FAILED);
         this.data.setExceptionName(message);

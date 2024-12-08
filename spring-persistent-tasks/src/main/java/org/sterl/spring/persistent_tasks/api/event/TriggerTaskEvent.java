@@ -12,18 +12,18 @@ public record TriggerTaskEvent<T extends Serializable>(Collection<Trigger<T>> tr
  implements PersistentTaskEvent {
 
     public static <T extends Serializable> TriggerTaskEvent<T> of(String name, T state) {
-        return new TriggerTaskEvent<T>(Collections.singleton(TaskTriggerBuilder
+        return new TriggerTaskEvent<>(Collections.singleton(TaskTriggerBuilder
                 .<T>newTrigger(name)
                 .state(state)
                 .build()));
     }
-    
+
     public static <T extends Serializable> TriggerTaskEvent<T> of(Trigger<T> trigger) {
-        return new TriggerTaskEvent<T>(Collections.singleton(trigger));
+        return new TriggerTaskEvent<>(Collections.singleton(trigger));
     }
 
     @SafeVarargs
     public static <T extends Serializable> TriggerTaskEvent<T> of(Trigger<T>... triggers) {
-        return new TriggerTaskEvent<T>(Arrays.asList(triggers));
+        return new TriggerTaskEvent<>(Arrays.asList(triggers));
     }
 }

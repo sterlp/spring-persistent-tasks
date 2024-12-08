@@ -17,15 +17,15 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
         private final TaskId<T> taskId;
         private String id;
         private T state;
-        private OffsetDateTime when = OffsetDateTime.now(); 
+        private OffsetDateTime when = OffsetDateTime.now();
         private int priority = Trigger.DEFAULT_PRIORITY;
-        
+
         public static <T extends Serializable> TaskTriggerBuilder<T> newTrigger(String name) {
             return new TaskTriggerBuilder<>(new TaskId<T>(name));
         }
         public Trigger<T> build() {
-            return new Trigger<T>(
-                    id == null ? UUID.randomUUID().toString() : id, 
+            return new Trigger<>(
+                    id == null ? UUID.randomUUID().toString() : id,
                     taskId, state, when, priority);
         }
         public TaskTriggerBuilder<T> id(String id) {

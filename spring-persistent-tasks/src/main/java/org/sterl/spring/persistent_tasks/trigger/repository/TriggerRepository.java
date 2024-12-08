@@ -34,10 +34,10 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, TriggerI
             ORDER BY data.priority DESC, data.executionCount ASC
             """)
     List<TriggerEntity> loadNextTasks(
-            @Param("triggerTime") OffsetDateTime triggerTime, 
-            @Param("status") TriggerStatus status, 
+            @Param("triggerTime") OffsetDateTime triggerTime,
+            @Param("status") TriggerStatus status,
             Pageable page);
-    
+
     long countByDataStatus(TriggerStatus status);
 
     @Query("SELECT count(1) FROM #{#entityName} e WHERE e.id.name = :name")

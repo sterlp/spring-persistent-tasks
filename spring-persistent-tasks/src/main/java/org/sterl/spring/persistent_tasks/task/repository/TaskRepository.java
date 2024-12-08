@@ -26,10 +26,12 @@ public class TaskRepository {
             addTask(task);
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     public <T extends Serializable> Task<T> remove(Task<T> task) {
-        if (task == null) return null;
+        if (task == null) {
+            return null;
+        }
         return (Task<T>)tasks.remove(task.getId());
     }
 
@@ -60,7 +62,7 @@ public class TaskRepository {
     public boolean contains(String name) {
         return contains(new TaskId<>(name));
     }
-    
+
     public boolean contains(TaskId<?> id) {
         return tasks.containsKey(id);
     }

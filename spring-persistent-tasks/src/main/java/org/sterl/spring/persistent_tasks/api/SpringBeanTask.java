@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 
 @FunctionalInterface
 public interface SpringBeanTask<T extends Serializable> extends Consumer<T> {
+    @Override
     void accept(T state);
 
     default RetryStrategy retryStrategy() {

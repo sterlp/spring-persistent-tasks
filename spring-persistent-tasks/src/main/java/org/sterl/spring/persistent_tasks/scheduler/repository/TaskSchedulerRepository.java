@@ -20,7 +20,7 @@ public interface TaskSchedulerRepository extends JpaRepository<SchedulerEntity, 
             """)
     @Modifying
     int setSchedulersStatusByLastPing(
-            @Param("timeout") OffsetDateTime timeout, 
+            @Param("timeout") OffsetDateTime timeout,
             @Param("status") TaskSchedulerStatus status);
 
     @Query("""

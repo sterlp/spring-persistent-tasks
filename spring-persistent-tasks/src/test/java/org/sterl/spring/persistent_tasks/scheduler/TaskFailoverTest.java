@@ -21,12 +21,12 @@ class TaskFailoverTest extends AbstractSpringTest {
 
     @Autowired TriggerRepository triggerRepository;
     private SchedulerService schedulerA;
-    
+
     @BeforeEach
     void setup() {
         this.schedulerA = schedulerService;
     }
-    
+
     @Test
     void nameTest() throws Exception {
         assertThat(schedulerA.getName()).isEqualTo("schedulerA");
@@ -40,7 +40,7 @@ class TaskFailoverTest extends AbstractSpringTest {
                 .id(new TriggerId("slowTask"))
                 .build()
                 .runOn("schedulerB"));
-        
+
         // WHEN
         Thread.sleep(19);
         // AND add one which looks like it is running :-)
@@ -48,7 +48,7 @@ class TaskFailoverTest extends AbstractSpringTest {
                 .id(new TriggerId("slowTask"))
                 .build()
                 .runOn("schedulerA"));
-        
+
         // AND check status
         Optional<TriggerEntity> state = triggerService.get(trigger.getId());
         assertThat(state).isPresent();
@@ -58,15 +58,15 @@ class TaskFailoverTest extends AbstractSpringTest {
         // AND re-run abandoned tasks
         schedulerA.pingRegistry();
         final var tasks = schedulerA.rescheduleAbandonedTasks(Duration.ofMillis(20));
-        
+
         // THEN
         assertThat(tasks).hasSize(1);
         assertThat(tasks.get(0).getId()).isEqualTo(trigger.getId());
-        
+
         // WHEN
         final var retryTime = OffsetDateTime.now();
         final List<Future<TriggerId>> runWaitingTasks = schedulerService.triggerNextTasks();
-        
+
         // THEN
         assertThat(runWaitingTasks).hasSize(1);
         runWaitingTasks.get(0).get();

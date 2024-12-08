@@ -10,8 +10,10 @@ import java.io.Serializable;
 public class StateSerializer {
 
     public byte[] serialize(final Serializable obj) {
-        if (obj == null) return null;
-        
+        if (obj == null) {
+            return null;
+        }
+
         var bos = new ByteArrayOutputStream(512);
 
         try (var out = new ObjectOutputStream(bos)) {
@@ -23,7 +25,9 @@ public class StateSerializer {
     }
 
     public Serializable deserialize(byte[] bytes) {
-        if (bytes == null) return null;
+        if (bytes == null) {
+            return null;
+        }
 
         var bis = new ByteArrayInputStream(bytes);
         try (ObjectInput in = new ObjectInputStream(bis)) {

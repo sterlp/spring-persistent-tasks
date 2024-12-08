@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
  * Use this service if direct access to the Scheduler is required.
  * <br>
  * <b>Note:</b> This Service is optional, as it could be disabled if no background
- * tasks should be execute on this note. As so the {@link TriggerService} should be 
+ * tasks should be execute on this note. As so the {@link TriggerService} should be
  * preferred to queue tasks.
  */
 @RequiredArgsConstructor
@@ -44,7 +44,7 @@ public class SchedulerService {
     private final TaskExecutorComponent taskExecutor;
     private final EditSchedulerStatusComponent editSchedulerStatus;
     private final TransactionTemplate trx;
-    
+
     @PostConstruct
     public void start() {
         taskExecutor.start();
@@ -64,7 +64,7 @@ public class SchedulerService {
         var s = editSchedulerStatus.checkinToRegistry(name, TaskSchedulerStatus.OFFLINE);
         log.info("Force stop {}", s);
     }
-    
+
     public SchedulerEntity pingRegistry() {
         var result = editSchedulerStatus.checkinToRegistry(name, TaskSchedulerStatus.ONLINE);
         log.debug("Ping {}", result);

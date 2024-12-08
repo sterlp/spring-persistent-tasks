@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class RunTriggerComponent {
-    
+
     private final TaskService taskService;
     private final EditTriggerComponent editTrigger;
     private final StateSerializer serializer = new StateSerializer();
@@ -26,7 +26,9 @@ public class RunTriggerComponent {
      * Will execute the given {@link TriggerEntity} and handle any errors etc.
      */
     public Optional<TriggerEntity> execute(@Nullable TriggerEntity trigger) {
-        if (trigger == null) return Optional.empty();
+        if (trigger == null) {
+            return Optional.empty();
+        }
         Task<Serializable> task = null;
         try {
             task = taskService.assertIsKnown(trigger.getId().toTaskId());
@@ -37,17 +39,17 @@ public class RunTriggerComponent {
         }
     }
 
-    private Optional<TriggerEntity> handleTaskException(TriggerEntity trigger, 
-            @Nullable Task<Serializable> task, 
+    private Optional<TriggerEntity> handleTaskException(TriggerEntity trigger,
+            @Nullable Task<Serializable> task,
             @Nullable Exception e) {
-        
+
         var result = editTrigger.completeTaskWithStatus(trigger.getId(), e);
 
-        if (task != null && 
+        if (task != null &&
                 task.retryStrategy().shouldRetry(trigger.getData().getExecutionCount(), e)) {
-            
+
             final OffsetDateTime retryAt = task.retryStrategy().retryAt(trigger.getData().getExecutionCount(), e);
-            log.info("Task={} failed, retry will be done at={}!", 
+            log.info("Task={} failed, retry will be done at={}!",
                     trigger, retryAt, e);
 
             result = editTrigger.retryTrigger(trigger.getId(), retryAt);

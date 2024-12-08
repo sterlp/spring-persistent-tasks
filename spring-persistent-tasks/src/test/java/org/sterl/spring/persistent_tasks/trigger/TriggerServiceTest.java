@@ -150,7 +150,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         // GIVEN
         TaskId<String> task = taskService.<String>replace("aha", s -> asserts.info(s));
         List<TriggerId> triggers = triggerService.triggerAll(Arrays.asList(
-                task.newTrigger().state("mid").priority(5).build(), // 
+                task.newTrigger().state("mid").priority(5).build(), //
                 task.newTrigger().state("low").priority(4).build(), //
                 task.newTrigger().state("high").priority(6).build()));
         // WHEN
@@ -184,7 +184,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         // THEN
         assertThat(triggerService.countTriggers()).isZero();
     }
-    
+
     @Test
     void testOverrideTriggersUsingSameId() throws Exception {
         // GIVEN
@@ -206,12 +206,12 @@ class TriggerServiceTest extends AbstractSpringTest {
         // THEN
         asserts.awaitValueOnce("paul@sterl.org");
         assertThat(subject.countTriggers(TriggerStatus.SUCCESS)).isEqualTo(1);
-        
+
         // AND
         assertThat(e1).isPresent();
         assertThat(e2).isEmpty();
     }
-    
+
     @Test
     void testLockTrigger() throws Exception {
         // GIVEN
@@ -220,14 +220,14 @@ class TriggerServiceTest extends AbstractSpringTest {
             for (int i = 1; i <= 100; ++i) {
                 triggerService.trigger(taskId.newUniqueTrigger("t" + i));
             }
-            
+
             // WHEN
             ArrayList<Callable<?>> lockInvocations = new ArrayList<>();
             for (int i = 1; i <= 100; ++i) {
                 lockInvocations.add(() -> runNextTrigger());
             }
             executor.invokeAll(lockInvocations);
-            
+
             // THEN
             for (int i = 1; i <= 100; ++i) {
                 asserts.awaitValueOnce("t" + i);

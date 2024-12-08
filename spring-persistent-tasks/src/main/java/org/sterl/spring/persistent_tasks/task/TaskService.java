@@ -23,20 +23,20 @@ import lombok.RequiredArgsConstructor;
 public class TaskService {
 
     private final TaskRepository taskRepository;
-    
+
     @Transactional(readOnly = true)
     public Set<TaskId<? extends Serializable>> findAllTaskIds() {
         return this.taskRepository.all();
     }
-    
-    
+
+
     public <T extends Serializable> Optional<Task<T>> get(TaskId<T> id) {
         return taskRepository.get(id);
     }
-    
+
     /**
      * Check if the {@link Task} is known or not.
-     * 
+     *
      * @param <T> the state type
      * @param id the {@link TaskId} of the {@link Task}
      * @throws IllegalStateException if the id is unknown
@@ -46,12 +46,12 @@ public class TaskService {
     public <T extends Serializable> Task<T> assertIsKnown(@NonNull TaskId<T> id) {
         final var task = taskRepository.get(id);
         if (task.isEmpty()) {
-            throw new IllegalStateException("Task with ID " + id 
+            throw new IllegalStateException("Task with ID " + id
                     + " is unknown. Known tasks: " + taskRepository.all());
         }
         return task.get();
     }
-    
+
     /**
      * A way to manually register a task, usually better to use {@link SpringBeanTask}.
      */
@@ -72,7 +72,7 @@ public class TaskService {
     public <T extends Serializable> TaskId<T> register(RegisteredTask<T> task) {
         return taskRepository.addTask(task);
     }
-    
+
     /**
      * A way to manually register a task, usually not needed as spring beans will be added anyway.
      */

@@ -5,7 +5,6 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -35,7 +34,7 @@ public class EditTriggerComponent {
 
     private final StateSerializer stateSerializer = new StateSerializer();
     private final TriggerRepository triggerRepository;
-    
+
     public Page<TriggerEntity> listTriggers(Pageable page) {
         return triggerRepository.findAll(page);
     }
@@ -49,7 +48,7 @@ public class EditTriggerComponent {
      */
     public Optional<TriggerEntity> completeTaskWithStatus(TriggerId id, Exception e) {
         final Optional<TriggerEntity> result = triggerRepository.findById(id);
-        
+
         result.ifPresent(t -> {
             t.complete(e);
 
@@ -57,11 +56,11 @@ public class EditTriggerComponent {
 
             if (t.getData().getStatus() != TriggerStatus.FAILED) {
                 publisher.publishEvent(new TriggerCompleteEvent(t));
-                log.debug("Setting task={} to status={} {}", id, t.getData().getStatus(), 
+                log.debug("Setting task={} to status={} {}", id, t.getData().getStatus(),
                         e == null ? "" : "error=" + e.getClass().getSimpleName());
             } else {
                 publisher.publishEvent(new TriggerFailedEvent(t));
-                log.info("Setting task={} to status={} {}", id, t.getData().getStatus(), 
+                log.info("Setting task={} to status={} {}", id, t.getData().getStatus(),
                         e == null ? "" : "error=" + e.getClass().getSimpleName());
             }
 
@@ -69,13 +68,13 @@ public class EditTriggerComponent {
 
         return result;
     }
-    
+
     public Optional<TriggerEntity> retryTrigger(TriggerId id, OffsetDateTime retryAt) {
         return triggerRepository //
                 .findById(id) //
                 .map(t -> t.runAt(retryAt));
     }
-    
+
     public Optional<TriggerEntity> cancelTask(TriggerId id) {
         return triggerRepository //
                 .findById(id) //

@@ -23,7 +23,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "TASK_TRIGGERS_HISTORY", 
+@Table(name = "TASK_TRIGGERS_HISTORY",
     indexes = {
         @Index(name = "IDX_TASK_TRIGGERS_HISTORY_CREATE_DATE", columnList = "create_date"),
         @Index(name = "IDX_TASK_TRIGGERS_HISTORY_TASK_ID", columnList = "task_id"),
@@ -44,19 +44,19 @@ public class TriggerHistoryEntity {
     @Column(updatable = false)
     @Id
     private Long id;
-    
+
     @Embedded
     @AttributeOverrides(@AttributeOverride(
-            name = "id", 
+            name = "id",
             column = @Column(name = "task_id", nullable = false))
     )
     @NotNull
     private TriggerId triggerId;
-    
+
     @Embedded
     @NotNull
     private BaseTriggerData data;
-    
+
     @Default
     private OffsetDateTime createDate = OffsetDateTime.now();
 }

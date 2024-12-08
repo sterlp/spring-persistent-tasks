@@ -30,16 +30,16 @@ public class EditSchedulerStatusComponent {
         result.setStatus(status);
         result.setRunnungTasks(taskExecutor.getRunningTasks());
         result.setTasksSlotCount(taskExecutor.getMaxThreads());
-        
+
         result.setSystemLoadAverage(os.getSystemLoadAverage());
         result.setMaxHeap(memory.getHeapMemoryUsage().getMax());
         result.setUsedHeap(memory.getHeapMemoryUsage().getUsed());
 
         result.setLastPing(OffsetDateTime.now());
-        
+
         return schedulerRepository.save(result);
     }
-    
+
     public SchedulerEntity get(String name) {
         return schedulerRepository.findById(name)
                 .orElseGet(() -> new SchedulerEntity(name));

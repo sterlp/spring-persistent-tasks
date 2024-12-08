@@ -18,5 +18,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Documented
 @Indexed
 public @interface TransactionalCompontant {
-    
+
 }

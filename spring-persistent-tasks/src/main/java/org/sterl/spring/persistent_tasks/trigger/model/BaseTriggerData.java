@@ -29,7 +29,7 @@ public class BaseTriggerData {
     @Default
     @Column(nullable = false)
     private OffsetDateTime triggerTime = OffsetDateTime.now();
-    
+
     @Column(name = "start_time")
     private OffsetDateTime start;
 
@@ -50,7 +50,7 @@ public class BaseTriggerData {
 
     @Lob
     private byte[] state;
-    
+
     @Column(length = 512)
     private String exceptionName;
     @Lob

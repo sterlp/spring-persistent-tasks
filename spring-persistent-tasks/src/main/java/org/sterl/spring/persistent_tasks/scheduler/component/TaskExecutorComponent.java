@@ -56,8 +56,9 @@ public class TaskExecutorComponent implements Closeable {
 
     @NonNull
     public Future<TriggerId> submit(@Nullable TriggerEntity trigger) {
-        if (trigger == null)
+        if (trigger == null) {
             return CompletableFuture.completedFuture(null);
+        }
         runningTasks.incrementAndGet();
         return executor.submit(() -> runTrigger(trigger));
     }
@@ -80,6 +81,7 @@ public class TaskExecutorComponent implements Closeable {
         }
     }
 
+    @Override
     @PreDestroy
     public void close() {
         if (stopped.compareAndExchange(false, true)) {
@@ -112,7 +114,9 @@ public class TaskExecutorComponent implements Closeable {
     }
 
     public int getFreeThreads() {
-        if (stopped.get()) return 0;
+        if (stopped.get()) {
+            return 0;
+        }
         return Math.max(maxThreads - runningTasks.get(), 0);
     }
 

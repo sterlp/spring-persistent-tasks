@@ -16,6 +16,6 @@ public interface TriggerHistoryRepository extends JpaRepository<TriggerHistoryEn
             WHERE e.triggerId = :triggerId
             """)
     List<TriggerHistoryEntity> findByTriggerId(
-            @Param("triggerId") TriggerId triggerId, 
+            @Param("triggerId") TriggerId triggerId,
             Pageable page);
 }

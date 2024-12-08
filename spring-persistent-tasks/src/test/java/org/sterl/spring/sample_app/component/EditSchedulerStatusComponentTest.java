@@ -11,9 +11,9 @@ import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatus
 
 class EditSchedulerStatusComponentTest extends AbstractSpringTest {
 
-    @Autowired 
+    @Autowired
     private EditSchedulerStatusComponent subject;
-    
+
     @Test
     void setSchedulersOfflineTest() throws Exception {
         // WHEN & THEN
