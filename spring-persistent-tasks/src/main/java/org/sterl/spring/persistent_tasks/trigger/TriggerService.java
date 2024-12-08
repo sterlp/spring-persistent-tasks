@@ -5,6 +5,7 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
@@ -13,6 +14,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.sterl.spring.persistent_tasks.api.Task;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
@@ -32,6 +34,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TriggerService {
 
+    private static final String MANUAL_TAG = "manual";
     private final TaskService taskService;
     private final RunTriggerComponent runTrigger;
     private final ReadTriggerComponent readTrigger;
@@ -52,7 +55,7 @@ public class TriggerService {
 
     @Transactional(propagation = Propagation.NEVER)
     public Optional<TriggerEntity> run(TriggerId triggerId) {
-        final TriggerEntity trigger = lockNextTrigger.lock(triggerId, "manual");
+        final TriggerEntity trigger = lockNextTrigger.lock(triggerId, MANUAL_TAG);
         if (trigger == null) return Optional.empty();
         return run(trigger);
     }
@@ -62,7 +65,7 @@ public class TriggerService {
     }
 
     public TriggerEntity lockNextTrigger() {
-        final List<TriggerEntity> r = lockNextTrigger.loadNext("manual", 1, OffsetDateTime.now());
+        final List<TriggerEntity> r = lockNextTrigger.loadNext(MANUAL_TAG, 1, OffsetDateTime.now());
         return r.isEmpty() ? null : r.get(0);
     }
 
@@ -136,5 +139,21 @@ public class TriggerService {
     public int countTriggers(TriggerStatus status) {
         if (status == null) return 0;
         return readTrigger.countByStatus(status);
+    }
+
+    /**
+     * Marks any tasks which are not on the given executors/schedulers abandoned for .
+     * 
+     * Retry will be triggered based on the set strategy.
+     */
+    public List<TriggerEntity> rescheduleAbandonedTasks(Set<String> names) {
+        names.add(MANUAL_TAG);
+        final List<TriggerEntity> result = readTrigger.findRunningOn(names);
+        result.forEach(t -> {
+            t.setRunningOn(null);
+            t.getData().setStatus(TriggerStatus.NEW);
+            t.getData().setExceptionName("Abandoned tasks");
+        });
+        return result;
     }
 }

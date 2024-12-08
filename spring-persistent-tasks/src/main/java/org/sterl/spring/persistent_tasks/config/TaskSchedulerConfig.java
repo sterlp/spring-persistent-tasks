@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -34,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TaskSchedulerConfig {
 
+    @ConditionalOnProperty(name = "persistent-tasks.disable-scheduler", matchIfMissing = true) 
     @Primary
     @DependsOnDatabaseInitialization
     @Bean
@@ -51,7 +53,7 @@ public class TaskSchedulerConfig {
             if (hostname == null) name = ip.toString();
             else name = hostname;
         }
-
+        
         return new SchedulerService(name, triggerService, taskExecutor, editSchedulerStatus, trx);
     }
 

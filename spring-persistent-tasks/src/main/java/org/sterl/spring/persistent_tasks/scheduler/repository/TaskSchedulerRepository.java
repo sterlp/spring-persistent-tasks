@@ -1,6 +1,7 @@
 package org.sterl.spring.persistent_tasks.scheduler.repository;
 
 import java.time.OffsetDateTime;
+import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -21,5 +22,11 @@ public interface TaskSchedulerRepository extends JpaRepository<SchedulerEntity, 
     int setSchedulersStatusByLastPing(
             @Param("timeout") OffsetDateTime timeout, 
             @Param("status") TaskSchedulerStatus status);
+
+    @Query("""
+            SELECT e.id FROM #{#entityName} e
+            WHERE e.status = :status
+            """)
+    Set<String> findIdByStatus(@Param("status") TaskSchedulerStatus status);
 
 }

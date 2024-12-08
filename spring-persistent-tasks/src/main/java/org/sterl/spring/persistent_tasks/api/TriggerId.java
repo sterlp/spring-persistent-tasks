@@ -22,6 +22,13 @@ public class TriggerId implements Serializable {
     public TaskId<Serializable> toTaskId() {
         return new TaskId<Serializable>(name);
     }
+    /**
+     * Builds a trigger for the given task name
+     */
+    public TriggerId(String taskName) {
+        id = UUID.randomUUID().toString();
+        this.name = taskName;
+    }
 
     /**
      * Just triggers the given task to be executed using <code>null</code> as state.

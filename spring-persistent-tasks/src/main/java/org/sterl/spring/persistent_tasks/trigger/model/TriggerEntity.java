@@ -13,6 +13,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -27,11 +29,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
+@Builder
 public class TriggerEntity {
 
     @EmbeddedId
     private TriggerId id;
     
+    @Default
     @Embedded
     private BaseTriggerData data = new BaseTriggerData();
 
@@ -57,7 +61,7 @@ public class TriggerEntity {
         return this;
     }
 
-    public void complete(Exception e) {
+    public TriggerEntity complete(Exception e) {
         data.setStatus(TriggerStatus.SUCCESS);
         data.setEnd(OffsetDateTime.now());
 
@@ -66,6 +70,15 @@ public class TriggerEntity {
             data.setExceptionName(e.getClass().getName());
             data.setLastException(ExceptionUtils.getStackTrace(e));
         }
+
+        return this;
+    }
+    
+    public TriggerEntity failWithMessage(String message) {
+        this.data.setStatus(TriggerStatus.FAILED);
+        this.data.setExceptionName(message);
+        this.data.setLastException(null);
+        return this;
     }
 
     public TriggerEntity runAt(OffsetDateTime triggerTime) {

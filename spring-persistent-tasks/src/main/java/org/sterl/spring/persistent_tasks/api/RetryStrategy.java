@@ -2,6 +2,8 @@ package org.sterl.spring.persistent_tasks.api;
 
 import java.time.OffsetDateTime;
 
+import org.springframework.lang.Nullable;
+
 @FunctionalInterface
 public interface RetryStrategy {
     RetryStrategy NO_RETRY = (c, e) -> false;
@@ -17,12 +19,17 @@ public interface RetryStrategy {
         }
     };
 
-    boolean shouldRetry(int executionCount, Exception error);
+    /**
+     * Check if a retry should be done.
+     * @param error the exception, <code>null</code> on a timeout
+     */
+    boolean shouldRetry(int executionCount, @Nullable Exception error);
     
     /**
      * By default a linear retry strategy, adding one minute for each failed try.
+     * @param error the exception, <code>null</code> on a timeout
      */
-    default OffsetDateTime retryAt(int executionCount, Exception error) {
+    default OffsetDateTime retryAt(int executionCount, @Nullable Exception error) {
         return OffsetDateTime.now().plusMinutes(1 + executionCount);
     }
 }

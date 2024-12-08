@@ -1,6 +1,7 @@
 package org.sterl.spring.persistent_tasks.scheduler;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.Optional;
 import java.util.concurrent.Future;
 
 import org.springframework.lang.NonNull;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.Trigger;
@@ -52,7 +54,11 @@ public class SchedulerService {
     @PreDestroy
     public void stop() {
         editSchedulerStatus.checkinToRegistry(name, TaskSchedulerStatus.OFFLINE);
-        taskExecutor.close();
+    }
+
+    public void shutdownNow() {
+        taskExecutor.shutdownNow();
+        editSchedulerStatus.checkinToRegistry(name, TaskSchedulerStatus.OFFLINE);
     }
     
     public SchedulerEntity pingRegistry() {
@@ -82,7 +88,7 @@ public class SchedulerService {
                 runningOn.setRunnungTasks(taskExecutor.getRunningTasks() + result.size());
             } else {
                 result = Collections.emptyList();
-                log.debug("triggerNextTasks({}) skipped as no free thread are available.", timeDue);
+                log.debug("triggerNextTasks({}) skipped as no free threads are available.", timeDue);
             }
             return result;
         });
@@ -113,19 +119,15 @@ public class SchedulerService {
         return editSchedulerStatus.get(name);
     }
 
-
-    /*
     @Transactional
     public List<TriggerEntity> rescheduleAbandonedTasks(Duration timeout) {
-        final var offlineScheduler = editSchedulerStatus.setSchedulersOffline(timeout);
-        if (offlineScheduler > 0) log.info("Found {} offline scheduler(s).", offlineScheduler);
-        final var tasks = editTriggerComponent.findTasksInTimeout(timeout);
-        tasks.forEach(t -> {
-            t.setRunningOn(null);
-            t.getData().setStatus(TriggerStatus.NEW);
-            t.getData().setExceptionName("Abandoned tasks");
-        });
-        log.info("Reschedule {} abandoned tasks.", tasks.size());
-        return tasks;
-    }*/
+        final var onlineSchedulers = editSchedulerStatus.findOnlineSchedulers(timeout);
+        if (onlineSchedulers.hasSchedulersOffline()) {
+            log.info("Found schedulers which are offline={}", onlineSchedulers);
+            final List<TriggerEntity> result = triggerService.rescheduleAbandonedTasks(onlineSchedulers.names());
+            log.info("Reschedule {} abandoned triggers.", result.size());
+            return result;
+        }
+        return Collections.emptyList();
+    }
 }

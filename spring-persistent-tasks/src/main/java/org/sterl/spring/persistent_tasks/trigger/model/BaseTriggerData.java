@@ -26,8 +26,9 @@ public class BaseTriggerData {
     @Column(updatable = false, name = "created_time")
     private OffsetDateTime created = OffsetDateTime.now();
 
+    @Default
     @Column(nullable = false)
-    private OffsetDateTime triggerTime;
+    private OffsetDateTime triggerTime = OffsetDateTime.now();
     
     @Column(name = "start_time")
     private OffsetDateTime start;

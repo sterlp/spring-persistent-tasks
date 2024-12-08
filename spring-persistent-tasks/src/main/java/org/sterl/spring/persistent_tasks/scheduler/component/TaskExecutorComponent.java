@@ -31,13 +31,15 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 public class TaskExecutorComponent implements Closeable {
-    
+
     private final TriggerService triggerService;
-    
-    @Value("${persistent-timer.max-threads:10}")
-    @Getter @Setter
+
+    @Value("${persistent-tasks.max-threads:10}")
+    @Getter
+    @Setter
     private int maxThreads = 10;
-    @Getter @Setter
+    @Getter
+    @Setter
     private Duration maxShutdownWaitTime = Duration.ofSeconds(10);
     private ExecutorService executor = Executors.newFixedThreadPool(maxThreads);
     private final AtomicInteger runningTasks = new AtomicInteger(0);
@@ -54,7 +56,8 @@ public class TaskExecutorComponent implements Closeable {
 
     @NonNull
     public Future<TriggerId> submit(@Nullable TriggerEntity trigger) {
-        if (trigger == null) return CompletableFuture.completedFuture(null);
+        if (trigger == null)
+            return CompletableFuture.completedFuture(null);
         runningTasks.incrementAndGet();
         return executor.submit(() -> runTrigger(trigger));
     }
@@ -71,7 +74,7 @@ public class TaskExecutorComponent implements Closeable {
     @PostConstruct
     public void start() {
         if (stopped.compareAndExchange(true, false)) {
-            synchronized(stopped) {
+            synchronized (stopped) {
                 log.info("Starting with {} threads", maxThreads);
                 executor = Executors.newFixedThreadPool(maxThreads);
             }
@@ -91,9 +94,9 @@ public class TaskExecutorComponent implements Closeable {
 
     private void waitForRunningTasks() {
         if (runningTasks.get() > 0) {
-            log.info("Shutdown executor with {} running tasks, waiting for {}.", 
+            log.info("Shutdown executor with {} running tasks, waiting for {}.",
                     runningTasks.get(), maxShutdownWaitTime);
-            
+
             try {
                 executor.awaitTermination(maxShutdownWaitTime.getSeconds(), TimeUnit.SECONDS);
             } catch (InterruptedException e) {
@@ -103,18 +106,23 @@ public class TaskExecutorComponent implements Closeable {
             }
         }
     }
-    
+
+    public void shutdownNow() {
+        stopped.set(true);
+        executor.shutdownNow();
+    }
+
     public int getFreeThreads() {
-        if (stopped.get()) return 0;
+        if (stopped.get())
+            return 0;
         return Math.max(maxThreads - runningTasks.get(), 0);
     }
 
     public int getRunningTasks() {
         return runningTasks.get();
     }
-    
+
     public boolean isStopped() {
         return stopped.get() || maxThreads <= 0;
     }
-
 }

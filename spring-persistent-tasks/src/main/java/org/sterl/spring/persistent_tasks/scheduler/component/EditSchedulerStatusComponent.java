@@ -8,6 +8,7 @@ import java.time.OffsetDateTime;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.sterl.spring.persistent_tasks.scheduler.entity.OnlineSchedulersEntity;
 import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity;
 import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity.TaskSchedulerStatus;
 import org.sterl.spring.persistent_tasks.scheduler.repository.TaskSchedulerRepository;
@@ -44,8 +45,10 @@ public class EditSchedulerStatusComponent {
                 .orElseGet(() -> new SchedulerEntity(name));
     }
 
-    public int setSchedulersOffline(Duration lastPingWas) {
+    public OnlineSchedulersEntity findOnlineSchedulers(Duration lastPingWas) {
         final var timeout = OffsetDateTime.now().minus(lastPingWas);
-        return schedulerRepository.setSchedulersStatusByLastPing(timeout, TaskSchedulerStatus.OFFLINE);
+        int countOffline = schedulerRepository.setSchedulersStatusByLastPing(timeout, TaskSchedulerStatus.OFFLINE);
+        var online = schedulerRepository.findIdByStatus(TaskSchedulerStatus.ONLINE);
+        return new OnlineSchedulersEntity(online, countOffline);
     }
 }

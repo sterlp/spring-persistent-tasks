@@ -2,6 +2,7 @@ package org.sterl.spring.persistent_tasks.trigger.repository;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Set;
 
 import org.hibernate.LockOptions;
 import org.hibernate.jpa.SpecHints;
@@ -38,10 +39,10 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, TriggerI
             Pageable page);
     
     int countByDataStatus(TriggerStatus status);
-    
+
     @Query("SELECT count(1) FROM #{#entityName} e WHERE e.id.name = :name")
     int countByTriggerName(@Param("name") String name);
-    
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @QueryHints({
         @QueryHint(name = SpecHints.HINT_SPEC_LOCK_TIMEOUT, value = "" + LockOptions.SKIP_LOCKED),
@@ -52,4 +53,13 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, TriggerI
             WHERE e.id <= :id
             """)
     TriggerEntity lockById(@Param("id") TriggerId id);
+
+    @Query("""
+            SELECT e FROM #{#entityName} e
+            WHERE e.runningOn IN ( :runningOn )
+            AND e.data.status = :status
+            """)
+    List<TriggerEntity> findRunningOn(
+            @Param("runningOn") Set<String> runningOn,
+            @Param("status") TriggerStatus status);
 }

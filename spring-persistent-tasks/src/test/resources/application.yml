@@ -8,6 +8,9 @@ spring:
       maximum-pool-size: 200
 
       
+start:
+  scheduler: true
+      
 logging:
   level:
     org.sterl.spring.persistent_tasks: debug

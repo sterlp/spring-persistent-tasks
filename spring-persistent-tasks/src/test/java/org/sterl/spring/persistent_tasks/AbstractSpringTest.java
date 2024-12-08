@@ -83,10 +83,11 @@ public class AbstractSpringTest {
         
         @Bean
         SpringBeanTask<Long> slowTask(AsyncAsserts asserts) {
-            return s -> {
+            return sleepTime -> {
                 try {
-                    Thread.sleep(s.longValue());
-                    asserts.info("Complete " + s);
+                    if (sleepTime == null) sleepTime = 1L;
+                    Thread.sleep(sleepTime.longValue());
+                    asserts.info("Complete " + sleepTime);
                 } catch (InterruptedException e) {
                     Thread.interrupted();
                     throw new RuntimeException("OH NO!", e);

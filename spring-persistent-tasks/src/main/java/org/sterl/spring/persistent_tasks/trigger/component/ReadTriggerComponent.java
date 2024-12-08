@@ -1,6 +1,8 @@
 package org.sterl.spring.persistent_tasks.trigger.component;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -47,5 +49,9 @@ public class ReadTriggerComponent {
     public boolean hasTriggers() {
         if (triggerRepository.countByDataStatus(TriggerStatus.NEW) > 0) return true;
         return triggerRepository.countByDataStatus(TriggerStatus.RUNNING) > 0;
+    }
+    
+    public List<TriggerEntity> findRunningOn(Set<String> names) {
+        return triggerRepository.findRunningOn(names, TriggerStatus.RUNNING);
     }
 }
