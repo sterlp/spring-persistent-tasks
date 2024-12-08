@@ -19,7 +19,7 @@ class TaskServiceTest {
         RegisteredTask<String> t = new RegisteredTask<>("foo", (s) -> {});
 
         // WHEN
-        subject.repalce(t);
+        subject.replace(t);
         
         // THEN
         subject.assertIsKnown(t.getId());

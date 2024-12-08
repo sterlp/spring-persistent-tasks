@@ -25,7 +25,8 @@ public class RunTriggerComponent {
     /**
      * Will execute the given {@link TriggerEntity} and handle any errors etc.
      */
-    public Optional<TriggerEntity> execute(TriggerEntity trigger) {
+    public Optional<TriggerEntity> execute(@Nullable TriggerEntity trigger) {
+        if (trigger == null) return Optional.empty();
         Task<Serializable> task = null;
         try {
             task = taskService.assertIsKnown(trigger.getId().toTaskId());

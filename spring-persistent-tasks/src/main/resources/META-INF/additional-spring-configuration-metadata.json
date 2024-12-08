@@ -24,8 +24,9 @@
   "description": "How often old triggers should be deleted in seconds, default every 2hours."
 },
 {
-  "name": "persistent-tasks.disable-scheduler",
+  "name": "persistent-tasks.scheduler-enabled",
   "type": "java.lang.Boolean",
-  "description": "If this node should handle any triggers or not."
+  "description": "If this node should handle any triggers or not.",
+  "defaultValue": true
 }
 ]}

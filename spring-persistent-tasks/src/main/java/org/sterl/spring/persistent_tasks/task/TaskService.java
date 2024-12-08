@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import org.sterl.spring.persistent_tasks.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@DependsOnDatabaseInitialization
 @RequiredArgsConstructor
 public class TaskService {
 
@@ -74,7 +76,7 @@ public class TaskService {
     /**
      * A way to manually register a task, usually not needed as spring beans will be added anyway.
      */
-    public <T extends Serializable> TaskId<T> repalce(RegisteredTask<T> task) {
+    public <T extends Serializable> TaskId<T> replace(RegisteredTask<T> task) {
         taskRepository.remove(task);
         return register(task);
     }
@@ -83,6 +85,6 @@ public class TaskService {
      */
     public <T extends Serializable> TaskId<T> replace(String name, SpringBeanTask<T> task) {
         RegisteredTask<T> t = new RegisteredTask<>(name, task);
-        return repalce(t);
+        return replace(t);
     }
 }

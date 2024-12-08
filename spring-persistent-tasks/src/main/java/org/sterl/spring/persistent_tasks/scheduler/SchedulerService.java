@@ -47,22 +47,28 @@ public class SchedulerService {
     
     @PostConstruct
     public void start() {
-        final var s = pingRegistry();
-        log.info("Started {}", s);
+        taskExecutor.start();
+        final var s = editSchedulerStatus.checkinToRegistry(name, TaskSchedulerStatus.ONLINE);
+        log.info("Started {} and {} threads.", s, taskExecutor.getMaxThreads());
     }
 
     @PreDestroy
     public void stop() {
-        editSchedulerStatus.checkinToRegistry(name, TaskSchedulerStatus.OFFLINE);
+        taskExecutor.close();
+        var s = editSchedulerStatus.checkinToRegistry(name, TaskSchedulerStatus.OFFLINE);
+        log.info("Stopped {}", s);
     }
 
     public void shutdownNow() {
         taskExecutor.shutdownNow();
-        editSchedulerStatus.checkinToRegistry(name, TaskSchedulerStatus.OFFLINE);
+        var s = editSchedulerStatus.checkinToRegistry(name, TaskSchedulerStatus.OFFLINE);
+        log.info("Force stop {}", s);
     }
     
     public SchedulerEntity pingRegistry() {
-        return editSchedulerStatus.checkinToRegistry(name, TaskSchedulerStatus.ONLINE);
+        var result = editSchedulerStatus.checkinToRegistry(name, TaskSchedulerStatus.ONLINE);
+        log.debug("Ping {}", result);
+        return result;
     }
 
     /**
@@ -81,8 +87,9 @@ public class SchedulerService {
     public List<Future<TriggerId>> triggerNextTasks(OffsetDateTime timeDue) {
         var triggers = trx.execute(t -> {
             List<TriggerEntity> result;
+            // in any case we say hello
+            final var runningOn = pingRegistry();
             if (taskExecutor.getFreeThreads() > 0) {
-                final var runningOn = pingRegistry();
                 result = triggerService.lockNextTrigger(
                         name, taskExecutor.getFreeThreads(), timeDue);
                 runningOn.setRunnungTasks(taskExecutor.getRunningTasks() + result.size());
@@ -98,7 +105,7 @@ public class SchedulerService {
     /**
      * Runs the next trigger if free threads are available.
      */
-    public Optional<Future<TriggerId>> runOrQueue(Trigger<Serializable> trigger) {
+    public Optional<Future<TriggerId>> runOrQueue(Trigger<? extends Serializable> trigger) {
         return trx.execute(t -> {
             Optional<Future<TriggerId>> result = Optional.empty();
             final TriggerId id = triggerService.trigger(trigger);
@@ -122,12 +129,8 @@ public class SchedulerService {
     @Transactional
     public List<TriggerEntity> rescheduleAbandonedTasks(Duration timeout) {
         final var onlineSchedulers = editSchedulerStatus.findOnlineSchedulers(timeout);
-        if (onlineSchedulers.hasSchedulersOffline()) {
-            log.info("Found schedulers which are offline={}", onlineSchedulers);
-            final List<TriggerEntity> result = triggerService.rescheduleAbandonedTasks(onlineSchedulers.names());
-            log.info("Reschedule {} abandoned triggers.", result.size());
-            return result;
-        }
-        return Collections.emptyList();
+        final List<TriggerEntity> result = triggerService.rescheduleAbandonedTasks(onlineSchedulers.online());
+        log.info("Reschedule {} abandoned triggers for {}.", result.size(), onlineSchedulers);
+        return result;
     }
 }

@@ -43,6 +43,6 @@ class SchedulerServiceTest extends AbstractSpringTest {
         for (int i = 1; i < 5; ++i) asserts.awaitValue(i + " state");
 
         assertThat(triggerService.countTriggers(TriggerStatus.SUCCESS)).isEqualTo(4);
-        assertThat(triggerService.hasTriggers()).isFalse();
+        assertThat(triggerService.hasPendingTriggers()).isFalse();
     }
 }

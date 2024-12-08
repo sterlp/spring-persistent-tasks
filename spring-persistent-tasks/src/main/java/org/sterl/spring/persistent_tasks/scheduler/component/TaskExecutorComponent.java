@@ -75,7 +75,6 @@ public class TaskExecutorComponent implements Closeable {
     public void start() {
         if (stopped.compareAndExchange(true, false)) {
             synchronized (stopped) {
-                log.info("Starting with {} threads", maxThreads);
                 executor = Executors.newFixedThreadPool(maxThreads);
             }
         }
@@ -113,8 +112,7 @@ public class TaskExecutorComponent implements Closeable {
     }
 
     public int getFreeThreads() {
-        if (stopped.get())
-            return 0;
+        if (stopped.get()) return 0;
         return Math.max(maxThreads - runningTasks.get(), 0);
     }
 

@@ -38,10 +38,10 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, TriggerI
             @Param("status") TriggerStatus status, 
             Pageable page);
     
-    int countByDataStatus(TriggerStatus status);
+    long countByDataStatus(TriggerStatus status);
 
     @Query("SELECT count(1) FROM #{#entityName} e WHERE e.id.name = :name")
-    int countByTriggerName(@Param("name") String name);
+    long countByTriggerName(@Param("name") String name);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @QueryHints({
@@ -56,10 +56,10 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, TriggerI
 
     @Query("""
             SELECT e FROM #{#entityName} e
-            WHERE e.runningOn IN ( :runningOn )
+            WHERE e.runningOn NOT IN ( :runningOn )
             AND e.data.status = :status
             """)
-    List<TriggerEntity> findRunningOn(
+    List<TriggerEntity> findNotRunningOn(
             @Param("runningOn") Set<String> runningOn,
             @Param("status") TriggerStatus status);
 }

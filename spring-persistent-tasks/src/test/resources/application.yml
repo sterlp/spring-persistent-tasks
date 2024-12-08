@@ -7,10 +7,10 @@ spring:
     hikari:
       maximum-pool-size: 200
 
-      
-start:
-  scheduler: true
-      
+
+persistent-tasks:
+  scheduler-enabled: false
+
 logging:
   level:
     org.sterl.spring.persistent_tasks: debug

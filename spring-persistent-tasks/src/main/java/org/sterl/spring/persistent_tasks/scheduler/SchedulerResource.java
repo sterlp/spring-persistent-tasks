@@ -1,12 +1,12 @@
 package org.sterl.spring.persistent_tasks.scheduler;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.sterl.spring.persistent_tasks.scheduler.config.ConditionalSchedulerServiceByProperty;
 
 import lombok.RequiredArgsConstructor;
 
-@ConditionalOnProperty(name = "persistent-tasks.disable-scheduler", matchIfMissing = true)
+@ConditionalSchedulerServiceByProperty
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("${persistent-tasks.web.base-path:api/persistent-tasks}")

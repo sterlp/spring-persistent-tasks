@@ -105,4 +105,10 @@ public class AsyncAsserts {
     public void assertMissing(String value) {
         assertThat(values).doesNotContain(value);
     }
+    public void assertMissing(String value, String... inValues) {
+        assertThat(values).doesNotContain(value);
+        for (String s : inValues) {
+            assertThat(values).doesNotContain(s);
+        }
+    }
 }

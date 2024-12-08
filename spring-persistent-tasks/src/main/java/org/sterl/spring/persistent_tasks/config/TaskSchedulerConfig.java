@@ -7,7 +7,6 @@ import java.util.Map.Entry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -22,6 +21,7 @@ import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
 import org.sterl.spring.persistent_tasks.scheduler.component.TaskExecutorComponent;
+import org.sterl.spring.persistent_tasks.scheduler.config.ConditionalSchedulerServiceByProperty;
 import org.sterl.spring.persistent_tasks.task.model.RegisteredTask;
 import org.sterl.spring.persistent_tasks.task.repository.TaskRepository;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TaskSchedulerConfig {
 
-    @ConditionalOnProperty(name = "persistent-tasks.disable-scheduler", matchIfMissing = true) 
+    @ConditionalSchedulerServiceByProperty
     @Primary
     @DependsOnDatabaseInitialization
     @Bean
@@ -53,7 +53,6 @@ public class TaskSchedulerConfig {
             if (hostname == null) name = ip.toString();
             else name = hostname;
         }
-        
         return new SchedulerService(name, triggerService, taskExecutor, editSchedulerStatus, trx);
     }
 

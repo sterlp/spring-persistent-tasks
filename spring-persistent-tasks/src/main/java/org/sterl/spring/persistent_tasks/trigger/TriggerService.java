@@ -14,7 +14,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.sterl.spring.persistent_tasks.api.Task;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
@@ -49,7 +48,7 @@ public class TriggerService {
      * @return the reference to the updated {@link TriggerEntity}
      */
     @Transactional(propagation = Propagation.NEVER)
-    public Optional<TriggerEntity> run(TriggerEntity trigger) {
+    public Optional<TriggerEntity> run(@Nullable TriggerEntity trigger) {
         return runTrigger.execute(trigger);
     }
 
@@ -90,12 +89,12 @@ public class TriggerService {
      * Checks if any job is still running or waiting for it's execution.
      */
     @Transactional(readOnly = true, timeout = 5)
-    public boolean hasTriggers() {
-        return readTrigger.hasTriggers();
+    public boolean hasPendingTriggers() {
+        return readTrigger.hasPendingTriggers();
     }
     
     @EventListener
-    public void trigger(TriggerTaskEvent<Serializable> event) {
+    public void trigger(TriggerTaskEvent<? extends Serializable> event) {
         triggerAll(event.triggers());
     }
 
@@ -124,8 +123,8 @@ public class TriggerService {
      * @return the amount of stored tasks
      */
     @Transactional(timeout = 5, readOnly = true)
-    public int countTriggers(@Nullable TaskId<String> taskId) {
-        if (taskId == null || taskId.name() == null) return 0;
+    public long countTriggers(@Nullable TaskId<String> taskId) {
+        if (taskId == null || taskId.name() == null) return 0L;
         return this.readTrigger.countByName(taskId.name());
     }
 
@@ -136,7 +135,7 @@ public class TriggerService {
      * @return the found amount or <code>0</code> if the given status is <code>null</code>
      */
     @Transactional(timeout = 5, readOnly = true)
-    public int countTriggers(TriggerStatus status) {
+    public long countTriggers(TriggerStatus status) {
         if (status == null) return 0;
         return readTrigger.countByStatus(status);
     }
@@ -146,14 +145,18 @@ public class TriggerService {
      * 
      * Retry will be triggered based on the set strategy.
      */
-    public List<TriggerEntity> rescheduleAbandonedTasks(Set<String> names) {
-        names.add(MANUAL_TAG);
-        final List<TriggerEntity> result = readTrigger.findRunningOn(names);
+    public List<TriggerEntity> rescheduleAbandonedTasks(Set<String> onlineRunner) {
+        onlineRunner.add(MANUAL_TAG);
+        final List<TriggerEntity> result = readTrigger.findNotRunningOn(onlineRunner);
         result.forEach(t -> {
             t.setRunningOn(null);
             t.getData().setStatus(TriggerStatus.NEW);
             t.getData().setExceptionName("Abandoned tasks");
         });
         return result;
+    }
+
+    public long countTriggers() {
+        return readTrigger.countByStatus(null);
     }
 }

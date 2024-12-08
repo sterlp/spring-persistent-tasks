@@ -7,6 +7,7 @@ import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.lang.Nullable;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalCompontant;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
@@ -24,11 +25,12 @@ public class ReadTriggerComponent {
     private final TriggerRepository triggerRepository;
     private final TriggerHistoryRepository triggerHistoryRepository;
 
-    public int countByName(@NotNull String name) {
+    public long countByName(@NotNull String name) {
         return triggerRepository.countByTriggerName(name);
     }
 
-    public int countByStatus(@NotNull TriggerStatus status) {
+    public long countByStatus(@Nullable TriggerStatus status) {
+        if (status == null) triggerRepository.count();
         return triggerRepository.countByDataStatus(status);
     }
 
@@ -46,12 +48,12 @@ public class ReadTriggerComponent {
     /**
      * Checks if any job is still running or waiting for it's execution.
      */
-    public boolean hasTriggers() {
+    public boolean hasPendingTriggers() {
         if (triggerRepository.countByDataStatus(TriggerStatus.NEW) > 0) return true;
         return triggerRepository.countByDataStatus(TriggerStatus.RUNNING) > 0;
     }
     
-    public List<TriggerEntity> findRunningOn(Set<String> names) {
-        return triggerRepository.findRunningOn(names, TriggerStatus.RUNNING);
+    public List<TriggerEntity> findNotRunningOn(Set<String> names) {
+        return triggerRepository.findNotRunningOn(names, TriggerStatus.RUNNING);
     }
 }
