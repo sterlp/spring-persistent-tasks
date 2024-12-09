@@ -18,7 +18,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.api.SpringBeanTask;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
-import org.sterl.spring.persistent_tasks.api.event.TriggerTaskEvent;
+import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
+import org.sterl.spring.persistent_tasks.history.HistoryService;
 import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
 import org.sterl.spring.persistent_tasks.scheduler.component.TaskExecutorComponent;
@@ -46,6 +47,9 @@ public class AbstractSpringTest {
     protected TriggerService triggerService;
     @Autowired
     protected TaskService taskService;
+    
+    @Autowired
+    protected HistoryService historyService;
 
     @Autowired
     protected TransactionTemplate trx;
@@ -87,7 +91,7 @@ public class AbstractSpringTest {
         SpringBeanTask<String> task1(ApplicationEventPublisher publisher, AsyncAsserts asserts) {
             return (String state) -> {
                 asserts.info("task1::" + state);
-                publisher.publishEvent(TriggerTaskEvent.of("task2", "task1::" + state));
+                publisher.publishEvent(TriggerTaskCommand.of("task2", "task1::" + state));
             };
         }
 
@@ -135,7 +139,7 @@ public class AbstractSpringTest {
     }
 
     protected List<TriggerId> runTriggersAndWait() {
-        final List<Future<TriggerId>> triggers = schedulerService.triggerNextTasks();
+        final List<Future<TriggerId>> triggers = schedulerA.triggerNextTasks();
         return triggers.stream().map(t -> {
             try {
                 return t.get();
@@ -147,9 +151,10 @@ public class AbstractSpringTest {
 
     @BeforeEach
     private void setup() throws Exception {
+        historyService.deleteAll();
         triggerService.deleteAll();
         asserts.clear();
-        schedulerService.start();
+        schedulerA.start();
         schedulerB.start();
     }
 }

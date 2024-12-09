@@ -6,6 +6,8 @@ import java.time.OffsetDateTime;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 
 import jakarta.persistence.Embedded;
 import jakarta.persistence.EmbeddedId;
@@ -37,7 +39,7 @@ public class TriggerEntity {
 
     @Default
     @Embedded
-    private BaseTriggerData data = new BaseTriggerData();
+    private TriggerData data = new TriggerData();
 
     private String runningOn;
 

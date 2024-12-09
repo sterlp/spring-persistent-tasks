@@ -13,8 +13,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerStatus;
 
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
@@ -38,7 +38,7 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, TriggerI
             @Param("status") TriggerStatus status,
             Pageable page);
 
-    long countByDataStatus(TriggerStatus status);
+    long countByDataStatusIn(Set<TriggerStatus> status);
 
     @Query("SELECT count(1) FROM #{#entityName} e WHERE e.id.name = :name")
     long countByTriggerName(@Param("name") String name);

@@ -7,8 +7,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
 
 import lombok.RequiredArgsConstructor;

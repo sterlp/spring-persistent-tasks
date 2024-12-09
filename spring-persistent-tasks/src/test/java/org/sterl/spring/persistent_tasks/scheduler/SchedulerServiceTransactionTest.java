@@ -18,6 +18,8 @@ import org.sterl.spring.persistent_tasks.api.RetryStrategy;
 import org.sterl.spring.persistent_tasks.api.SpringBeanTask;
 import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
+import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 import org.sterl.spring.sample_app.person.PersonBE;
 import org.sterl.spring.sample_app.person.PersonRepository;
 
@@ -93,6 +95,14 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
 
     private void assertExecutionCount(Optional<Future<TriggerId>> refId, int count) throws InterruptedException, ExecutionException {
         final TriggerId triggerId = refId.get().get();
-        assertThat(triggerService.get(triggerId).get().getData().getExecutionCount()).isEqualTo(count);
+        final Optional<TriggerEntity> t = triggerService.get(triggerId);
+        TriggerData data;
+        if (t.isEmpty()) {
+            data = historyService.findLastKnownStatus(triggerId).get().getData();
+        } else {
+            data = t.get().getData();
+        }
+            
+        assertThat(data.getExecutionCount()).isEqualTo(count);
     }
 }

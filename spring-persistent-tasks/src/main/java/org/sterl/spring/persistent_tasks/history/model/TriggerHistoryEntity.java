@@ -1,8 +1,9 @@
-package org.sterl.spring.persistent_tasks.trigger.model;
+package org.sterl.spring.persistent_tasks.history.model;
 
 import java.time.OffsetDateTime;
 
 import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
@@ -55,7 +56,7 @@ public class TriggerHistoryEntity {
 
     @Embedded
     @NotNull
-    private BaseTriggerData data;
+    private TriggerData data;
 
     @Default
     private OffsetDateTime createDate = OffsetDateTime.now();

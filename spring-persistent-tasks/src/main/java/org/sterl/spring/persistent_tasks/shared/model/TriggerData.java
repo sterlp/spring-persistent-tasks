@@ -1,4 +1,4 @@
-package org.sterl.spring.persistent_tasks.trigger.model;
+package org.sterl.spring.persistent_tasks.shared.model;
 
 import java.time.OffsetDateTime;
 
@@ -14,13 +14,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Basically a value class for the ability to clone the data more easily
+ */
 @Data
-@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Embeddable
 @ToString(of = {"status", "priority", "executionCount", "created", "triggerTime", "start", "end"})
-public class BaseTriggerData {
+@Builder(toBuilder = true)
+public class TriggerData {
 
     @Default
     @Column(updatable = false, name = "created_time")

@@ -33,7 +33,9 @@ public class RunTriggerComponent {
         try {
             task = taskService.assertIsKnown(trigger.getId().toTaskId());
             task.accept(serializer.deserialize(trigger.getData().getState()));
-            return editTrigger.completeTaskWithSuccess(trigger.getId());
+            var result = editTrigger.completeTaskWithSuccess(trigger.getId());
+            editTrigger.deleteTrigger(trigger);
+            return result;
         } catch (Exception e) {
             return handleTaskException(trigger, task, e);
         }
@@ -49,10 +51,15 @@ public class RunTriggerComponent {
                 task.retryStrategy().shouldRetry(trigger.getData().getExecutionCount(), e)) {
 
             final OffsetDateTime retryAt = task.retryStrategy().retryAt(trigger.getData().getExecutionCount(), e);
-            log.info("Task={} failed, retry will be done at={}!",
-                    trigger, retryAt, e);
+            log.warn("{} failed, retry will be done at={}!",
+                    trigger.getId(), retryAt, e);
 
             result = editTrigger.retryTrigger(trigger.getId(), retryAt);
+        } else {
+            log.error("{} failed, no more retries! {}", trigger.getId(), 
+                    e == null ? "No exception given." : e.getMessage());
+            
+            editTrigger.deleteTrigger(trigger);
         }
         return result;
     }

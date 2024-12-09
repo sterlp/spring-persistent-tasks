@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.sterl.spring.persistent_tasks.api.RetryStrategy;
 import org.sterl.spring.persistent_tasks.api.SpringBeanTask;
 import org.sterl.spring.persistent_tasks.api.TaskId;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerStatus;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 
 class TaskSchedulerServiceTest extends AbstractSpringTest {
 
@@ -39,9 +39,9 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
 
         // THEN
         assertThat(asserts.getCount("hallo")).isEqualTo(3);
-        assertThat(triggerService.countTriggers(TriggerStatus.FAILED)).isOne();
+        assertThat(triggerService.countTriggers()).isZero();
         // AND
-        var trigger = triggerService.get(id).get();
+        var trigger = historyService.findLastKnownStatus(id).get();
         assertThat(trigger.getData().getExecutionCount()).isEqualTo(3);
         assertThat(trigger.getData().getExceptionName()).isEqualTo(RuntimeException.class.getName());
         assertThat(trigger.getData().getLastException()).contains("NOPE!");
@@ -71,6 +71,6 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
         for (int i = 1; i <= 100; ++i) {
             asserts.awaitValueOnce("t" + i);
         }
-        assertThat(triggerService.countTriggers(TriggerStatus.SUCCESS)).isEqualTo(100);
+        assertThat(historyService.countTriggers(TriggerStatus.SUCCESS)).isEqualTo(100);
     }
 }

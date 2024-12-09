@@ -13,8 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
 
 class TaskFailoverTest extends AbstractSpringTest {
@@ -50,8 +50,7 @@ class TaskFailoverTest extends AbstractSpringTest {
                 .runOn("schedulerA"));
 
         // AND check status
-        Optional<TriggerEntity> state = triggerService.get(trigger.getId());
-        assertThat(state).isPresent();
+        var state = triggerService.get(trigger.getId());
         assertThat(state.get().getData().getStatus()).isEqualTo(TriggerStatus.RUNNING);
         assertThat(state.get().getRunningOn()).isEqualTo("schedulerB");
         assertThat(state.get().getData().getEnd()).isNull();
@@ -71,13 +70,14 @@ class TaskFailoverTest extends AbstractSpringTest {
         assertThat(runWaitingTasks).hasSize(1);
         runWaitingTasks.get(0).get();
         assertThat(tasks.get(0).getId()).isEqualTo(trigger.getId());
+        
         // AND date should be set after the retry
-        state = triggerService.get(trigger.getId());
-        assertThat(state.get().getData().getEnd()).isNotNull();
-        assertThat(state.get().getData().getStart()).isAfter(retryTime);
+        var data = historyService.findLastKnownStatus(trigger.getId()).get().getData();
+        assertThat(data.getEnd()).isNotNull();
+        assertThat(data.getStart()).isAfter(retryTime);
         // AND execution duration should be reflected
-        assertThat(state.get().getData().getEnd()).isAfter(state.get().getData().getStart());
-        assertThat(state.get().getData().getStatus()).isEqualTo(TriggerStatus.SUCCESS);
+        assertThat(data.getEnd()).isAfter(state.get().getData().getStart());
+        assertThat(data.getStatus()).isEqualTo(TriggerStatus.SUCCESS);
     }
 
 }

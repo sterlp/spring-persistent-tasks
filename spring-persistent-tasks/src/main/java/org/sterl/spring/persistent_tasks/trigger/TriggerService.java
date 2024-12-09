@@ -17,7 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
-import org.sterl.spring.persistent_tasks.api.event.TriggerTaskEvent;
+import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
 import org.sterl.spring.persistent_tasks.task.TaskService;
 import org.sterl.spring.persistent_tasks.trigger.component.EditTriggerComponent;
@@ -25,7 +26,6 @@ import org.sterl.spring.persistent_tasks.trigger.component.LockNextTriggerCompon
 import org.sterl.spring.persistent_tasks.trigger.component.ReadTriggerComponent;
 import org.sterl.spring.persistent_tasks.trigger.component.RunTriggerComponent;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerStatus;
 
 import lombok.RequiredArgsConstructor;
 
@@ -96,7 +96,7 @@ public class TriggerService {
     }
 
     @EventListener
-    public void trigger(TriggerTaskEvent<? extends Serializable> event) {
+    public void trigger(TriggerTaskCommand<? extends Serializable> event) {
         triggerAll(event.triggers());
     }
 

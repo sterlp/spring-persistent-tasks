@@ -8,7 +8,7 @@ import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity;
 import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity.TaskSchedulerStatus;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerStatus;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 
 class SchedulerServiceTest extends AbstractSpringTest {
 
@@ -48,7 +48,7 @@ class SchedulerServiceTest extends AbstractSpringTest {
             asserts.awaitValue(i + " state");
         }
 
-        assertThat(triggerService.countTriggers(TriggerStatus.SUCCESS)).isEqualTo(4);
         assertThat(triggerService.hasPendingTriggers()).isFalse();
+        assertThat(historyService.countTriggers(TriggerStatus.SUCCESS)).isEqualTo(4);
     }
 }

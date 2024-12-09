@@ -14,11 +14,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.api.event.TriggerCanceledEvent;
 import org.sterl.spring.persistent_tasks.api.event.TriggerCompleteEvent;
 import org.sterl.spring.persistent_tasks.api.event.TriggerFailedEvent;
-import org.sterl.spring.persistent_tasks.trigger.model.BaseTriggerData;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class EditTriggerComponent {
     private final ApplicationEventPublisher publisher;
-    private final TriggerHistoryComponent historyComponent;
 
     private final StateSerializer stateSerializer = new StateSerializer();
     private final TriggerRepository triggerRepository;
@@ -51,8 +51,6 @@ public class EditTriggerComponent {
 
         result.ifPresent(t -> {
             t.complete(e);
-
-            historyComponent.write(t);
 
             if (t.getData().getStatus() != TriggerStatus.FAILED) {
                 publisher.publishEvent(new TriggerCompleteEvent(t));
@@ -78,7 +76,11 @@ public class EditTriggerComponent {
     public Optional<TriggerEntity> cancelTask(TriggerId id) {
         return triggerRepository //
                 .findById(id) //
-                .map(t -> t.cancel());
+                .map(t -> {
+                    t.cancel();
+                    publisher.publishEvent(new TriggerCanceledEvent(t));
+                    return t;
+                });
     }
 
     public <T extends Serializable> TriggerEntity addTrigger(Trigger<T> tigger) {
@@ -102,7 +104,7 @@ public class EditTriggerComponent {
         byte[] state = stateSerializer.serialize(trigger.state());
         var t = new TriggerEntity(
             trigger.toTaskTriggerId(),
-            BaseTriggerData.builder()
+            TriggerData.builder()
                 .triggerTime(trigger.when())
                 .priority(trigger.priority())
                 .state(state)
@@ -115,5 +117,9 @@ public class EditTriggerComponent {
     public void deleteAll() {
         log.info("All triggers are removed!");
         this.triggerRepository.deleteAllInBatch();
+    }
+
+    public void deleteTrigger(TriggerEntity trigger) {
+        this.triggerRepository.delete(trigger);
     }
 }
