@@ -133,20 +133,6 @@ public class TriggerService {
     }
 
     /**
-     * Counts the stored triggers by their status including the history.
-     *
-     * @param status the status to count
-     * @return the found amount or <code>0</code> if the given status is <code>null</code>
-     */
-    @Transactional(timeout = 5, readOnly = true)
-    public long countTriggers(TriggerStatus status) {
-        if (status == null) {
-            return 0;
-        }
-        return readTrigger.countByStatus(status);
-    }
-
-    /**
      * Marks any tasks which are not on the given executors/schedulers abandoned for .
      *
      * Retry will be triggered based on the set strategy.

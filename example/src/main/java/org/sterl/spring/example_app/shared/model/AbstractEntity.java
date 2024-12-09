@@ -1,4 +1,4 @@
-package org.sterl.spring.persistent_tasks.example.bl.shared.model;
+package org.sterl.spring.example_app.shared.model;
 
 import jakarta.persistence.Transient;
 

@@ -23,7 +23,7 @@ public class SchedulerTimer {
     private final Collection<SchedulerService> schedulerServices;
 
     @Scheduled(fixedDelayString = "${persistent-tasks.poll-rate:30}", timeUnit = TimeUnit.SECONDS)
-    void pollTriggerNexTask() {
+    void triggerNextTasks() {
         for (SchedulerService s : schedulerServices) {
             try {
                 final var count = s.triggerNextTasks().size();
@@ -34,24 +34,20 @@ public class SchedulerTimer {
         }
     }
 
-    /*
-     * @Scheduled(fixedDelayString = "${persistent-tasks.poll-task-timeout:300}",
-     * timeUnit = TimeUnit.SECONDS)
-     * void rescheduleAbandonedTasks() {
-     * for (SchedulerService s : schedulerServices) {
-     * try {
-     * final var count = s.rescheduleAbandonedTasks(taskTimeout);
-     * log.debug("Found {} abandoned tasks for {}.", count.size(), s.getName());
-     * } catch (Exception e) {
-     * log.error("Scheduler {} failed schedule abandoned tasks", s.getName(), e);
-     * }
-     * }
-     * }
-     *
-     * @Scheduled(fixedDelayString = "${persistent-tasks.clean-trigger-rate:7200}",
-     * timeUnit = TimeUnit.SECONDS)
-     * void cleanupFinishedTriggers() {
-     * // TODO
-     * }
-     */
+    @Scheduled(fixedDelayString = "${persistent-tasks.poll-task-timeout:300}", timeUnit = TimeUnit.SECONDS)
+    void rescheduleAbandonedTasks() {
+        for (SchedulerService s : schedulerServices) {
+            try {
+                final var count = s.rescheduleAbandonedTasks(taskTimeout);
+                log.debug("Found {} abandoned tasks for {}.", count.size(), s.getName());
+            } catch (Exception e) {
+                log.error("Scheduler {} failed schedule abandoned tasks", s.getName(), e);
+            }
+        }
+    }
+
+    @Scheduled(fixedDelayString = "${persistent-tasks.clean-trigger-rate:7200}", timeUnit = TimeUnit.SECONDS)
+    void cleanupFinishedTriggers() {
+        // TODO
+    }
 }

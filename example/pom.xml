@@ -11,7 +11,7 @@
     </parent>
 
     <groupId>org.sterl.spring.persistent-tasks</groupId>
-    <artifactId>example</artifactId>
+    <artifactId>example-app</artifactId>
     <description>Sample project for the Spring Persistent Tasks</description>
 
 

@@ -1,6 +1,6 @@
-package org.sterl.spring.persistent_tasks.example.bl.vehicle.model;
+package org.sterl.spring.example_app.vehicle.model;
 
-import org.sterl.spring.persistent_tasks.example.bl.shared.model.AbstractEntity;
+import org.sterl.spring.example_app.shared.model.AbstractEntity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

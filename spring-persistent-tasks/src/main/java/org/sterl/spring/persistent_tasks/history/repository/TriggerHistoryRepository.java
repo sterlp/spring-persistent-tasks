@@ -24,7 +24,7 @@ public interface TriggerHistoryRepository extends JpaRepository<TriggerHistoryEn
     
     @Query("""
             DELETE FROM #{#entityName} e
-            WHERE e.createDate <= :age
+            WHERE e.data.createdTime < :age
             """)
     @Modifying
     long deleteHistoryOlderThan(@Param("age") OffsetDateTime age);

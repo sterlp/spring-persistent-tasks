@@ -22,7 +22,7 @@ public class HistoryService {
     
     public List<TriggerHistoryEntity> listHistoryForTrigger(TriggerId id, PageRequest page) {
         if (page.getSort() == Sort.unsorted()) {
-            page = page.withSort(Sort.by(Direction.DESC, "createDate"));
+            page = page.withSort(Sort.by(Direction.DESC, "id"));
         }
         return triggerHistoryRepository.findByTriggerId(id, page);
     }

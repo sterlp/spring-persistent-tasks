@@ -1,10 +1,10 @@
-package org.sterl.spring.persistent_tasks.example.bl.vehicle;
+package org.sterl.spring.example_app.vehicle;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.sterl.spring.example_app.vehicle.task.BuildVehicleTask;
 import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
-import org.sterl.spring.persistent_tasks.example.bl.vehicle.task.BuildVehicleTask;
 
 import lombok.RequiredArgsConstructor;
 

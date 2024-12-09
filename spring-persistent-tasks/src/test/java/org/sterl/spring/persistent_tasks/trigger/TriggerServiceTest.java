@@ -54,7 +54,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         final var e = subject.get(triggerId);
         assertThat(e).isPresent();
         assertThat(e.get().getData().getTriggerTime().toEpochSecond()).isEqualTo(triggerTime.toEpochSecond());
-        assertThat(e.get().getData().getCreated()).isNotNull();
+        assertThat(e.get().getData().getCreatedTime()).isNotNull();
         assertThat(e.get().getData().getStart()).isNull();
         assertThat(e.get().getData().getEnd()).isNull();
         assertThat(e.get().getData().getExecutionCount()).isZero();
@@ -121,7 +121,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         // AND
         final var e = historyService.findLastKnownStatus(triggerId);
         assertThat(e).isPresent();
-        assertThat(e.get().getData().getCreated()).isNotNull();
+        assertThat(e.get().getData().getCreatedTime()).isNotNull();
         assertThat(e.get().getData().getStart()).isNotNull();
         assertThat(e.get().getData().getEnd()).isNotNull();
         assertThat(e.get().getData().getExecutionCount()).isOne();

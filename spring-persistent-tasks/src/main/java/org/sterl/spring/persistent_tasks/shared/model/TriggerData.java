@@ -7,6 +7,7 @@ import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Lob;
+import jakarta.persistence.PrePersist;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -21,13 +22,20 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Embeddable
-@ToString(of = {"status", "priority", "executionCount", "created", "triggerTime", "start", "end"})
+@ToString(of = {"status", "priority", "executionCount", "createdTime", "triggerTime", "start", "end"})
 @Builder(toBuilder = true)
 public class TriggerData {
+    
+    @PrePersist
+    void beforeSave() {
+        if (start != null && end != null) {
+            runningDurationInMs = end.toInstant().toEpochMilli() - start.toInstant().toEpochMilli();
+        }
+    }
 
     @Default
     @Column(updatable = false, name = "created_time")
-    private OffsetDateTime created = OffsetDateTime.now();
+    private OffsetDateTime createdTime = OffsetDateTime.now();
 
     @Default
     @Column(nullable = false)
@@ -50,6 +58,8 @@ public class TriggerData {
     @Column(length = 20, nullable = false)
     @Default
     private TriggerStatus status = TriggerStatus.NEW;
+    
+    private Long runningDurationInMs;
 
     @Lob
     private byte[] state;
