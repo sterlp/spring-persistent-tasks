@@ -3,11 +3,13 @@ spring:
     name: example
   jpa:
     open-in-view: false
+
+  persistent-tasks:
+    scheduler-enabled: true
     
 springdoc:
   swagger-ui:
     use-root-path: true
-
 
 logging:
   level:

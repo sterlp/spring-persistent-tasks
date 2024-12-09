@@ -18,11 +18,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SchedulerTimer {
 
-    @Value("${persistent-tasks.task-timeout:PT5M}")
+    @Value("${spring.persistent-tasks.task-timeout:PT5M}")
     private Duration taskTimeout = Duration.ofMinutes(5);
     private final Collection<SchedulerService> schedulerServices;
 
-    @Scheduled(fixedDelayString = "${persistent-tasks.poll-rate:30}", timeUnit = TimeUnit.SECONDS)
+    @Scheduled(fixedDelayString = "${spring.persistent-tasks.poll-rate:30}", timeUnit = TimeUnit.SECONDS)
     void triggerNextTasks() {
         for (SchedulerService s : schedulerServices) {
             try {
@@ -34,7 +34,7 @@ public class SchedulerTimer {
         }
     }
 
-    @Scheduled(fixedDelayString = "${persistent-tasks.poll-task-timeout:300}", timeUnit = TimeUnit.SECONDS)
+    @Scheduled(fixedDelayString = "${spring.persistent-tasks.poll-task-timeout:300}", timeUnit = TimeUnit.SECONDS)
     void rescheduleAbandonedTasks() {
         for (SchedulerService s : schedulerServices) {
             try {
@@ -46,7 +46,7 @@ public class SchedulerTimer {
         }
     }
 
-    @Scheduled(fixedDelayString = "${persistent-tasks.clean-trigger-rate:7200}", timeUnit = TimeUnit.SECONDS)
+    @Scheduled(fixedDelayString = "${spring.persistent-tasks.clean-trigger-rate:7200}", timeUnit = TimeUnit.SECONDS)
     void cleanupFinishedTriggers() {
         // TODO
     }

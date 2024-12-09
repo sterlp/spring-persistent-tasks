@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
-@ConditionalOnProperty(name = "persistent-tasks.scheduler-enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "spring.persistent-tasks.scheduler-enabled", havingValue = "true", matchIfMissing = true)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Documented

@@ -34,7 +34,7 @@ public class TaskExecutorComponent implements Closeable {
 
     private final TriggerService triggerService;
 
-    @Value("${persistent-tasks.max-threads:10}")
+    @Value("${spring.persistent-tasks.max-threads:10}")
     @Getter
     @Setter
     private int maxThreads = 10;

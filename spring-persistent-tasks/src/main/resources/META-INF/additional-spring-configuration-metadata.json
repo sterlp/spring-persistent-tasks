@@ -1,30 +1,30 @@
 {"properties": [{
-  "name": "persistent-tasks.poll-rate",
+  "name": "spring.persistent-tasks.poll-rate",
   "type": "java.lang.Integer",
   "description": "The rate in which the scheduler should check for new tasks."
 },
 {
-  "name": "persistent-tasks.max-threads",
+  "name": "spring.persistent-tasks.max-threads",
   "type": "java.lang.Integer",
   "description": "The amount of threads to use, use 0 to disable the task processing."
 },
 {
-  "name": "persistent-tasks.task-timeout",
+  "name": "spring.persistent-tasks.task-timeout",
   "type": "java.time.Duration",
   "description": "The amount of time a task and scheduler has time to finish a task in seconds, default 5min."
 },
 {
-  "name": "persistent-tasks.poll-task-timeout",
+  "name": "spring.persistent-tasks.poll-task-timeout",
   "type": "java.lang.Integer",
   "description": "How often the system should check for abandond tasks in seconds, default every 5min."
 },
 {
-  "name": "persistent-tasks.clean-trigger-rate",
+  "name": "spring.persistent-tasks.clean-trigger-rate",
   "type": "java.lang.Integer",
   "description": "How often old triggers should be deleted in seconds, default every 2hours."
 },
 {
-  "name": "persistent-tasks.scheduler-enabled",
+  "name": "spring.persistent-tasks.scheduler-enabled",
   "type": "java.lang.Boolean",
   "description": "If this node should handle any triggers or not.",
   "defaultValue": true
