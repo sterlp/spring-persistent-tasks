@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { Card, Col, Container, Navbar, Row } from "react-bootstrap";
 
 function App() {
     const [schedulers, setSchedulers] =  useState<string[] | undefined>(undefined);
@@ -16,7 +17,18 @@ function App() {
 
     return (
         <>
-            {schedulers?.map(i => <div>{i}</div>)}
+            <Navbar expand="lg" className="bg-body-tertiary">
+            <Container>
+                <Navbar.Brand href="#home">Persistent Tasks UI</Navbar.Brand>
+            </Container>
+            </Navbar>
+            <Container as="main" className="py-4 px-0 mx-auto">
+                <Container>
+                    <Row>
+                        {schedulers?.map(i => <Col key={i}><Card><Card.Header>{i}</Card.Header></Card></Col>)}
+                    </Row>
+                </Container>
+            </Container>
         </>
     )
 }
