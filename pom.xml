@@ -59,6 +59,7 @@
     </properties>
 
     <modules>
+        <module>spring-persistent-tasks-ui</module>
         <module>spring-persistent-tasks</module>
         <module>example</module>
     </modules>
