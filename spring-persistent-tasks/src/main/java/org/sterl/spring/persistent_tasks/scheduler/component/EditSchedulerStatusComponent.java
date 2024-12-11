@@ -5,6 +5,7 @@ import java.lang.management.MemoryMXBean;
 import java.lang.management.OperatingSystemMXBean;
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +44,10 @@ public class EditSchedulerStatusComponent {
     public SchedulerEntity get(String name) {
         return schedulerRepository.findById(name)
                 .orElseGet(() -> new SchedulerEntity(name));
+    }
+    
+    public Optional<SchedulerEntity> find(String name) {
+        return schedulerRepository.findById(name);
     }
 
     public OnlineSchedulersEntity findOnlineSchedulers(Duration lastPingWas) {

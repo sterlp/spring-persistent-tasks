@@ -31,7 +31,7 @@ public class ExampleApplication {
     GroupedOpenApi springPersistentTasksApi() {
       return GroupedOpenApi.builder()
               .group("spring-persistent-tasks-api")
-              .pathsToMatch("/spring-tasks/**")
+              .pathsToMatch("/spring-tasks-api/**")
               .build();
     }
 

@@ -36,7 +36,7 @@ public class SchedulerEntity {
 
     private int runnungTasks;
 
-    private double systemLoadAverage;
+    private double systemLoadAverage = 0.0d;
 
     private long maxHeap;
 

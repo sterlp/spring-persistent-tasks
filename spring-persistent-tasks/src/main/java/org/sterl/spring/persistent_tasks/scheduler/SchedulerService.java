@@ -70,6 +70,16 @@ public class SchedulerService {
         log.debug("Ping {}", result);
         return result;
     }
+    
+    public SchedulerEntity getScheduler() {
+        var result = editSchedulerStatus.checkinToRegistry(name, TaskSchedulerStatus.ONLINE);
+        log.debug("Ping {}", result);
+        return result;
+    }
+    
+    public Optional<SchedulerEntity> findStatus(String name) {
+        return editSchedulerStatus.find(name);
+    }
 
     /**
      * Simply triggers the next task which is now due to be executed

@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("${spring.persistent-tasks.web.base-path:spring-tasks}")
+@RequestMapping("${spring.persistent-tasks.web.base-path:spring-tasks-api}")
 public class TriggerResource {
 
 
