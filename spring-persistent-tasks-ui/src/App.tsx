@@ -1,31 +1,33 @@
-import { useEffect, useState } from "react"
-import { Card, Col, Container, Navbar, Row } from "react-bootstrap";
+import { useEffect } from "react"
+import { Alert, Card, Col, Container, Navbar, Row } from "react-bootstrap";
+import { useServerObject } from "./shared/http-request";
 
 function App() {
-    const [schedulers, setSchedulers] =  useState<string[] | undefined>(undefined);
+    const schedulers = useServerObject<string[]>('/spring-tasks-api/schedulers');
 
     useEffect(() => {
-        fetchSchedulers();
+        const c = schedulers.doGet();
+        return () => c.abort();
     }, []);
-    
-    const fetchSchedulers = async () => {
-        const response = await fetch('/spring-tasks-api/schedulers');
-        if (response.ok) {
-            setSchedulers(await response.json() as string[]);
-        }
-    }
 
     return (
         <>
             <Navbar expand="lg" className="bg-body-tertiary">
-            <Container>
-                <Navbar.Brand href="#home">Persistent Tasks UI</Navbar.Brand>
-            </Container>
+                <Container>
+                    <Navbar.Brand href="#home">Persistent Tasks UI</Navbar.Brand>
+                </Container>
             </Navbar>
             <Container as="main" className="py-4 px-0 mx-auto">
                 <Container>
                     <Row>
-                        {schedulers?.map(i => <Col key={i}><Card><Card.Header>{i}</Card.Header></Card></Col>)}
+                        {schedulers.error ?
+                            <Alert variant="danger">
+                                {JSON.stringify(schedulers.error)}
+                            </Alert>
+                        : undefined}
+                    </Row>
+                    <Row>
+                        {schedulers.data?.map(i => <Col key={i}><Card><Card.Header>{i}</Card.Header></Card></Col>)}
                     </Row>
                 </Container>
             </Container>
