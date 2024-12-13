@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 3.2.1263 on 2024-12-11 21:22:17.
+// Generated using typescript-generator version 3.2.1263 on 2024-12-13 22:15:44.
 
 export interface RetryStrategy {
 }
@@ -54,6 +54,22 @@ export interface TriggerTaskCommand<T> {
     triggers: Trigger<T>[];
 }
 
+export interface OnlineSchedulersEntity {
+    online: string[];
+    countOffline: number;
+}
+
+export interface SchedulerEntity {
+    id: string;
+    tasksSlotCount: number;
+    runnungTasks: number;
+    systemLoadAverage: number;
+    maxHeap: number;
+    usedHeap: number;
+    status: TaskSchedulerStatus;
+    lastPing: Date;
+}
+
 export interface Serializable {
 }
 
@@ -79,5 +95,7 @@ export interface TriggerData {
     exceptionName: string;
     lastException: string;
 }
+
+export type TaskSchedulerStatus = "ONLINE" | "OFFLINE";
 
 export type TriggerStatus = "NEW" | "RUNNING" | "SUCCESS" | "FAILED" | "CANCELED";

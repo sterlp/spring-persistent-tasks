@@ -29,7 +29,7 @@ public class SchedulerResource {
     }
     
     @GetMapping("/schedulers/{name}")
-    public ResponseEntity<SchedulerEntity> get(@PathVariable String name) {
+    public ResponseEntity<SchedulerEntity> get(@PathVariable("name") String name) {
         return ResponseEntity.of(anyService.findStatus(name));
     }
 }

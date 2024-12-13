@@ -5,29 +5,33 @@ export interface ServerObject<T> {
     isLoading: boolean,
     data: T | undefined,
     error: any,
-    doGet(id?: string): AbortController
+    doGet(id?: string): () => void
 }
 export const useServerObject = <T>(url: string, startValue?: T): ServerObject<T> => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [data, setData] = useState<T | undefined>(startValue);
     const [error, steError] = useState<any>(undefined);
 
-    const doGet = (id?: string): AbortController => {
+    const doGet = (id?: string) => {
         const controller = new AbortController();
         const requestUrl = url + (id ?? "");
         steError(undefined);
         setIsLoading(true);
         axios
             .get(requestUrl, {
-                signal: controller.signal
+                signal: controller.signal,
             })
-            .then(response => setData(response.data))
-            .catch(e => {
-                console.error(requestUrl, e)
-                steError(error);
+            .then((response) => setData(response.data))
+            .catch((e) => {
+                if (e.code === 'ERR_CANCELED') {
+                    console.debug(requestUrl, "canceled", e);
+                } else {
+                    console.error(requestUrl, e);
+                    steError(e);
+                }
             })
             .finally(() => setIsLoading(false));
-        return controller;
+        return () => controller.abort();
     }
     return {isLoading, data, error, doGet};
 }

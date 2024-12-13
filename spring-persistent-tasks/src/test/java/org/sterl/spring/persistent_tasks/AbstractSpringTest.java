@@ -63,8 +63,8 @@ public class AbstractSpringTest {
             return new AsyncAsserts();
         }
 
-        @Bean("schedulerA")
         @Primary
+        @Bean("schedulerA")
         @SuppressWarnings("resource")
         SchedulerService schedulerA(TriggerService triggerService, EditSchedulerStatusComponent editSchedulerStatus,
                 TransactionTemplate trx) throws UnknownHostException {
