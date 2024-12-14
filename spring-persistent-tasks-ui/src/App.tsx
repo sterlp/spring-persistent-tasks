@@ -1,15 +1,7 @@
 import { useEffect } from "react";
-import {
-    Alert,
-    Badge,
-    Card,
-    Col,
-    Container,
-    Navbar,
-    Row,
-} from "react-bootstrap";
+import { Alert, Col, Container, Navbar, Row } from "react-bootstrap";
+import SchedulerStatusView from "./scheduler/views/scheduler.view";
 import { useServerObject } from "./shared/http-request";
-import { SchedulerEntity } from "./server-api";
 
 function App() {
     const schedulers = useServerObject<string[]>(
@@ -51,25 +43,3 @@ function App() {
 }
 
 export default App;
-
-function SchedulerStatusView({ name }: { name: string }) {
-    const status = useServerObject<SchedulerEntity>(
-        `/spring-tasks-api/schedulers/${name}`
-    );
-
-    useEffect(status.doGet, [name]);
-
-    return (
-        <Card>
-            <Card.Header>
-                {name}{" "}
-                {status.data ? (
-                    <Badge pill bg="success">
-                        {status.data?.status}
-                    </Badge>
-                ) : undefined}
-            </Card.Header>
-            <Card.Body>{JSON.stringify(status.data)}</Card.Body>
-        </Card>
-    );
-}
