@@ -6,10 +6,23 @@ interface Props {
     onClick: () => void | any;
 }
 function ReloadButton({ isLoading, onClick }: Props) {
-    if (isLoading) return <Spinner animation="border" role="status"></Spinner>;
+    if (isLoading)
+        return (
+            <Button disabled>
+                <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                />
+                <span className="visually-hidden">Loading...</span>
+            </Button>
+        );
+
     return (
         <Button onClick={onClick}>
-            <ArrowClockwise />
+            <ArrowClockwise size={18} />
         </Button>
     );
 }

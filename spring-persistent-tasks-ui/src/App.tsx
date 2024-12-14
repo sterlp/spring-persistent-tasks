@@ -1,7 +1,8 @@
 import { useEffect } from "react";
-import { Alert, Col, Container, Navbar, Row } from "react-bootstrap";
+import { Col, Container, Navbar, Row } from "react-bootstrap";
 import SchedulerStatusView from "./scheduler/views/scheduler.view";
 import { useServerObject } from "./shared/http-request";
+import HttpErrorView from "./shared/http-error.view";
 
 function App() {
     const schedulers = useServerObject<string[]>(
@@ -22,12 +23,7 @@ function App() {
             <Container as="main" className="py-4 px-0 mx-auto">
                 <Container>
                     <Row>
-                        {schedulers.error ? (
-                            <Alert variant="danger">
-                                {schedulers.error.message ??
-                                    JSON.stringify(schedulers.error)}
-                            </Alert>
-                        ) : undefined}
+                        <HttpErrorView error={schedulers.error} />
                     </Row>
                     <Row>
                         {schedulers.data?.map((i) => (

@@ -1,17 +1,7 @@
 import { useEffect } from "react";
-import { useServerObject } from "../../shared/http-request";
+import { Badge, Card, Col, Form, ProgressBar, Row } from "react-bootstrap";
 import { SchedulerEntity, TaskSchedulerStatus } from "../../server-api";
-import {
-    Badge,
-    Button,
-    Card,
-    Col,
-    Form,
-    ProgressBar,
-    Row,
-    Spinner,
-} from "react-bootstrap";
-import { ArrowClockwise } from "react-bootstrap-icons";
+import { useServerObject } from "../../shared/http-request";
 import ReloadButton from "../../shared/reload-button";
 
 interface Props {
@@ -106,17 +96,20 @@ function SchedulerStatusView({ name }: Props) {
 export default SchedulerStatusView;
 
 function durationSince(from: Date) {
-    let diff =
-        (new Date().getMilliseconds() - from.getMilliseconds()) / 1000 / 60;
-
+    let diff = (new Date().getTime() - from.getTime()) / 1000;
+    console.info(diff, from);
     if (diff < 1) return "just now";
-    if (diff < 60) {
-        return "seit " + Math.round(diff) + " min";
-    } else if (diff < 3600) {
-        return "seit " + Math.round(diff / 60) + " hour(s)";
-    } else {
-        return "seit " + Math.round(diff / 3600) + " day(s)";
-    }
+
+    if (diff < 60) return Math.round(diff) + "s ago";
+    diff = diff / 60;
+
+    if (diff < 60) return Math.round(diff) + "min ago";
+    diff = diff / 60;
+
+    if (diff < 60) return Math.round(diff * 10) / 10 + "h ago";
+    diff = diff / 60;
+
+    return Math.round(diff * 10) / 10 + "days ago";
 }
 
 function formatMemory(value: number) {
