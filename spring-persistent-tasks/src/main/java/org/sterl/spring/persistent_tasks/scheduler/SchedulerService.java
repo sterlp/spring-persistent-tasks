@@ -118,7 +118,7 @@ public class SchedulerService {
     public Optional<Future<TriggerId>> runOrQueue(Trigger<? extends Serializable> trigger) {
         return trx.execute(t -> {
             Optional<Future<TriggerId>> result = Optional.empty();
-            final TriggerId id = triggerService.trigger(trigger);
+            final TriggerId id = triggerService.queue(trigger);
             if (taskExecutor.getFreeThreads() > 0) {
                 var toRun = triggerService.markTriggerInExecution(id, name).get();
                 result = Optional.of(taskExecutor.submit(toRun));
@@ -129,7 +129,7 @@ public class SchedulerService {
     }
 
     public <T extends Serializable> TriggerId queue(TaskId<T> taskId, T state) {
-        return triggerService.trigger(taskId.newUniqueTrigger(state));
+        return triggerService.queue(taskId.newUniqueTrigger(state));
     }
 
     public SchedulerEntity getStatus() {

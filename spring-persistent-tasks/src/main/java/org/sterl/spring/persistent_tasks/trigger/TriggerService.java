@@ -3,6 +3,7 @@ package org.sterl.spring.persistent_tasks.trigger;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -96,17 +97,17 @@ public class TriggerService {
     }
 
     @EventListener
-    public void trigger(TriggerTaskCommand<? extends Serializable> event) {
-        triggerAll(event.triggers());
+    public void queue(TriggerTaskCommand<? extends Serializable> event) {
+        queueAll(event.triggers());
     }
 
-    public <T extends Serializable> TriggerId trigger(Trigger<T> tigger) {
+    public <T extends Serializable> TriggerId queue(Trigger<T> tigger) {
         taskService.assertIsKnown(tigger.taskId());
         return editTrigger.addTrigger(tigger).getId();
     }
 
     @NonNull
-    public <T extends Serializable> List<TriggerId> triggerAll(Collection<Trigger<T>> triggers) {
+    public <T extends Serializable> List<TriggerId> queueAll(Collection<Trigger<T>> triggers) {
         triggers.forEach(t -> taskService.assertIsKnown(t.taskId()));
         return editTrigger.addTriggers(triggers);
     }
@@ -130,6 +131,10 @@ public class TriggerService {
             return 0L;
         }
         return this.readTrigger.countByName(taskId.name());
+    }
+    
+    public long countTriggers(@Nullable TriggerStatus status) {
+        return readTrigger.countByStatus(status);
     }
 
     /**

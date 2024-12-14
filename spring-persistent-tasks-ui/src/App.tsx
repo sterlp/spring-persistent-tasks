@@ -3,6 +3,7 @@ import { Col, Container, Navbar, Row } from "react-bootstrap";
 import SchedulerStatusView from "./scheduler/views/scheduler.view";
 import { useServerObject } from "./shared/http-request";
 import HttpErrorView from "./shared/http-error.view";
+import TriggersView from "./trigger/views/triggers-list.view";
 
 function App() {
     const schedulers = useServerObject<string[]>(
@@ -31,6 +32,9 @@ function App() {
                                 <SchedulerStatusView name={i} />
                             </Col>
                         ))}
+                    </Row>
+                    <Row>
+                        <TriggersView />
                     </Row>
                 </Container>
             </Container>

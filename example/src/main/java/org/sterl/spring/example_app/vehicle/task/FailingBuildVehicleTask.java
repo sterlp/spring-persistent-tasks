@@ -8,23 +8,24 @@ import org.sterl.spring.persistent_tasks.api.SpringBeanTask;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Component(BuildVehicleTask.NAME)
+@Component(FailingBuildVehicleTask.NAME)
 @RequiredArgsConstructor
 @Slf4j
-public class BuildVehicleTask implements SpringBeanTask<String> {
+public class FailingBuildVehicleTask implements SpringBeanTask<String> {
 
-    public static final String NAME = "buildVehicleTask";
+    public static final String NAME = "failingBuildVehicleTask";
 
     private final VehicleRepository vehicleRepository;
 
     @Override
     public void accept(String type) {
         vehicleRepository.save(new Vehicle(type));
-        log.info("Create vehicle with type={}", type);
+        log.info("Create vehicle with type={} - which will fail", type);
         try {
-            Thread.sleep(1500);
+            Thread.sleep(3500);
         } catch (InterruptedException e) {
             Thread.interrupted();
         }
+        throw new RuntimeException("This task will always fail!");
     }
 }

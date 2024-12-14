@@ -29,7 +29,7 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
                         return RetryStrategy.TRY_THREE_TIMES_IMMEDIATELY;
                     }
                 });
-        var id = triggerService.trigger(task.newTrigger().state("hallo").build());
+        var id = triggerService.queue(task.newTrigger().state("hallo").build());
 
         // WHEN
         runTriggersAndWait();
@@ -52,7 +52,7 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
         // GIVEN
         final TaskId<String> taskId = taskService.<String>replace("multi-threading", s -> asserts.info(s));
         for (int i = 1; i <= 100; ++i) {
-            triggerService.trigger(taskId.newUniqueTrigger("t" + i));
+            triggerService.queue(taskId.newUniqueTrigger("t" + i));
         }
 
         // WHEN

@@ -48,7 +48,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         final var trigger = task1Id.newTrigger().triggerTime(triggerTime).build();
 
         // WHEN
-        final var triggerId = subject.trigger(trigger);
+        final var triggerId = subject.queue(trigger);
 
         // THEN
         final var e = subject.get(triggerId);
@@ -67,8 +67,8 @@ class TriggerServiceTest extends AbstractSpringTest {
         taskService.<String>replace("bar", c -> asserts.info("bar"));
 
         // WHEN
-        subject.trigger(taskId.newTrigger().build());
-        subject.trigger(taskId.newTrigger().build());
+        subject.queue(taskId.newTrigger().build());
+        subject.queue(taskId.newTrigger().build());
 
         // THEN
         assertThat(subject.countTriggers(taskId)).isEqualTo(2);
@@ -80,7 +80,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         final var trigger = TaskTriggerBuilder.newTrigger(Task3.NAME).state("trigger3").build();
 
         // WHEN
-        var id = subject.trigger(trigger);
+        var id = subject.queue(trigger);
         subject.run(subject.get(id).get());
 
         // THEN
@@ -93,7 +93,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         // GIVEN
         TaskId<String> taskId = taskService.replace("foo", c -> asserts.info("foo"));
         taskService.<String>replace("bar", c -> asserts.info("bar"));
-        TriggerId triggerId = subject.trigger(taskId.newTrigger().build());
+        TriggerId triggerId = subject.queue(taskId.newTrigger().build());
 
         // WHEN
         subject.run(triggerId);
@@ -111,7 +111,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         final var trigger = task1Id.newTrigger().state("aa").build();
 
         // WHEN
-        final var triggerId = subject.trigger(trigger);
+        final var triggerId = subject.queue(trigger);
         subject.run(subject.lockNextTrigger());
         subject.run(subject.lockNextTrigger());
 
@@ -135,7 +135,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         });
 
         // WHEN
-        final var triggerId = subject.trigger(task.newTrigger().state("Hallo :-)").build());
+        final var triggerId = subject.queue(task.newTrigger().state("Hallo :-)").build());
         subject.run(subject.lockNextTrigger());
 
         // THEN
@@ -149,7 +149,7 @@ class TriggerServiceTest extends AbstractSpringTest {
     void testTriggerPriority() throws Exception {
         // GIVEN
         TaskId<String> task = taskService.<String>replace("aha", s -> asserts.info(s));
-        List<TriggerId> triggers = triggerService.triggerAll(Arrays.asList(
+        List<TriggerId> triggers = triggerService.queueAll(Arrays.asList(
                 task.newTrigger().state("mid").priority(5).build(), //
                 task.newTrigger().state("low").priority(4).build(), //
                 task.newTrigger().state("high").priority(6).build()));
@@ -174,8 +174,8 @@ class TriggerServiceTest extends AbstractSpringTest {
         // WHEN
         try {
             trx.executeWithoutResult(t -> {
-                subject.trigger(taskId.newUniqueTrigger("nope1"));
-                subject.trigger(taskId.newUniqueTrigger("nope2"));
+                subject.queue(taskId.newUniqueTrigger("nope1"));
+                subject.queue(taskId.newUniqueTrigger("nope2"));
                 throw new RuntimeException("we are doomed!");
             });
         } catch (Exception idc) {
@@ -191,11 +191,11 @@ class TriggerServiceTest extends AbstractSpringTest {
         final TaskId<String> taskId = taskService.<String>replace("send_email", s -> asserts.info(s));
 
         // WHEN
-        subject.trigger(taskId.newTrigger()
+        subject.queue(taskId.newTrigger()
                 .id("paul@sterl.org")
                 .state("pau@sterl.org") // bad state
                 .build());
-        subject.trigger(taskId.newTrigger()
+        subject.queue(taskId.newTrigger()
                 .id("paul@sterl.org")
                 .state("paul@sterl.org") // fixed state
                 .build());
@@ -218,7 +218,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         try (final var executor = Executors.newFixedThreadPool(100)) {
             final TaskId<String> taskId = taskService.<String>replace("multi-threading", s -> asserts.info(s));
             for (int i = 1; i <= 100; ++i) {
-                triggerService.trigger(taskId.newUniqueTrigger("t" + i));
+                triggerService.queue(taskId.newUniqueTrigger("t" + i));
             }
 
             // WHEN

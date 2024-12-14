@@ -2,13 +2,21 @@ package org.sterl.spring.persistent_tasks.scheduler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Optional;
+import java.util.concurrent.Future;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
+import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
 import org.sterl.spring.persistent_tasks.api.TaskId;
+import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
+import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryEntity;
 import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity;
 import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity.TaskSchedulerStatus;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
+import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 class SchedulerServiceTest extends AbstractSpringTest {
 
@@ -28,6 +36,50 @@ class SchedulerServiceTest extends AbstractSpringTest {
 
         // THEN
         assertThat(status.getStatus()).isEqualTo(TaskSchedulerStatus.ONLINE);
+    }
+    
+    @Test
+    void willTriggerOnlyFreeThreadSize() throws Exception {
+        // GIVEN
+        for (int i = 0; i < 15; i++) {
+            triggerService.queue(TaskTriggerBuilder
+                    .newTrigger("slowTask")
+                    .state(50L)
+                    .build()
+                );
+        }
+
+        // WHEN
+        subject.triggerNextTasks();
+
+        // THEN
+        Thread.sleep(25);
+        assertThat(triggerService.countTriggers(TriggerStatus.RUNNING)).isEqualTo(10);
+        assertThat(triggerService.countTriggers(TriggerStatus.NEW)).isEqualTo(5);
+    }
+    
+    @Test
+    void verifyRunningStatusTest() throws Exception {
+        // GIVEN
+        final TriggerId triggerId = triggerService.queue(TaskTriggerBuilder
+                .newTrigger("slowTask")
+                .state(50L)
+                .build()
+            );
+
+        // WHEN
+        final Future<TriggerId> running = subject.triggerNextTasks().get(0);
+
+        // THEN
+        Thread.sleep(40);
+        var runningTrigger = triggerService.get(triggerId).get();
+        assertThat(runningTrigger.getData().getStatus()).isEqualTo(TriggerStatus.RUNNING);
+        // AND
+        running.get();
+        assertThat(triggerService.get(triggerId)).isEmpty();
+        // AND
+        var history = historyService.findLastKnownStatus(triggerId).get();
+        assertThat(history.getData().getStatus()).isEqualTo(TriggerStatus.SUCCESS);
     }
 
     @Test

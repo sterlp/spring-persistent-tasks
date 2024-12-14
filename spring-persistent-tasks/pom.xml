@@ -67,7 +67,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    
+
     <build>
         <plugins>
             <plugin>
@@ -85,11 +85,16 @@
                 </executions>
                 <configuration>
                     <jsonLibrary>jackson2</jsonLibrary>
+                    <customTypeMappings>
+                        <mapping>java.time.OffsetDateTime:string</mapping>
+                    </customTypeMappings>
                     <classPatterns>
                         <pattern>org.sterl.spring.persistent_tasks.api.**</pattern>
-                        <pattern>org.sterl.spring.persistent_tasks.scheduler.entity.*</pattern>
+                        <pattern>
+                            org.sterl.spring.persistent_tasks.scheduler.entity.*</pattern>
                     </classPatterns>
-                    <outputFile>../spring-persistent-tasks-ui/src/server-api.d.ts</outputFile>
+                    <outputFile>
+                        ../spring-persistent-tasks-ui/src/server-api.d.ts</outputFile>
                     <outputKind>module</outputKind>
                 </configuration>
             </plugin>

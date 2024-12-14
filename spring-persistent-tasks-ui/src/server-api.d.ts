@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 3.2.1263 on 2024-12-13 22:15:44.
+// Generated using typescript-generator version 3.2.1263 on 2024-12-14 15:33:48.
 
 export interface RetryStrategy {
 }
@@ -23,7 +23,7 @@ export interface Trigger<T> {
     id: string;
     taskId: TaskId<T>;
     state: T;
-    when: Date;
+    when: string;
     priority: number;
 }
 
@@ -67,7 +67,7 @@ export interface SchedulerEntity {
     maxHeap: number;
     usedHeap: number;
     status: TaskSchedulerStatus;
-    lastPing: Date;
+    lastPing: string;
 }
 
 export interface Serializable {
@@ -83,10 +83,10 @@ export interface Consumer<T> {
 }
 
 export interface TriggerData {
-    createdTime: Date;
-    triggerTime: Date;
-    start: Date;
-    end: Date;
+    createdTime: string;
+    triggerTime: string;
+    start: string;
+    end: string;
     executionCount: number;
     priority: number;
     status: TriggerStatus;
