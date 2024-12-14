@@ -11,6 +11,11 @@ function App() {
     );
 
     useEffect(schedulers.doGet, []);
+    // Poll every 10 seconds
+    useEffect(() => {
+        const intervalId = setInterval(schedulers.doGet, 10000);
+        return () => clearInterval(intervalId);
+    }, []);
 
     return (
         <>
@@ -26,7 +31,7 @@ function App() {
                     <Row>
                         <HttpErrorView error={schedulers.error} />
                     </Row>
-                    <Row>
+                    <Row className="mb-2">
                         {schedulers.data?.map((i) => (
                             <Col key={i}>
                                 <SchedulerStatusView name={i} />

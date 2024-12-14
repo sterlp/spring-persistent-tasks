@@ -66,7 +66,7 @@ public class TriggerEntity {
     public TriggerEntity complete(Exception e) {
         data.setStatus(TriggerStatus.SUCCESS);
         data.setEnd(OffsetDateTime.now());
-
+        data.updateRunningDuration();
         if (e != null) {
             data.setStatus(TriggerStatus.FAILED);
             data.setExceptionName(e.getClass().getName());

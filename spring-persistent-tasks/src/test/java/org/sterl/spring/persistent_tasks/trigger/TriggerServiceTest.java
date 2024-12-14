@@ -2,6 +2,7 @@ package org.sterl.spring.persistent_tasks.trigger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,8 +16,8 @@ import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.task.repository.TaskRepository;
 
 class TriggerServiceTest extends AbstractSpringTest {
@@ -100,7 +101,14 @@ class TriggerServiceTest extends AbstractSpringTest {
 
         // THEN
         assertThat(historyService.countTriggers(TriggerStatus.SUCCESS)).isOne();
-        assertThat(historyService.findLastKnownStatus(triggerId).get().getData().getExecutionCount()).isEqualTo(1);
+        final var historyEntity = historyService.findLastKnownStatus(triggerId).get();
+        assertThat(historyEntity.getData().getExecutionCount()).isEqualTo(1);
+        assertThat(historyEntity.getData().getEnd()).isAfter(historyEntity.getData().getStart());
+        assertThat(historyEntity.getData().getRunningDurationInMs())
+            .isEqualTo(Duration.between(
+                    historyEntity.getData().getStart(),
+                    historyEntity.getData().getEnd()).toMillis());
+        assertThat(historyEntity.getData().getExecutionCount()).isEqualTo(1);
         asserts.assertValue("foo");
         asserts.assertMissing("bar");
     }
@@ -143,6 +151,26 @@ class TriggerServiceTest extends AbstractSpringTest {
         assertThat(trigger.getData().getExecutionCount()).isEqualTo(1);
         assertThat(trigger.getData().getExceptionName()).isEqualTo(IllegalArgumentException.class.getName());
         assertThat(trigger.getData().getLastException()).contains("Nope! Hallo :-)");
+    }
+    
+    @Test
+    void testFailedTriggerHasDuration() throws Exception {
+        // GIVEN
+        TaskId<String> task = taskService.<String>replace("foo", c -> {
+            throw new IllegalArgumentException("Nope! " + c);
+        });
+
+        // WHEN
+        final var triggerId = subject.queue(task.newTrigger().state("Hallo :-)").build());
+        subject.run(subject.lockNextTrigger());
+
+        // THEN
+        final var trigger = triggerService.get(triggerId).get();
+        assertThat(trigger.getData().getEnd()).isAfter(trigger.getData().getStart());
+        assertThat(trigger.getData().getRunningDurationInMs())
+            .isEqualTo(Duration.between(
+                    trigger.getData().getStart(),
+                    trigger.getData().getEnd()).toMillis());
     }
 
     @Test

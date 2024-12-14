@@ -1,5 +1,6 @@
 package org.sterl.spring.persistent_tasks.shared.model;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
 
 import jakarta.persistence.Column;
@@ -27,9 +28,9 @@ import lombok.ToString;
 public class TriggerData {
     
     @PrePersist
-    void beforeSave() {
+    public void updateRunningDuration() {
         if (start != null && end != null) {
-            runningDurationInMs = end.toInstant().toEpochMilli() - start.toInstant().toEpochMilli();
+            runningDurationInMs = Duration.between(start, end).toMillis();
         }
     }
 

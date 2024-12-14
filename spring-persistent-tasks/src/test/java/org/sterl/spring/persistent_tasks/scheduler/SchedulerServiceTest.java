@@ -2,21 +2,17 @@ package org.sterl.spring.persistent_tasks.scheduler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Optional;
 import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
-import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
-import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryEntity;
 import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity;
 import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity.TaskSchedulerStatus;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 class SchedulerServiceTest extends AbstractSpringTest {
 
