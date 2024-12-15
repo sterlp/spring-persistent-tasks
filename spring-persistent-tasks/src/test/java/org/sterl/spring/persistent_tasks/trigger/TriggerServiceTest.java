@@ -46,7 +46,7 @@ class TriggerServiceTest extends AbstractSpringTest {
     void testAddTrigger() throws Exception {
         // GIVEN
         final var triggerTime = OffsetDateTime.now().minusMinutes(1);
-        final var trigger = task1Id.newTrigger().triggerTime(triggerTime).build();
+        final var trigger = task1Id.newTrigger().runAt(triggerTime).build();
 
         // WHEN
         final var triggerId = subject.queue(trigger);

@@ -7,7 +7,7 @@ import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import lombok.Data;
 
 @Data
-public class TriggerView {
+public class Trigger {
     
     private String key;
     

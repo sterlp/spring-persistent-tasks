@@ -49,12 +49,12 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
             return this;
         }
         /**
-         * synonym for {@link #triggerTime(OffsetDateTime)}
+         * synonym for {@link #runAt(OffsetDateTime)}
          */
         public TaskTriggerBuilder<T> when(OffsetDateTime when) {
-            return triggerTime(when);
+            return runAt(when);
         }
-        public TaskTriggerBuilder<T> triggerTime(OffsetDateTime when) {
+        public TaskTriggerBuilder<T> runAt(OffsetDateTime when) {
             this.when = when;
             return this;
         }

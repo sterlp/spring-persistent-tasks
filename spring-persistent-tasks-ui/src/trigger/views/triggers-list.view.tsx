@@ -1,12 +1,12 @@
 import { useEffect } from "react";
 import { Accordion, Col, Container, Row, Stack } from "react-bootstrap";
-import { PagedModel, TriggerView } from "../../server-api";
+import { PagedModel, Trigger } from "../../server-api";
 import { useServerObject } from "../../shared/http-request";
 import LabeledText from "../../shared/labled-text";
 import TriggerStatusView from "./trigger-staus.view";
 
 function TriggersView() {
-    const triggers = useServerObject<PagedModel<TriggerView>>(
+    const triggers = useServerObject<PagedModel<Trigger>>(
         "/spring-tasks-api/triggers"
     );
 
@@ -27,7 +27,7 @@ function TriggersView() {
 
 export default TriggersView;
 
-function TriggerItemView({ trigger }: { trigger: TriggerView }) {
+function TriggerItemView({ trigger }: { trigger: Trigger }) {
     return (
         <Accordion>
             <Accordion.Item eventKey={trigger.id.id + trigger.id.name}>
@@ -78,10 +78,46 @@ function TriggerItemView({ trigger }: { trigger: TriggerView }) {
                             />
                         </Col>
                     </Row>
+                    {trigger.state ? (
+                        <Row className="mt-2">
+                            <Col>
+                                <LabeledText
+                                    label="State"
+                                    value={trigger.state}
+                                />
+                            </Col>
+                        </Row>
+                    ) : undefined}
+                    {trigger.exceptionName ? (
+                        <Row className="mt-2">
+                            <ExcptionView
+                                label={trigger.exceptionName}
+                                stack={trigger.lastException}
+                            />
+                        </Row>
+                    ) : undefined}
                 </Accordion.Body>
             </Accordion.Item>
         </Accordion>
     );
+}
+
+function ExcptionView({ label, stack }: { label?: string; stack?: string }) {
+    if (!label) return undefined;
+
+    return (
+        <Accordion>
+            <Accordion.Header>
+                <div className="text-danger">{label}</div>
+            </Accordion.Header>
+            <Accordion.Body>{stack}</Accordion.Body>
+        </Accordion>
+    );
+}
+
+function isObject(value: any): boolean {
+    if (value === undefined || value === null) return false;
+    return typeof value === "object" || Array.isArray(value);
 }
 
 function formatDateTime(inputDate?: string | Date): string {
@@ -98,7 +134,7 @@ function formatDateTime(inputDate?: string | Date): string {
     } as Intl.DateTimeFormatOptions;
     if (!isToday) {
         options.year = "numeric";
-        options.month = "short";
+        options.month = "numeric";
         options.day = "numeric";
     }
     const browserLanguage = navigator.language || "en-US";

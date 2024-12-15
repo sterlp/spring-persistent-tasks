@@ -42,15 +42,7 @@ export interface TaskId<T> extends Serializable {
 export interface TaskTriggerBuilder<T> {
 }
 
-export interface TriggerId extends Serializable {
-    id: string;
-    name: string;
-}
-
-export interface TriggerIdBuilder {
-}
-
-export interface TriggerView {
+export interface Trigger {
     key: string;
     id: TriggerId;
     runningOn: string;
@@ -65,6 +57,14 @@ export interface TriggerView {
     state: any;
     exceptionName: string;
     lastException: string;
+}
+
+export interface TriggerId extends Serializable {
+    id: string;
+    name: string;
+}
+
+export interface TriggerIdBuilder {
 }
 
 export interface TriggerTaskCommand<T> {
