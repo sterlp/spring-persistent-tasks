@@ -27,26 +27,37 @@ function TriggersView() {
 
 export default TriggersView;
 
-function TriggerItemView({ trigger }: { trigger: Trigger }) {
+interface TriggerProps {
+    trigger: Trigger;
+}
+function TriggerItemView({ trigger }: TriggerProps) {
+    // className="d-flex justify-content-between align-items-center"
     return (
         <Accordion>
-            <Accordion.Item eventKey={trigger.id.id + trigger.id.name}>
-                <Accordion.Header className="d-flex justify-content-between align-items-center">
+            <Accordion.Item eventKey={trigger.key}>
+                <Accordion.Header>
                     <Container>
                         <Row>
-                            <Col>{trigger.id.name}</Col>
+                            <Col>
+                                <small className="text-truncate text-muted">
+                                    {trigger.id.id}
+                                </small>
+                                {" " + trigger.id.name}
+                            </Col>
                             <Col>
                                 <TriggerStatusView data={trigger} />
                             </Col>
-                            <Col>{formatDateTime(trigger.runAt)}</Col>
+                            <Col>
+                                <LabeledText
+                                    label="Run at"
+                                    value={formatDateTime(trigger.runAt)}
+                                />
+                            </Col>
                         </Row>
                     </Container>
                 </Accordion.Header>
                 <Accordion.Body>
                     <Row>
-                        <Col>
-                            <LabeledText label="Id" value={trigger.id.id} />
-                        </Col>
                         <Col>
                             <LabeledText
                                 label="Retrys"
@@ -78,40 +89,52 @@ function TriggerItemView({ trigger }: { trigger: Trigger }) {
                             />
                         </Col>
                     </Row>
-                    {trigger.state ? (
-                        <Row className="mt-2">
-                            <Col>
-                                <LabeledText
-                                    label="State"
-                                    value={trigger.state}
-                                />
-                            </Col>
-                        </Row>
-                    ) : undefined}
-                    {trigger.exceptionName ? (
-                        <Row className="mt-2">
-                            <ExcptionView
-                                label={trigger.exceptionName}
-                                stack={trigger.lastException}
-                            />
-                        </Row>
-                    ) : undefined}
                 </Accordion.Body>
             </Accordion.Item>
+            <StateView key={trigger.id + "state-view"} trigger={trigger} />
+            <ExcptionView key={trigger.id + "error-view"} trigger={trigger} />
         </Accordion>
     );
 }
 
-function ExcptionView({ label, stack }: { label?: string; stack?: string }) {
-    if (!label) return undefined;
+function StateView({ trigger }: TriggerProps) {
+    if (!trigger.state) return undefined;
 
     return (
-        <Accordion>
+        <Accordion.Item eventKey={trigger.key + "-state"}>
             <Accordion.Header>
-                <div className="text-danger">{label}</div>
+                <Container>
+                    <Row>
+                        <Col xs="2" md="1">
+                            State
+                        </Col>
+                        <Col className="text-truncate text-muted">
+                            <small>{trigger.state}</small>
+                        </Col>
+                    </Row>
+                </Container>
             </Accordion.Header>
-            <Accordion.Body>{stack}</Accordion.Body>
-        </Accordion>
+            <Accordion.Body>{trigger.state}</Accordion.Body>
+        </Accordion.Item>
+    );
+}
+
+function ExcptionView({ trigger }: TriggerProps) {
+    if (!trigger.exceptionName) return undefined;
+
+    return (
+        <Accordion.Item eventKey={trigger.key + "-error"}>
+            <Accordion.Header>
+                <Container>
+                    <Row>
+                        <Col className="text-danger">
+                            {trigger.exceptionName}
+                        </Col>
+                    </Row>
+                </Container>
+            </Accordion.Header>
+            <Accordion.Body>{trigger.lastException}</Accordion.Body>
+        </Accordion.Item>
     );
 }
 
