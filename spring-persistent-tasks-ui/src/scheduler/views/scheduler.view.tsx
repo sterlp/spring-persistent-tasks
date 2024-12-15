@@ -97,18 +97,18 @@ const SchedulerStatusView = ({ name }: Props) => {
 export default SchedulerStatusView;
 
 function durationSince(from: Date) {
-    let now = DateTime.now();
-    let diff = now.diff(DateTime.fromJSDate(from), [
+    const now = DateTime.now();
+    const diff = now.diff(DateTime.fromJSDate(from), [
         "days",
         "hours",
         "minutes",
         "seconds",
     ]);
-    let days = diff.days;
-    let hours = diff.hours;
-    let minutes = diff.minutes;
-    let seconds = diff.seconds;
-    let result = [];
+    const days = diff.days;
+    const hours = diff.hours;
+    const minutes = diff.minutes;
+    const seconds = diff.seconds;
+    const result = [];
     if (days > 0) result.push(`${Math.floor(days)}d`);
     if (hours > 0) result.push(`${Math.floor(hours)}h`);
     if (minutes > 0) result.push(`${Math.floor(minutes)}min`);
@@ -138,7 +138,7 @@ const TaskSchedulerStatusView = ({
                 {status}
             </Badge>
         );
-    }npm install eslint-plugin-react
+    }
     return (
         <Badge pill bg="warning" text="dark">
             {status}

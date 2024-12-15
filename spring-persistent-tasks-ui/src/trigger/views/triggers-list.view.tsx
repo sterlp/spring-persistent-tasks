@@ -20,7 +20,7 @@ const TriggersView = () => {
     return (
         <Stack gap={1}>
             {triggers.data?.content.map((t) => (
-                <TriggerItemView key={t.id.id + t.id.name} trigger={t} />
+                <TriggerItemView key={t.key} trigger={t} />
             ))}
         </Stack>
     );
@@ -92,8 +92,8 @@ const TriggerItemView = ({ trigger }: TriggerProps) => {
                     </Row>
                 </Accordion.Body>
             </Accordion.Item>
-            <StateView key={trigger.id + "state-view"} trigger={trigger} />
-            <ExcptionView key={trigger.id + "error-view"} trigger={trigger} />
+            <StateView key={trigger.key + "-state-view"} trigger={trigger} />
+            <ExcptionView key={trigger.key + "-error-view"} trigger={trigger} />
         </Accordion>
     );
 };
@@ -154,7 +154,7 @@ const ExcptionView = ({ trigger }: TriggerProps) => {
     );
 };
 
-function isString(value: any) {
+function isString(value: any): value is string {
     return typeof value === "string" || value instanceof String;
 }
 function isObject(value: any): boolean {

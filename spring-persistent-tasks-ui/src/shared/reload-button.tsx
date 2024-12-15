@@ -3,7 +3,7 @@ import { ArrowClockwise } from "react-bootstrap-icons";
 
 interface Props {
     isLoading: boolean;
-    onClick: () => void | any;
+    onClick: () => unknown;
 }
 const ReloadButton = ({ isLoading, onClick }: Props) => {
     if (isLoading)

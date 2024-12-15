@@ -28,7 +28,7 @@ public class VehicleService {
 
     @Scheduled(fixedDelay = 30_000, initialDelay = 1_000)
     void triggerBuildVehicle() {
-        final Vehicle v = PODAM.manufacturePojo(Vehicle.class);
+        final Vehicle v = PODAM.manufacturePojoWithFullData(Vehicle.class);
         v.setId(null);
         v.getEngine().setId(null);
         

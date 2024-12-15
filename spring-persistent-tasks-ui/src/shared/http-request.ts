@@ -21,9 +21,10 @@ export const useServerObject = <T>(url: string, startValue?: T): ServerObject<T>
             .get(requestUrl, {
                 signal: controller.signal,
             })
-            .then((response) => setData(response.data))
+            .then((response) => setData(response.data as T))
             .catch((e) => {
-                if (e.code === 'ERR_CANCELED') {
+                if (controller.signal.aborted) {
+                //if (controller.signal.aborted) {
                     console.debug(requestUrl, "canceled", e);
                 } else {
                     console.error(requestUrl, e);

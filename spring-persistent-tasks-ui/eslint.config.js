@@ -24,6 +24,7 @@ export default tseslint.config(
         // Set the react version
         settings: { react: { version: "18.3" } },
         plugins: {
+            react: react,
             "react-hooks": reactHooks,
             "react-refresh": reactRefresh,
         },
@@ -35,6 +36,8 @@ export default tseslint.config(
                 "warn",
                 { allowConstantExport: true },
             ],
+            "@typescript-eslint/no-explicit-any": "off",
+            "@typescript-eslint/no-unsafe-assignment": "warn",
         },
     }
 );
