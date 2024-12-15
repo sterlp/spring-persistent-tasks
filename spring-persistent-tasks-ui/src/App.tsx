@@ -5,7 +5,7 @@ import { useServerObject } from "./shared/http-request";
 import HttpErrorView from "./shared/http-error.view";
 import TriggersView from "./trigger/views/triggers-list.view";
 
-function App() {
+const App = () => {
     const schedulers = useServerObject<string[]>(
         "/spring-tasks-api/schedulers"
     );
@@ -45,6 +45,6 @@ function App() {
             </Container>
         </>
     );
-}
+};
 
 export default App;

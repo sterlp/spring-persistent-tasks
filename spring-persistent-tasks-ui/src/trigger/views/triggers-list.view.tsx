@@ -4,8 +4,9 @@ import { PagedModel, Trigger } from "../../server-api";
 import { useServerObject } from "../../shared/http-request";
 import LabeledText from "../../shared/labled-text";
 import TriggerStatusView from "./trigger-staus.view";
+import JsonView from "@uiw/react-json-view";
 
-function TriggersView() {
+const TriggersView = () => {
     const triggers = useServerObject<PagedModel<Trigger>>(
         "/spring-tasks-api/triggers"
     );
@@ -23,14 +24,14 @@ function TriggersView() {
             ))}
         </Stack>
     );
-}
+};
 
 export default TriggersView;
 
 interface TriggerProps {
     trigger: Trigger;
 }
-function TriggerItemView({ trigger }: TriggerProps) {
+const TriggerItemView = ({ trigger }: TriggerProps) => {
     // className="d-flex justify-content-between align-items-center"
     return (
         <Accordion>
@@ -95,13 +96,14 @@ function TriggerItemView({ trigger }: TriggerProps) {
             <ExcptionView key={trigger.id + "error-view"} trigger={trigger} />
         </Accordion>
     );
-}
+};
 
-function StateView({ trigger }: TriggerProps) {
+const StateView = ({ trigger }: TriggerProps) => {
     if (!trigger.state) return undefined;
     const state = isString(trigger.state)
         ? trigger.state
         : JSON.stringify(trigger.state, null, 2);
+
     return (
         <Accordion.Item eventKey={trigger.key + "-state"}>
             <Accordion.Header>
@@ -111,17 +113,23 @@ function StateView({ trigger }: TriggerProps) {
                             State
                         </Col>
                         <Col className="text-truncate text-muted">
-                            <small>{state}</small>
+                            <small>{state + ""}</small>
                         </Col>
                     </Row>
                 </Container>
             </Accordion.Header>
-            <Accordion.Body>{state}</Accordion.Body>
+            <Accordion.Body>
+                {isObject(trigger.state) ? (
+                    <JsonView value={trigger.state} />
+                ) : (
+                    <pre>{state}</pre>
+                )}
+            </Accordion.Body>
         </Accordion.Item>
     );
-}
+};
 
-function ExcptionView({ trigger }: TriggerProps) {
+const ExcptionView = ({ trigger }: TriggerProps) => {
     if (!trigger.exceptionName) return undefined;
 
     return (
@@ -135,10 +143,16 @@ function ExcptionView({ trigger }: TriggerProps) {
                     </Row>
                 </Container>
             </Accordion.Header>
-            <Accordion.Body>{trigger.lastException}</Accordion.Body>
+            <Accordion.Body>
+                <pre>
+                    <small>
+                        <code>{trigger.lastException}</code>
+                    </small>
+                </pre>
+            </Accordion.Body>
         </Accordion.Item>
     );
-}
+};
 
 function isString(value: any) {
     return typeof value === "string" || value instanceof String;

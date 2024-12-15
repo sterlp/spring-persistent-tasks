@@ -5,7 +5,7 @@ interface Props {
     isLoading: boolean;
     onClick: () => void | any;
 }
-function ReloadButton({ isLoading, onClick }: Props) {
+const ReloadButton = ({ isLoading, onClick }: Props) => {
     if (isLoading)
         return (
             <Button disabled>
@@ -25,6 +25,6 @@ function ReloadButton({ isLoading, onClick }: Props) {
             <ArrowClockwise size={18} />
         </Button>
     );
-}
+};
 
 export default ReloadButton;

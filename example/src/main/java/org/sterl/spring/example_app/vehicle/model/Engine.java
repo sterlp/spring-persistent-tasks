@@ -25,7 +25,6 @@ public class Engine extends AbstractEntity<Long> implements Serializable {
     private Long id;
     
     @Length(max = 50)
-    @NotNull
     private String type;
 
     private Integer power;

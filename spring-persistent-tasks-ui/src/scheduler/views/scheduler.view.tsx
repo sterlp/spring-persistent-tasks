@@ -3,11 +3,12 @@ import { Badge, Card, Col, Form, ProgressBar, Row } from "react-bootstrap";
 import { SchedulerEntity, TaskSchedulerStatus } from "../../server-api";
 import { useServerObject } from "../../shared/http-request";
 import ReloadButton from "../../shared/reload-button";
+import { DateTime } from "luxon";
 
 interface Props {
     name: string;
 }
-function SchedulerStatusView({ name }: Props) {
+const SchedulerStatusView = ({ name }: Props) => {
     const status = useServerObject<SchedulerEntity>(
         `/spring-tasks-api/schedulers/${name}`
     );
@@ -91,25 +92,29 @@ function SchedulerStatusView({ name }: Props) {
             ) : undefined}
         </Card>
     );
-}
+};
 
 export default SchedulerStatusView;
 
 function durationSince(from: Date) {
-    let diff = (new Date().getTime() - from.getTime()) / 1000;
-    console.info(diff, from);
-    if (diff < 1) return "just now";
-
-    if (diff < 60) return Math.round(diff) + "s ago";
-    diff = diff / 60;
-
-    if (diff < 60) return Math.round(diff) + "min ago";
-    diff = diff / 60;
-
-    if (diff < 60) return Math.round(diff * 10) / 10 + "h ago";
-    diff = diff / 60;
-
-    return Math.round(diff * 10) / 10 + "days ago";
+    let now = DateTime.now();
+    let diff = now.diff(DateTime.fromJSDate(from), [
+        "days",
+        "hours",
+        "minutes",
+        "seconds",
+    ]);
+    let days = diff.days;
+    let hours = diff.hours;
+    let minutes = diff.minutes;
+    let seconds = diff.seconds;
+    let result = [];
+    if (days > 0) result.push(`${Math.floor(days)}d`);
+    if (hours > 0) result.push(`${Math.floor(hours)}h`);
+    if (minutes > 0) result.push(`${Math.floor(minutes)}min`);
+    if (result.length === 0 || (days === 0 && seconds > 0))
+        result.push(`${Math.floor(seconds)}s`);
+    return result.join(" ") + " ago";
 }
 
 function formatMemory(value: number) {
@@ -121,7 +126,11 @@ function formatMemory(value: number) {
     return Math.round(result) + "MB";
 }
 
-function TaskSchedulerStatusView({ status }: { status?: TaskSchedulerStatus }) {
+const TaskSchedulerStatusView = ({
+    status,
+}: {
+    status?: TaskSchedulerStatus;
+}) => {
     if (!status) return undefined;
     if (status === "ONLINE") {
         return (
@@ -129,10 +138,10 @@ function TaskSchedulerStatusView({ status }: { status?: TaskSchedulerStatus }) {
                 {status}
             </Badge>
         );
-    }
+    }npm install eslint-plugin-react
     return (
         <Badge pill bg="warning" text="dark">
             {status}
         </Badge>
     );
-}
+};
