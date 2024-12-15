@@ -99,7 +99,9 @@ function TriggerItemView({ trigger }: TriggerProps) {
 
 function StateView({ trigger }: TriggerProps) {
     if (!trigger.state) return undefined;
-
+    const state = isString(trigger.state)
+        ? trigger.state
+        : JSON.stringify(trigger.state, null, 2);
     return (
         <Accordion.Item eventKey={trigger.key + "-state"}>
             <Accordion.Header>
@@ -109,12 +111,12 @@ function StateView({ trigger }: TriggerProps) {
                             State
                         </Col>
                         <Col className="text-truncate text-muted">
-                            <small>{trigger.state}</small>
+                            <small>{state}</small>
                         </Col>
                     </Row>
                 </Container>
             </Accordion.Header>
-            <Accordion.Body>{trigger.state}</Accordion.Body>
+            <Accordion.Body>{state}</Accordion.Body>
         </Accordion.Item>
     );
 }
@@ -138,6 +140,9 @@ function ExcptionView({ trigger }: TriggerProps) {
     );
 }
 
+function isString(value: any) {
+    return typeof value === "string" || value instanceof String;
+}
 function isObject(value: any): boolean {
     if (value === undefined || value === null) return false;
     return typeof value === "object" || Array.isArray(value);

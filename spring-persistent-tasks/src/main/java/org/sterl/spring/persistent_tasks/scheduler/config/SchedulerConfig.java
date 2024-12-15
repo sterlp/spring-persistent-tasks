@@ -3,7 +3,6 @@ package org.sterl.spring.persistent_tasks.scheduler.config;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,7 +24,6 @@ public class SchedulerConfig {
 
     @ConditionalSchedulerServiceByProperty
     @Primary
-    @ConditionalOnMissingBean
     @DependsOnDatabaseInitialization
     @Bean
     SchedulerService schedulerService(

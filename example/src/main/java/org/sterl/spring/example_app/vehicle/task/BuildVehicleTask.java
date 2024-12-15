@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import org.sterl.spring.example_app.vehicle.model.Vehicle;
 import org.sterl.spring.example_app.vehicle.repository.VehicleRepository;
 import org.sterl.spring.persistent_tasks.api.SpringBeanTask;
+import org.sterl.spring.persistent_tasks.api.TaskId;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,16 +12,17 @@ import lombok.extern.slf4j.Slf4j;
 @Component(BuildVehicleTask.NAME)
 @RequiredArgsConstructor
 @Slf4j
-public class BuildVehicleTask implements SpringBeanTask<String> {
+public class BuildVehicleTask implements SpringBeanTask<Vehicle> {
 
-    public static final String NAME = "buildVehicleTask";
+    static final String NAME = "buildVehicleTask";
+    public static final TaskId<Vehicle> ID = new TaskId<>(NAME);
 
     private final VehicleRepository vehicleRepository;
 
     @Override
-    public void accept(String type) {
-        vehicleRepository.save(new Vehicle(type));
-        log.info("Create vehicle with type={}", type);
+    public void accept(Vehicle vehicle) {
+        vehicleRepository.save(vehicle);
+        log.info("Create vehicle ={}", vehicle);
         try {
             Thread.sleep(1500);
         } catch (InterruptedException e) {

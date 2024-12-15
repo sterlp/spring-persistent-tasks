@@ -31,9 +31,9 @@ function App() {
                     <Row>
                         <HttpErrorView error={schedulers.error} />
                     </Row>
-                    <Row className="mb-2">
+                    <Row>
                         {schedulers.data?.map((i) => (
-                            <Col key={i}>
+                            <Col key={i} xl="6" md="12" className="mb-2">
                                 <SchedulerStatusView name={i} />
                             </Col>
                         ))}
