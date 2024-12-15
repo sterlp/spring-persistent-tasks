@@ -1,8 +1,8 @@
 import { Badge } from "react-bootstrap";
-import { TriggerData } from "../../server-api";
+import { TriggerView } from "../../server-api";
 
 interface Props {
-    data?: TriggerData;
+    data?: TriggerView;
 }
 function TriggerStatusView({ data }: Props) {
     if (!data) return undefined;

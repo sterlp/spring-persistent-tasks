@@ -15,7 +15,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.TaskId;
-import org.sterl.spring.persistent_tasks.api.Trigger;
+import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
 import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
@@ -100,13 +100,13 @@ public class TriggerService {
         queueAll(event.triggers());
     }
 
-    public <T extends Serializable> TriggerId queue(Trigger<T> tigger) {
+    public <T extends Serializable> TriggerId queue(AddTriggerRequest<T> tigger) {
         taskService.assertIsKnown(tigger.taskId());
         return editTrigger.addTrigger(tigger).getId();
     }
 
     @NonNull
-    public <T extends Serializable> List<TriggerId> queueAll(Collection<Trigger<T>> triggers) {
+    public <T extends Serializable> List<TriggerId> queueAll(Collection<AddTriggerRequest<T>> triggers) {
         triggers.forEach(t -> taskService.assertIsKnown(t.taskId()));
         return editTrigger.addTriggers(triggers);
     }

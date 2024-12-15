@@ -12,7 +12,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.api.TaskId;
-import org.sterl.spring.persistent_tasks.api.Trigger;
+import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
 import org.sterl.spring.persistent_tasks.scheduler.component.TaskExecutorComponent;
@@ -115,7 +115,7 @@ public class SchedulerService {
     /**
      * Runs the next trigger if free threads are available.
      */
-    public Optional<Future<TriggerId>> runOrQueue(Trigger<? extends Serializable> trigger) {
+    public Optional<Future<TriggerId>> runOrQueue(AddTriggerRequest<? extends Serializable> trigger) {
         return trx.execute(t -> {
             Optional<Future<TriggerId>> result = Optional.empty();
             final TriggerId id = triggerService.queue(trigger);

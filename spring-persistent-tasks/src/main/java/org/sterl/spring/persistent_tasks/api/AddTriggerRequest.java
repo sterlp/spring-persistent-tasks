@@ -6,11 +6,11 @@ import java.time.OffsetDateTime;
 /**
  * For any registered task a task trigger represent one unit of work, executing this task once.
  */
-public record Trigger<T extends Serializable>(
+public record AddTriggerRequest<T extends Serializable>(
         String id,
         TaskId<T> taskId,
         T state,
-        OffsetDateTime when,
+        OffsetDateTime runtAt,
         int priority) {
 
     public static final int DEFAULT_PRIORITY = 4;

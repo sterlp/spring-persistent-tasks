@@ -54,7 +54,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         // THEN
         final var e = subject.get(triggerId);
         assertThat(e).isPresent();
-        assertThat(e.get().getData().getTriggerTime().toEpochSecond()).isEqualTo(triggerTime.toEpochSecond());
+        assertThat(e.get().getData().getRunAt().toEpochSecond()).isEqualTo(triggerTime.toEpochSecond());
         assertThat(e.get().getData().getCreatedTime()).isNotNull();
         assertThat(e.get().getData().getStart()).isNull();
         assertThat(e.get().getData().getEnd()).isNull();

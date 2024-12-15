@@ -2,10 +2,10 @@ package org.sterl.spring.persistent_tasks.history.component;
 
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import org.sterl.spring.persistent_tasks.api.event.TriggerLifeCycleEvent;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryEntity;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryRepository;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalCompontant;
+import org.sterl.spring.persistent_tasks.trigger.event.TriggerLifeCycleEvent;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 import lombok.RequiredArgsConstructor;

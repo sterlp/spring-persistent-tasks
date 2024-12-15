@@ -85,16 +85,18 @@
                 </executions>
                 <configuration>
                     <jsonLibrary>jackson2</jsonLibrary>
+                    <noFileComment>true</noFileComment>
                     <customTypeMappings>
                         <mapping>java.time.OffsetDateTime:string</mapping>
                     </customTypeMappings>
+                    <classes>
+                        <class>org.springframework.data.web.PagedModel</class>
+                        <class>org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity</class>
+                    </classes>
                     <classPatterns>
                         <pattern>org.sterl.spring.persistent_tasks.api.**</pattern>
-                        <pattern>
-                            org.sterl.spring.persistent_tasks.scheduler.entity.*</pattern>
                     </classPatterns>
-                    <outputFile>
-                        ../spring-persistent-tasks-ui/src/server-api.d.ts</outputFile>
+                    <outputFile>../spring-persistent-tasks-ui/src/server-api.d.ts</outputFile>
                     <outputKind>module</outputKind>
                 </configuration>
             </plugin>

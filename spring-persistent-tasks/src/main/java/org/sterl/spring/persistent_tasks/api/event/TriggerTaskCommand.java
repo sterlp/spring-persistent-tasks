@@ -6,12 +6,12 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
-import org.sterl.spring.persistent_tasks.api.Trigger;
+import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 
 /**
  * An event to trigger one or multiple task executions
  */
-public record TriggerTaskCommand<T extends Serializable>(Collection<Trigger<T>> triggers) {
+public record TriggerTaskCommand<T extends Serializable>(Collection<AddTriggerRequest<T>> triggers) {
 
     public static <T extends Serializable> TriggerTaskCommand<T> of(String name, T state) {
         return new TriggerTaskCommand<>(Collections.singleton(TaskTriggerBuilder
@@ -20,12 +20,12 @@ public record TriggerTaskCommand<T extends Serializable>(Collection<Trigger<T>> 
                 .build()));
     }
 
-    public static <T extends Serializable> TriggerTaskCommand<T> of(Trigger<T> trigger) {
+    public static <T extends Serializable> TriggerTaskCommand<T> of(AddTriggerRequest<T> trigger) {
         return new TriggerTaskCommand<>(Collections.singleton(trigger));
     }
 
     @SafeVarargs
-    public static <T extends Serializable> TriggerTaskCommand<T> of(Trigger<T>... triggers) {
+    public static <T extends Serializable> TriggerTaskCommand<T> of(AddTriggerRequest<T>... triggers) {
         return new TriggerTaskCommand<>(Arrays.asList(triggers));
     }
 }

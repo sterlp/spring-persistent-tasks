@@ -99,7 +99,7 @@
                         <target>${java.version}</target>
                         <encoding>${project.reporting.outputEncoding}</encoding>
                         <compilerArgs>
-                            <arg>-Xlint:all,-options,-path</arg>
+                            <arg>-Xlint:all,-options,-path,-parameters</arg>
                         </compilerArgs>
                     </configuration>
                 </plugin>

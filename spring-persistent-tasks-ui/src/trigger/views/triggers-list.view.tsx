@@ -1,21 +1,12 @@
 import { useEffect } from "react";
-import { TriggerEntity } from "../../server-api";
+import { Accordion, Col, Container, Row, Stack } from "react-bootstrap";
+import { PagedModel, TriggerView } from "../../server-api";
 import { useServerObject } from "../../shared/http-request";
-import {
-    Accordion,
-    Badge,
-    Col,
-    Container,
-    Form,
-    Row,
-    Stack,
-} from "react-bootstrap";
-import { Slice } from "../../shared/spring-common";
 import LabeledText from "../../shared/labled-text";
 import TriggerStatusView from "./trigger-staus.view";
 
 function TriggersView() {
-    const triggers = useServerObject<Slice<TriggerEntity>>(
+    const triggers = useServerObject<PagedModel<TriggerView>>(
         "/spring-tasks-api/triggers"
     );
 
@@ -28,7 +19,7 @@ function TriggersView() {
     return (
         <Stack gap={1}>
             {triggers.data?.content.map((t) => (
-                <TriggerView key={t.id.id + t.id.name} trigger={t} />
+                <TriggerItemView key={t.id.id + t.id.name} trigger={t} />
             ))}
         </Stack>
     );
@@ -36,7 +27,7 @@ function TriggersView() {
 
 export default TriggersView;
 
-function TriggerView({ trigger }: { trigger: TriggerEntity }) {
+function TriggerItemView({ trigger }: { trigger: TriggerView }) {
     return (
         <Accordion>
             <Accordion.Item eventKey={trigger.id.id + trigger.id.name}>
@@ -45,11 +36,9 @@ function TriggerView({ trigger }: { trigger: TriggerEntity }) {
                         <Row>
                             <Col>{trigger.id.name}</Col>
                             <Col>
-                                <TriggerStatusView data={trigger.data} />
+                                <TriggerStatusView data={trigger} />
                             </Col>
-                            <Col>
-                                {formatDateTime(trigger.data.triggerTime)}
-                            </Col>
+                            <Col>{formatDateTime(trigger.runAt)}</Col>
                         </Row>
                     </Container>
                 </Accordion.Header>
@@ -61,31 +50,31 @@ function TriggerView({ trigger }: { trigger: TriggerEntity }) {
                         <Col>
                             <LabeledText
                                 label="Retrys"
-                                value={trigger.data.executionCount}
+                                value={trigger.executionCount}
                             />
                         </Col>
                         <Col>
                             <LabeledText
                                 label="Run at"
-                                value={formatDateTime(trigger.data.triggerTime)}
+                                value={formatDateTime(trigger.runAt)}
                             />
                         </Col>
                         <Col>
                             <LabeledText
                                 label="Started at"
-                                value={formatDateTime(trigger.data.start)}
+                                value={formatDateTime(trigger.start)}
                             />
                         </Col>
                         <Col>
                             <LabeledText
                                 label="Finished at"
-                                value={formatDateTime(trigger.data.end)}
+                                value={formatDateTime(trigger.end)}
                             />
                         </Col>
                         <Col>
                             <LabeledText
                                 label="Duration MS"
-                                value={trigger.data.runningDurationInMs}
+                                value={trigger.runningDurationInMs}
                             />
                         </Col>
                     </Row>

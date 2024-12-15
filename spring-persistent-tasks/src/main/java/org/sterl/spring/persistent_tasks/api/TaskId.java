@@ -12,19 +12,27 @@ import lombok.RequiredArgsConstructor;
  */
 public record TaskId<T extends Serializable>(String name) implements Serializable {
 
+    public TaskTriggerBuilder<T> newTrigger() {
+        return new TaskTriggerBuilder<>(this);
+    }
+
+    public AddTriggerRequest<T> newUniqueTrigger(T state) {
+        return new TaskTriggerBuilder<>(this).state(state).build();
+    }
+    
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class TaskTriggerBuilder<T extends Serializable> {
         private final TaskId<T> taskId;
         private String id;
         private T state;
         private OffsetDateTime when = OffsetDateTime.now();
-        private int priority = Trigger.DEFAULT_PRIORITY;
+        private int priority = AddTriggerRequest.DEFAULT_PRIORITY;
 
         public static <T extends Serializable> TaskTriggerBuilder<T> newTrigger(String name) {
             return new TaskTriggerBuilder<>(new TaskId<T>(name));
         }
-        public Trigger<T> build() {
-            return new Trigger<>(
+        public AddTriggerRequest<T> build() {
+            return new AddTriggerRequest<>(
                     id == null ? UUID.randomUUID().toString() : id,
                     taskId, state, when, priority);
         }
@@ -50,13 +58,5 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
             this.when = when;
             return this;
         }
-    }
-
-    public TaskTriggerBuilder<T> newTrigger() {
-        return new TaskTriggerBuilder<>(this);
-    }
-
-    public Trigger<T> newUniqueTrigger(T state) {
-        return new TaskTriggerBuilder<>(this).state(state).build();
     }
 }

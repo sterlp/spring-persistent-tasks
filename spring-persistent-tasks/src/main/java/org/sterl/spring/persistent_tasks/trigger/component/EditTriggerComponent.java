@@ -12,13 +12,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.sterl.spring.persistent_tasks.api.Trigger;
+import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
-import org.sterl.spring.persistent_tasks.api.event.TriggerCanceledEvent;
-import org.sterl.spring.persistent_tasks.api.event.TriggerCompleteEvent;
-import org.sterl.spring.persistent_tasks.api.event.TriggerFailedEvent;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
+import org.sterl.spring.persistent_tasks.trigger.event.TriggerCanceledEvent;
+import org.sterl.spring.persistent_tasks.trigger.event.TriggerCompleteEvent;
+import org.sterl.spring.persistent_tasks.trigger.event.TriggerFailedEvent;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
 
@@ -83,7 +83,7 @@ public class EditTriggerComponent {
                 });
     }
 
-    public <T extends Serializable> TriggerEntity addTrigger(Trigger<T> tigger) {
+    public <T extends Serializable> TriggerEntity addTrigger(AddTriggerRequest<T> tigger) {
         var result = toTriggerEntity(tigger);
         result = triggerRepository.save(result);
         log.debug("Added trigger={}", result);
@@ -91,7 +91,7 @@ public class EditTriggerComponent {
     }
 
     @NonNull
-    public <T extends Serializable> List<TriggerId> addTriggers(Collection<Trigger<T>> newTriggers) {
+    public <T extends Serializable> List<TriggerId> addTriggers(Collection<AddTriggerRequest<T>> newTriggers) {
         var result = triggerRepository
             .saveAll(newTriggers.stream().map(this::toTriggerEntity).toList())
             .stream().map(TriggerEntity::getId)
@@ -100,12 +100,12 @@ public class EditTriggerComponent {
         return result;
     }
 
-    private <T extends Serializable> TriggerEntity toTriggerEntity(Trigger<T> trigger) {
+    private <T extends Serializable> TriggerEntity toTriggerEntity(AddTriggerRequest<T> trigger) {
         byte[] state = stateSerializer.serialize(trigger.state());
         var t = new TriggerEntity(
             trigger.toTaskTriggerId(),
             TriggerData.builder()
-                .triggerTime(trigger.when())
+                .runAt(trigger.runtAt())
                 .priority(trigger.priority())
                 .state(state)
                 .build(),

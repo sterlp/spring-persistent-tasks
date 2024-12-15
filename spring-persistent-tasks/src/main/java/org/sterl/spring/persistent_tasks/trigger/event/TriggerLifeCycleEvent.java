@@ -1,4 +1,4 @@
-package org.sterl.spring.persistent_tasks.api.event;
+package org.sterl.spring.persistent_tasks.trigger.event;
 
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 

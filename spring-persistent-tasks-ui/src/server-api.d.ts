@@ -1,6 +1,29 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 3.2.1263 on 2024-12-14 15:33:48.
+
+export interface PagedModel<T> {
+    content: T[];
+    page: PageMetadata;
+}
+
+export interface SchedulerEntity {
+    id: string;
+    tasksSlotCount: number;
+    runnungTasks: number;
+    systemLoadAverage: number;
+    maxHeap: number;
+    usedHeap: number;
+    status: TaskSchedulerStatus;
+    lastPing: string;
+}
+
+export interface AddTriggerRequest<T> {
+    id: string;
+    taskId: TaskId<T>;
+    state: T;
+    runtAt: string;
+    priority: number;
+}
 
 export interface RetryStrategy {
 }
@@ -19,14 +42,6 @@ export interface TaskId<T> extends Serializable {
 export interface TaskTriggerBuilder<T> {
 }
 
-export interface Trigger<T> {
-    id: string;
-    taskId: TaskId<T>;
-    state: T;
-    when: string;
-    priority: number;
-}
-
 export interface TriggerId extends Serializable {
     id: string;
     name: string;
@@ -35,56 +50,12 @@ export interface TriggerId extends Serializable {
 export interface TriggerIdBuilder {
 }
 
-export interface TriggerCanceledEvent extends TriggerLifeCycleEvent {
-    trigger: TriggerEntity;
-}
-
-export interface TriggerCompleteEvent extends TriggerLifeCycleEvent {
-    trigger: TriggerEntity;
-}
-
-export interface TriggerFailedEvent extends TriggerLifeCycleEvent {
-    trigger: TriggerEntity;
-}
-
-export interface TriggerLifeCycleEvent {
-}
-
-export interface TriggerTaskCommand<T> {
-    triggers: Trigger<T>[];
-}
-
-export interface OnlineSchedulersEntity {
-    online: string[];
-    countOffline: number;
-}
-
-export interface SchedulerEntity {
-    id: string;
-    tasksSlotCount: number;
-    runnungTasks: number;
-    systemLoadAverage: number;
-    maxHeap: number;
-    usedHeap: number;
-    status: TaskSchedulerStatus;
-    lastPing: string;
-}
-
-export interface Serializable {
-}
-
-export interface TriggerEntity {
+export interface TriggerView {
+    key: string;
     id: TriggerId;
-    data: TriggerData;
     runningOn: string;
-}
-
-export interface Consumer<T> {
-}
-
-export interface TriggerData {
     createdTime: string;
-    triggerTime: string;
+    runAt: string;
     start: string;
     end: string;
     executionCount: number;
@@ -94,6 +65,23 @@ export interface TriggerData {
     state: any;
     exceptionName: string;
     lastException: string;
+}
+
+export interface TriggerTaskCommand<T> {
+    triggers: AddTriggerRequest<T>[];
+}
+
+export interface PageMetadata {
+    size: number;
+    number: number;
+    totalElements: number;
+    totalPages: number;
+}
+
+export interface Serializable {
+}
+
+export interface Consumer<T> {
 }
 
 export type TaskSchedulerStatus = "ONLINE" | "OFFLINE";

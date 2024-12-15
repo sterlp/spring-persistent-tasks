@@ -23,7 +23,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Embeddable
-@ToString(of = {"status", "priority", "executionCount", "createdTime", "triggerTime", "start", "end"})
+@ToString(of = {"status", "priority", "executionCount", "createdTime", "runAt", "start", "end"})
 @Builder(toBuilder = true)
 public class TriggerData {
     
@@ -40,7 +40,7 @@ public class TriggerData {
 
     @Default
     @Column(nullable = false)
-    private OffsetDateTime triggerTime = OffsetDateTime.now();
+    private OffsetDateTime runAt = OffsetDateTime.now();
 
     @Column(name = "start_time")
     private OffsetDateTime start;

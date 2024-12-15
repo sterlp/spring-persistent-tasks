@@ -1,14 +1,15 @@
 package org.sterl.spring.persistent_tasks.trigger.api;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedModel;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.sterl.spring.persistent_tasks.api.TriggerView;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.api.TriggerConverter.FromTriggerEntity;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("${spring.persistent-tasks.web.base-path:spring-tasks-api}")
 public class TriggerResource {
-
 
     private final TriggerService triggerService;
     
@@ -26,8 +26,8 @@ public class TriggerResource {
     }
     
     @GetMapping("/triggers")
-    public Page<TriggerEntity> listTasks(
+    public PagedModel<TriggerView> list(
             @PageableDefault(size = 50, direction = Direction.ASC, sort = "data.createdTime") Pageable pageable) {
-        return triggerService.findAllTriggers(pageable);
+        return FromTriggerEntity.INSTANCE.toPage(triggerService.findAllTriggers(pageable));
     }
 }

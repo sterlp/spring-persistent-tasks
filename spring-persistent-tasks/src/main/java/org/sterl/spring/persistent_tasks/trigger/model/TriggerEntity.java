@@ -83,9 +83,9 @@ public class TriggerEntity {
         return this;
     }
 
-    public TriggerEntity runAt(OffsetDateTime triggerTime) {
+    public TriggerEntity runAt(OffsetDateTime runAt) {
         data.setStatus(TriggerStatus.NEW);
-        data.setTriggerTime(triggerTime);
+        data.setRunAt(runAt);
         return this;
     }
 }
