@@ -6,7 +6,9 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedModel;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.api.TriggerConverter.FromTriggerEntity;
@@ -20,15 +22,17 @@ public class TriggerResource {
 
     private final TriggerService triggerService;
     
-    @GetMapping("/triggers/count")
+    @GetMapping("triggers/count")
     public long count() {
         return triggerService.countTriggers();
     }
     
-    @GetMapping("/triggers")
+    @GetMapping("triggers")
     public PagedModel<Trigger> list(
-            @PageableDefault(size = 50, direction = Direction.ASC, sort = "data.runAt") 
+            @RequestParam(name = "taskId", required = false) String taskId,
+            @PageableDefault(size = 100, direction = Direction.ASC, sort = "data.runAt") 
             Pageable pageable) {
-        return FromTriggerEntity.INSTANCE.toPage(triggerService.findAllTriggers(pageable));
+        return FromTriggerEntity.INSTANCE.toPage(
+                triggerService.findAllTriggers(TaskId.of(taskId), pageable));
     }
 }

@@ -22,9 +22,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "TASK_TRIGGERS", indexes = {
+@Table(name = "SPT_TASK_TRIGGERS", indexes = {
         @Index(name = "IDX_TASK_TRIGGERS_PRIORITY", columnList = "priority"),
-        @Index(name = "IDX_TASK_TRIGGERS_TIME", columnList = "trigger_time"),
+        @Index(name = "IDX_TASK_TRIGGERS_RUN_AT", columnList = "run_at"),
         @Index(name = "IDX_TASK_TRIGGERS_STATUS", columnList = "status"),
 })
 @Data

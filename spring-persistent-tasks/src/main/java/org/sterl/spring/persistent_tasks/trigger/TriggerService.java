@@ -14,8 +14,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
+import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
 import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
@@ -79,8 +79,8 @@ public class TriggerService {
     }
 
     @Transactional(readOnly = true , timeout = 10)
-    public Page<TriggerEntity> findAllTriggers(Pageable page) {
-        return this.editTrigger.listTriggers(page);
+    public Page<TriggerEntity> findAllTriggers(TaskId<?> task, Pageable page) {
+        return this.editTrigger.listTriggers(task, page);
     }
 
     public void deleteAll() {

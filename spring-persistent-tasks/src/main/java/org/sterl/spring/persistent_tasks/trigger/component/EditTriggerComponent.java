@@ -13,6 +13,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
+import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
@@ -35,8 +36,9 @@ public class EditTriggerComponent {
     private final StateSerializer stateSerializer = new StateSerializer();
     private final TriggerRepository triggerRepository;
 
-    public Page<TriggerEntity> listTriggers(Pageable page) {
-        return triggerRepository.findAll(page);
+    public Page<TriggerEntity> listTriggers(TaskId<?> task, Pageable page) {
+        if (task == null) return triggerRepository.findAll(page);
+        return triggerRepository.findAll(task.name(), page);
     }
 
     public Optional<TriggerEntity> completeTaskWithSuccess(TriggerId id) {

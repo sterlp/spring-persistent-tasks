@@ -1,8 +1,10 @@
 package org.sterl.spring.example_app.shared.model;
 
+import java.io.Serializable;
+
 import jakarta.persistence.Transient;
 
-public abstract class AbstractEntity<T> {
+public abstract class AbstractEntity<T> implements Serializable {
 
     public abstract T getId();
     

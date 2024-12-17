@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.hibernate.LockOptions;
 import org.hibernate.jpa.SpecHints;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -21,6 +22,14 @@ import jakarta.persistence.QueryHint;
 
 public interface TriggerRepository extends JpaRepository<TriggerEntity, TriggerId> {
 
+    
+    @Query("""
+           SELECT e FROM #{#entityName} e
+           WHERE e.id.name = :name
+           """)
+    Page<TriggerEntity> findAll(
+            @Param("name") String name, Pageable page);
+    
     // https://jakarta.ee/specifications/persistence/3.0/jakarta-persistence-spec-3.0.html#a2132
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @QueryHints({
@@ -28,11 +37,11 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, TriggerI
         @QueryHint(name = SpecHints.HINT_SPEC_QUERY_TIMEOUT, value = "4500")
     })
     @Query("""
-            SELECT e FROM #{#entityName} e
-            WHERE data.runAt <= :runAt
-            AND data.status = :status
-            ORDER BY data.priority DESC, data.executionCount ASC
-            """)
+           SELECT e FROM #{#entityName} e
+           WHERE data.runAt <= :runAt
+           AND data.status = :status
+           ORDER BY data.priority DESC, data.executionCount ASC
+           """)
     List<TriggerEntity> loadNextTasks(
             @Param("runAt") OffsetDateTime runAt,
             @Param("status") TriggerStatus status,
@@ -49,16 +58,16 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, TriggerI
         @QueryHint(name = SpecHints.HINT_SPEC_QUERY_TIMEOUT, value = "4500")
     })
     @Query("""
-            SELECT e FROM #{#entityName} e
-            WHERE e.id <= :id
-            """)
+           SELECT e FROM #{#entityName} e
+           WHERE e.id <= :id
+           """)
     TriggerEntity lockById(@Param("id") TriggerId id);
 
     @Query("""
-            SELECT e FROM #{#entityName} e
-            WHERE e.runningOn NOT IN ( :runningOn )
-            AND e.data.status = :status
-            """)
+           SELECT e FROM #{#entityName} e
+           WHERE e.runningOn NOT IN ( :runningOn )
+           AND e.data.status = :status
+           """)
     List<TriggerEntity> findNotRunningOn(
             @Param("runningOn") Set<String> runningOn,
             @Param("status") TriggerStatus status);

@@ -21,13 +21,13 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "TASK_TRIGGERS_HISTORY",
+@Table(name = "SPT_TASK_TRIGGERS_HISTORY",
     indexes = {
         @Index(name = "IDX_TASK_TRIGGERS_HISTORY_CREATE_DATE", columnList = "created_time"),
         @Index(name = "IDX_TASK_TRIGGERS_HISTORY_TASK_ID", columnList = "task_id"),
         @Index(name = "IDX_TASK_TRIGGERS_HISTORY_NAME", columnList = "name"),
         @Index(name = "IDX_TASK_TRIGGERS_HISTORY_PRIORITY", columnList = "priority"),
-        @Index(name = "IDX_TASK_TRIGGERS_HISTORY_TRIGGER_TIME", columnList = "trigger_time"),
+        @Index(name = "IDX_TASK_TRIGGERS_HISTORY_RUN_AT", columnList = "run_at"),
         @Index(name = "IDX_TASK_TRIGGERS_HISTORY_STATUS", columnList = "status"),
     }
 )

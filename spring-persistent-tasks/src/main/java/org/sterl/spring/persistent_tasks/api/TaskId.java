@@ -19,6 +19,11 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
     public AddTriggerRequest<T> newUniqueTrigger(T state) {
         return new TaskTriggerBuilder<>(this).state(state).build();
     }
+
+    public static TaskId<?> of(String taskId) {
+        if (taskId == null) return null;
+        return new TaskId(taskId);
+    }
     
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class TaskTriggerBuilder<T extends Serializable> {
