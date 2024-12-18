@@ -31,6 +31,12 @@ const TriggerItemView = ({ trigger }: TriggerProps) => {
                                     value={formatDateTime(trigger.runAt)}
                                 />
                             </Col>
+                            <Col className="d-none d-lg-block">
+                                <LabeledText
+                                    label="Retrys"
+                                    value={trigger.executionCount}
+                                />
+                            </Col>
                         </Row>
                     </Container>
                 </Accordion.Header>
@@ -51,25 +57,25 @@ const TriggerItemView = ({ trigger }: TriggerProps) => {
                     </Row>
                     <hr />
                     <Row>
-                        <Col>
+                        <Col md="6" xl="3">
                             <LabeledText
                                 label="Run at"
                                 value={formatDateTime(trigger.runAt)}
                             />
                         </Col>
-                        <Col>
+                        <Col md="6" xl="3">
                             <LabeledText
                                 label="Started at"
                                 value={formatDateTime(trigger.start)}
                             />
                         </Col>
-                        <Col>
+                        <Col md="6" xl="3">
                             <LabeledText
                                 label="Finished at"
                                 value={formatDateTime(trigger.end)}
                             />
                         </Col>
-                        <Col>
+                        <Col md="6" xl="3">
                             <LabeledText
                                 label="Duration MS"
                                 value={trigger.runningDurationInMs}

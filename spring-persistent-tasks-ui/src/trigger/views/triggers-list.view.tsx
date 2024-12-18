@@ -1,53 +1,50 @@
 import { useEffect, useState } from "react";
 import {
-    Accordion,
-    Button,
-    Card,
     Col,
-    Container,
     Form,
     Pagination,
     Row,
-    Spinner,
-    Stack,
+    Stack
 } from "react-bootstrap";
 import { PagedModel, Trigger } from "../../server-api";
 import { useServerObject } from "../../shared/http-request";
-import LabeledText from "../../shared/labled-text";
-import TriggerStatusView from "./trigger-staus.view";
-import JsonView from "@uiw/react-json-view";
 import ReloadButton from "../../shared/reload-button";
+import TaskSelect from "../../task/view/task-select.view";
 import TriggerItemView from "./trigger-list-item.view";
 
 const TriggersView = () => {
     const [page, setPage] = useState(0);
+    const [selectedTask, setSelectedTask] = useState("");
     const triggers = useServerObject<PagedModel<Trigger>>(
         "/spring-tasks-api/triggers"
     );
 
     const doReload = () => {
-        triggers.doGet("?size=5&page=" + page);
+        triggers.doGet("?size=5&page=" + page + "&taskId=" + selectedTask);
     };
 
-    useEffect(doReload, [page]);
+    useEffect(doReload, [page, selectedTask]);
     useEffect(() => {
         const intervalId = setInterval(doReload, 10000);
         return () => clearInterval(intervalId);
-    }, [page]);
+    }, [page, selectedTask]);
 
+// className="d-flex justify-content-between align-items-center"
     return (
         <Stack gap={1}>
-            <Row>
-                <Col className="d-flex justify-content-between align-items-center">
-                    <div>
-                        <TaskSelect />
-                    </div>
+            <Row className="align-items-center">
+                <Col >
+                    <TaskSelect onTaskChange={setSelectedTask}  />
+                </Col>
+                <Col>
                     <PageView
                         onPage={(p) => setPage(p)}
                         data={triggers.data}
                         className="mt-2 mb-2"
                     />
-                    <ReloadButton
+                </Col>
+                <Col>
+                    <ReloadButton className="float-end"
                         isLoading={triggers.isLoading}
                         onClick={doReload}
                     />
@@ -62,25 +59,6 @@ const TriggersView = () => {
 
 export default TriggersView;
 
-function TaskSelect() {
-    const tasksState = useServerObject<string[]>("/spring-tasks-api/tasks");
-    useEffect(tasksState.doGet, []);
-    const options = tasksState.data?.map((t) => <option>{t}</option>);
-    return (
-        <>
-            {tasksState.isLoading ? (
-                <Spinner />
-            ) : (
-                <Form.Select aria-label="Default select example">
-                    <option value="">All</option>
-
-                    <option value="2">{tasksState.data?.length}</option>
-                    <option value="3">{tasksState.data}</option>
-                </Form.Select>
-            )}
-        </>
-    );
-}
 
 const PageView = ({
     data,

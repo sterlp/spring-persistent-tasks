@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 export interface ServerObject<T> {
     isLoading: boolean,
@@ -34,5 +34,8 @@ export const useServerObject = <T>(url: string, startValue?: T): ServerObject<T>
             .finally(() => setIsLoading(false));
         return () => controller.abort();
     }
-    return {isLoading, data, error, doGet};
+    return useMemo(
+        () => ({ isLoading, data, error, doGet }),
+        [isLoading, data, error]
+    );
 }

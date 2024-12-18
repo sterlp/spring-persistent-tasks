@@ -21,7 +21,7 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
     }
 
     public static TaskId<?> of(String taskId) {
-        if (taskId == null) return null;
+        if (taskId == null || taskId.isBlank()) return null;
         return new TaskId(taskId);
     }
     
