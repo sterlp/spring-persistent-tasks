@@ -1,24 +1,58 @@
-import { useEffect } from "react";
-import { Accordion, Col, Container, Row, Stack } from "react-bootstrap";
+import { useEffect, useState } from "react";
+import {
+    Accordion,
+    Button,
+    Card,
+    Col,
+    Container,
+    Form,
+    Pagination,
+    Row,
+    Spinner,
+    Stack,
+} from "react-bootstrap";
 import { PagedModel, Trigger } from "../../server-api";
 import { useServerObject } from "../../shared/http-request";
 import LabeledText from "../../shared/labled-text";
 import TriggerStatusView from "./trigger-staus.view";
 import JsonView from "@uiw/react-json-view";
+import ReloadButton from "../../shared/reload-button";
+import TriggerItemView from "./trigger-list-item.view";
 
 const TriggersView = () => {
+    const [page, setPage] = useState(0);
     const triggers = useServerObject<PagedModel<Trigger>>(
         "/spring-tasks-api/triggers"
     );
 
-    useEffect(triggers.doGet, []);
+    const doReload = () => {
+        triggers.doGet("?size=5&page=" + page);
+    };
+
+    useEffect(doReload, [page]);
     useEffect(() => {
-        const intervalId = setInterval(triggers.doGet, 10000);
+        const intervalId = setInterval(doReload, 10000);
         return () => clearInterval(intervalId);
-    }, []);
+    }, [page]);
 
     return (
         <Stack gap={1}>
+            <Row>
+                <Col className="d-flex justify-content-between align-items-center">
+                    <div>
+                        <TaskSelect />
+                    </div>
+                    <PageView
+                        onPage={(p) => setPage(p)}
+                        data={triggers.data}
+                        className="mt-2 mb-2"
+                    />
+                    <ReloadButton
+                        isLoading={triggers.isLoading}
+                        onClick={doReload}
+                    />
+                </Col>
+            </Row>
             {triggers.data?.content.map((t) => (
                 <TriggerItemView key={t.key} trigger={t} />
             ))}
@@ -28,157 +62,59 @@ const TriggersView = () => {
 
 export default TriggersView;
 
-interface TriggerProps {
-    trigger: Trigger;
-}
-const TriggerItemView = ({ trigger }: TriggerProps) => {
-    // className="d-flex justify-content-between align-items-center"
+function TaskSelect() {
+    const tasksState = useServerObject<string[]>("/spring-tasks-api/tasks");
+    useEffect(tasksState.doGet, []);
+    const options = tasksState.data?.map((t) => <option>{t}</option>);
     return (
-        <Accordion>
-            <Accordion.Item eventKey={trigger.key}>
-                <Accordion.Header>
-                    <Container>
-                        <Row>
-                            <Col>
-                                <small className="text-truncate text-muted">
-                                    {trigger.id.id}
-                                </small>
-                                {" " + trigger.id.name}
-                            </Col>
-                            <Col>
-                                <TriggerStatusView data={trigger} />
-                            </Col>
-                            <Col>
-                                <LabeledText
-                                    label="Run at"
-                                    value={formatDateTime(trigger.runAt)}
-                                />
-                            </Col>
-                        </Row>
-                    </Container>
-                </Accordion.Header>
-                <Accordion.Body>
-                    <Row>
-                        <Col>
-                            <LabeledText
-                                label="Retrys"
-                                value={trigger.executionCount}
-                            />
-                        </Col>
-                        <Col>
-                            <LabeledText
-                                label="Run at"
-                                value={formatDateTime(trigger.runAt)}
-                            />
-                        </Col>
-                        <Col>
-                            <LabeledText
-                                label="Started at"
-                                value={formatDateTime(trigger.start)}
-                            />
-                        </Col>
-                        <Col>
-                            <LabeledText
-                                label="Finished at"
-                                value={formatDateTime(trigger.end)}
-                            />
-                        </Col>
-                        <Col>
-                            <LabeledText
-                                label="Duration MS"
-                                value={trigger.runningDurationInMs}
-                            />
-                        </Col>
-                    </Row>
-                </Accordion.Body>
-            </Accordion.Item>
-            <StateView key={trigger.key + "-state-view"} trigger={trigger} />
-            <ExcptionView key={trigger.key + "-error-view"} trigger={trigger} />
-        </Accordion>
+        <>
+            {tasksState.isLoading ? (
+                <Spinner />
+            ) : (
+                <Form.Select aria-label="Default select example">
+                    <option value="">All</option>
+
+                    <option value="2">{tasksState.data?.length}</option>
+                    <option value="3">{tasksState.data}</option>
+                </Form.Select>
+            )}
+        </>
+    );
+}
+
+const PageView = ({
+    data,
+    className,
+    onPage,
+}: {
+    className: string;
+    data?: PagedModel<unknown>;
+    onPage(page: number): void;
+}) => {
+    if (!data || !data.content)
+        return (
+            <Pagination className={className}>
+                <Pagination.Prev disabled />
+                <Form.Label className="mt-2 ms-2 me-1">-</Form.Label>
+                <Pagination.Next disabled />
+            </Pagination>
+        );
+    return (
+        <Pagination className="mt-2 mb-2">
+            <Pagination.Prev
+                onClick={() => onPage(data.page.number - 1)}
+                disabled={data.page.number === 0}
+            />
+            <Form.Label className="mt-2 ms-2 me-1">
+                {data.content.length +
+                    data.page.size * data.page.number +
+                    " / " +
+                    data.page.totalElements}
+            </Form.Label>
+            <Pagination.Next
+                onClick={() => onPage(data.page.number + 1)}
+                disabled={data.page.number >= data.page.totalPages - 1}
+            />
+        </Pagination>
     );
 };
-
-const StateView = ({ trigger }: TriggerProps) => {
-    if (!trigger.state) return undefined;
-    const state = isString(trigger.state)
-        ? trigger.state
-        : JSON.stringify(trigger.state, null, 2);
-
-    return (
-        <Accordion.Item eventKey={trigger.key + "-state"}>
-            <Accordion.Header>
-                <Container>
-                    <Row>
-                        <Col xs="2" md="1">
-                            State
-                        </Col>
-                        <Col className="text-truncate text-muted">
-                            <small>{state + ""}</small>
-                        </Col>
-                    </Row>
-                </Container>
-            </Accordion.Header>
-            <Accordion.Body>
-                {isObject(trigger.state) ? (
-                    <JsonView value={trigger.state} />
-                ) : (
-                    <pre>{state}</pre>
-                )}
-            </Accordion.Body>
-        </Accordion.Item>
-    );
-};
-
-const ExcptionView = ({ trigger }: TriggerProps) => {
-    if (!trigger.exceptionName) return undefined;
-
-    return (
-        <Accordion.Item eventKey={trigger.key + "-error"}>
-            <Accordion.Header>
-                <Container>
-                    <Row>
-                        <Col className="text-danger">
-                            {trigger.exceptionName}
-                        </Col>
-                    </Row>
-                </Container>
-            </Accordion.Header>
-            <Accordion.Body>
-                <pre>
-                    <small>
-                        <code>{trigger.lastException}</code>
-                    </small>
-                </pre>
-            </Accordion.Body>
-        </Accordion.Item>
-    );
-};
-
-function isString(value: any): value is string {
-    return typeof value === "string" || value instanceof String;
-}
-function isObject(value: any): boolean {
-    if (value === undefined || value === null) return false;
-    return typeof value === "object" || Array.isArray(value);
-}
-
-function formatDateTime(inputDate?: string | Date): string {
-    if (!inputDate) return "";
-    const date = inputDate instanceof Date ? inputDate : new Date(inputDate);
-
-    const now = new Date();
-    const isToday = date.toDateString() === now.toDateString();
-    const options = {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false, // Use 24-hour format
-    } as Intl.DateTimeFormatOptions;
-    if (!isToday) {
-        options.year = "numeric";
-        options.month = "numeric";
-        options.day = "numeric";
-    }
-    const browserLanguage = navigator.language || "en-US";
-    return new Intl.DateTimeFormat(browserLanguage, options).format(date);
-}

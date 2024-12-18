@@ -1,8 +1,6 @@
 package org.sterl.spring.persistent_tasks.task.api;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.Arrays;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,11 +18,14 @@ public class TaskResource {
     private final TaskService taskService;
     
     @GetMapping("tasks")
-    public Collection<String> get() {
-        final List<String> taskNames = taskService.findAllTaskIds()
+    public String[] get() {
+        final var taskNames = taskService.findAllTaskIds()
                 .stream()
-                .map(TaskId::name).toList();
-        Collections.sort(taskNames);
+                .map(TaskId::name)
+                .toArray(size -> new String[size]);
+
+        Arrays.sort(taskNames);
+
         return taskNames;
     }
 }
