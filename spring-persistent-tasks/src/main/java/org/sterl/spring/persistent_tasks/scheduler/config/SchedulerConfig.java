@@ -3,6 +3,7 @@ package org.sterl.spring.persistent_tasks.scheduler.config;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,10 +26,10 @@ public class SchedulerConfig {
     @ConditionalSchedulerServiceByProperty
     @Primary
     @DependsOnDatabaseInitialization
-    @Bean
+    @Bean(name = "schedulerService", initMethod = "start", destroyMethod = "stop")
     SchedulerService schedulerService(
             TriggerService triggerService,
-            TaskExecutorComponent taskExecutor,
+            @Value("${spring.persistent-tasks.max-threads:10}") int maxThreads,
             EditSchedulerStatusComponent editSchedulerStatus,
             TransactionTemplate trx) throws UnknownHostException {
 
@@ -38,6 +39,8 @@ public class SchedulerConfig {
         if (name == null) {
             name = ip.toString();
         }
-        return new SchedulerService(name, triggerService, taskExecutor, editSchedulerStatus, trx);
+        return new SchedulerService(name, triggerService, 
+                new TaskExecutorComponent(triggerService, maxThreads), 
+                editSchedulerStatus, trx);
     }
 }

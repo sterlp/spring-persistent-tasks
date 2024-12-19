@@ -49,7 +49,7 @@ public class SchedulerService {
     public void start() {
         taskExecutor.start();
         final var s = editSchedulerStatus.checkinToRegistry(name, TaskSchedulerStatus.ONLINE);
-        log.info("Started {} and {} threads.", s, taskExecutor.getMaxThreads());
+        log.info("Started {} on {} threads.", s, taskExecutor.getMaxThreads());
     }
 
     @PreDestroy
@@ -67,13 +67,14 @@ public class SchedulerService {
 
     public SchedulerEntity pingRegistry() {
         var result = editSchedulerStatus.checkinToRegistry(name, TaskSchedulerStatus.ONLINE);
+        result.setRunnungTasks(taskExecutor.getRunningTasks());
+        result.setTasksSlotCount(taskExecutor.getMaxThreads());
         log.debug("Ping {}", result);
         return result;
     }
     
     public SchedulerEntity getScheduler() {
-        var result = editSchedulerStatus.checkinToRegistry(name, TaskSchedulerStatus.ONLINE);
-        log.debug("Ping {}", result);
+        var result = editSchedulerStatus.get(name);
         return result;
     }
     
@@ -123,6 +124,9 @@ public class SchedulerService {
                 var toRun = triggerService.markTriggerInExecution(id, name).get();
                 result = Optional.of(taskExecutor.submit(toRun));
                 pingRegistry();
+            } else {
+                log.debug("Currently not enough free thread available {} of {} in use. Task {} queued.", 
+                        taskExecutor.getFreeThreads(), taskExecutor.getMaxThreads(), id);
             }
             return result;
         });

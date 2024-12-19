@@ -54,7 +54,8 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
     }
 
     @BeforeEach
-    private void setup() {
+    public void beforeEach() throws Exception {
+        super.beforeEach();
         subject = schedulerService;
         personRepository.deleteAllInBatch();
         sendError.set(false);

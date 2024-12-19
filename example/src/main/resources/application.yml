@@ -6,6 +6,7 @@ spring:
 
   persistent-tasks:
     scheduler-enabled: true
+    max-threads: 1
     
 springdoc:
   swagger-ui:

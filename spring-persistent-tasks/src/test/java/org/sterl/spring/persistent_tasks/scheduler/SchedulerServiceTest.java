@@ -19,7 +19,8 @@ class SchedulerServiceTest extends AbstractSpringTest {
     private SchedulerService subject;
 
     @BeforeEach
-    void before() throws Exception {
+    public void beforeEach() throws Exception {
+        super.beforeEach();
         subject = schedulerService;
     }
 
@@ -35,7 +36,7 @@ class SchedulerServiceTest extends AbstractSpringTest {
     }
     
     @Test
-    void willTriggerOnlyFreeThreadSize() throws Exception {
+    void testWillTriggerOnlyFreeThreadSize() throws Exception {
         // GIVEN
         for (int i = 0; i < 15; i++) {
             triggerService.queue(TaskTriggerBuilder
@@ -49,9 +50,12 @@ class SchedulerServiceTest extends AbstractSpringTest {
         subject.triggerNextTasks();
 
         // THEN
-        Thread.sleep(25);
+        Thread.sleep(15);
         assertThat(triggerService.countTriggers(TriggerStatus.RUNNING)).isEqualTo(10);
         assertThat(triggerService.countTriggers(TriggerStatus.NEW)).isEqualTo(5);
+        // AND
+        final SchedulerEntity scheduler = subject.getScheduler();
+        assertThat(scheduler.getRunnungTasks()).isEqualTo(10);
     }
     
     @Test

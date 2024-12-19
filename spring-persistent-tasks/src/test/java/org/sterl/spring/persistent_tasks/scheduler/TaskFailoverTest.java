@@ -22,7 +22,8 @@ class TaskFailoverTest extends AbstractSpringTest {
     private SchedulerService schedulerA;
 
     @BeforeEach
-    void setup() {
+    public void beforeEach() throws Exception {
+        super.beforeEach();
         this.schedulerA = schedulerService;
     }
 

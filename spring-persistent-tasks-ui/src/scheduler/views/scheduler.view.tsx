@@ -15,6 +15,12 @@ const SchedulerStatusView = ({ name }: Props) => {
 
     useEffect(status.doGet, [name]);
 
+    // Poll every 10 seconds
+    useEffect(() => {
+        const intervalId = setInterval(status.doGet, 10000);
+        return () => clearInterval(intervalId);
+    }, [name]);
+
     return (
         <Card>
             <Card.Header

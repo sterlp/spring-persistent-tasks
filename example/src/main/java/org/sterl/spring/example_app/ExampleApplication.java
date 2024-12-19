@@ -44,14 +44,14 @@ public class ExampleApplication {
               .build();
     }
 
-    @Bean
+    @Bean(name = "schedulerB", initMethod = "start", destroyMethod = "stop")
     @SuppressWarnings("resource")
-    SchedulerService schedulerB(TriggerService triggerService, EditSchedulerStatusComponent editSchedulerStatus,
+    SchedulerService schedulerB(
+            TriggerService triggerService, 
+            EditSchedulerStatusComponent editSchedulerStatus,
             TransactionTemplate trx) throws UnknownHostException {
 
-        final var taskExecutor = new TaskExecutorComponent(triggerService);
-        taskExecutor.setMaxShutdownWaitTime(Duration.ofSeconds(0));
-        return new SchedulerService("schedulerB", triggerService, taskExecutor, editSchedulerStatus, trx);
+        return new SchedulerService("schedulerB", triggerService, 
+                new TaskExecutorComponent(triggerService, 7), editSchedulerStatus, trx);
     }
-
 }

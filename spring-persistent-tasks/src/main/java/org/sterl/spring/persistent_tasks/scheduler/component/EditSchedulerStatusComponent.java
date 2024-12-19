@@ -23,21 +23,17 @@ public class EditSchedulerStatusComponent {
     private final OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
     private final MemoryMXBean memory = ManagementFactory.getMemoryMXBean();
     private final TaskSchedulerRepository schedulerRepository;
-    private final TaskExecutorComponent taskExecutor;
 
     public SchedulerEntity checkinToRegistry(String name, TaskSchedulerStatus status) {
         var result = get(name);
 
         result.setStatus(status);
-        result.setRunnungTasks(taskExecutor.getRunningTasks());
-        result.setTasksSlotCount(taskExecutor.getMaxThreads());
 
         result.setSystemLoadAverage(os.getSystemLoadAverage());
         result.setMaxHeap(memory.getHeapMemoryUsage().getMax());
         result.setUsedHeap(memory.getHeapMemoryUsage().getUsed());
 
         result.setLastPing(OffsetDateTime.now());
-
         return schedulerRepository.save(result);
     }
 

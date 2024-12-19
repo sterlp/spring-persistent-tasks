@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Future;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -69,7 +70,7 @@ public class AbstractSpringTest {
         SchedulerService schedulerA(TriggerService triggerService, EditSchedulerStatusComponent editSchedulerStatus,
                 TransactionTemplate trx) throws UnknownHostException {
 
-            final var taskExecutor = new TaskExecutorComponent(triggerService);
+            final var taskExecutor = new TaskExecutorComponent(triggerService, 10);
             taskExecutor.setMaxShutdownWaitTime(Duration.ofSeconds(0));
             return new SchedulerService("schedulerA", triggerService, taskExecutor, editSchedulerStatus, trx);
         }
@@ -79,7 +80,7 @@ public class AbstractSpringTest {
         SchedulerService schedulerB(TriggerService triggerService, EditSchedulerStatusComponent editSchedulerStatus,
                 TransactionTemplate trx) throws UnknownHostException {
 
-            final var taskExecutor = new TaskExecutorComponent(triggerService);
+            final var taskExecutor = new TaskExecutorComponent(triggerService, 20);
             taskExecutor.setMaxShutdownWaitTime(Duration.ofSeconds(0));
             return new SchedulerService("schedulerB", triggerService, taskExecutor, editSchedulerStatus, trx);
         }
@@ -150,11 +151,19 @@ public class AbstractSpringTest {
     }
 
     @BeforeEach
-    private void setup() throws Exception {
-        historyService.deleteAll();
+    public void beforeEach() throws Exception {
         triggerService.deleteAll();
+        historyService.deleteAll();
         asserts.clear();
         schedulerA.start();
         schedulerB.start();
+    }
+
+    @AfterEach
+    public void afterEach() throws Exception {
+        schedulerA.stop();
+        schedulerB.stop();
+        triggerService.deleteAll();
+        historyService.deleteAll();
     }
 }

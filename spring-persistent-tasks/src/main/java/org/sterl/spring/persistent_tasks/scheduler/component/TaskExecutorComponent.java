@@ -12,9 +12,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
@@ -23,27 +21,27 @@ import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component
-@RequiredArgsConstructor
 public class TaskExecutorComponent implements Closeable {
 
     private final TriggerService triggerService;
-
-    @Value("${spring.persistent-tasks.max-threads:10}")
     @Getter
-    @Setter
-    private int maxThreads = 10;
+    private final int maxThreads;
     @Getter
     @Setter
     private Duration maxShutdownWaitTime = Duration.ofSeconds(10);
-    private ExecutorService executor = Executors.newFixedThreadPool(maxThreads);
+    private ExecutorService executor;
     private final AtomicInteger runningTasks = new AtomicInteger(0);
     private final AtomicBoolean stopped = new AtomicBoolean(true);
+    
+    public TaskExecutorComponent(TriggerService triggerService, int maxThreads) {
+        super();
+        this.triggerService = triggerService;
+        this.maxThreads = maxThreads;
+    }
 
     @NonNull
     public List<Future<TriggerId>> submit(List<TriggerEntity> trigger) {
@@ -76,6 +74,7 @@ public class TaskExecutorComponent implements Closeable {
     public void start() {
         if (stopped.compareAndExchange(true, false)) {
             synchronized (stopped) {
+                runningTasks.set(0);
                 executor = Executors.newFixedThreadPool(maxThreads);
             }
         }
@@ -86,9 +85,11 @@ public class TaskExecutorComponent implements Closeable {
     public void close() {
         if (stopped.compareAndExchange(false, true)) {
             synchronized (stopped) {
-                executor.shutdown();
-                waitForRunningTasks();
-                executor = null;
+                if (executor != null) {
+                    executor.shutdown();
+                    waitForRunningTasks();
+                    executor = null;
+                }
             }
         }
     }

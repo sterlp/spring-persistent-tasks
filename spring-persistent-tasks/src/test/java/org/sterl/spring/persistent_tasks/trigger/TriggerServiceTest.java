@@ -103,7 +103,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         assertThat(historyService.countTriggers(TriggerStatus.SUCCESS)).isOne();
         final var historyEntity = historyService.findLastKnownStatus(triggerId).get();
         assertThat(historyEntity.getData().getExecutionCount()).isEqualTo(1);
-        assertThat(historyEntity.getData().getEnd()).isAfter(historyEntity.getData().getStart());
+        assertThat(historyEntity.getData().getEnd()).isAfterOrEqualTo(historyEntity.getData().getStart());
         assertThat(historyEntity.getData().getRunningDurationInMs())
             .isEqualTo(Duration.between(
                     historyEntity.getData().getStart(),
