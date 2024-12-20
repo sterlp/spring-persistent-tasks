@@ -29,7 +29,7 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
                         return RetryStrategy.TRY_THREE_TIMES_IMMEDIATELY;
                     }
                 });
-        var id = triggerService.queue(task.newTrigger().state("hallo").build());
+        var id = triggerService.queue(task.newTrigger().state("hallo").build()).getKey();
 
         // WHEN
         runTriggersAndWait();

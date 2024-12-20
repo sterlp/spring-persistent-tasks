@@ -64,6 +64,9 @@ public class TriggerService {
     public Optional<TriggerEntity> markTriggerInExecution(TriggerId id, String runOn) {
         return readTrigger.get(id).map(t -> t.runOn(runOn));
     }
+    public TriggerEntity markTriggerInExecution(TriggerEntity trigger, String runOn) {
+        return trigger.runOn(runOn);
+    }
 
     public TriggerEntity lockNextTrigger() {
         final List<TriggerEntity> r = lockNextTrigger.loadNext(MANUAL_TAG, 1, OffsetDateTime.now());
@@ -100,13 +103,13 @@ public class TriggerService {
         queueAll(event.triggers());
     }
 
-    public <T extends Serializable> TriggerId queue(AddTriggerRequest<T> tigger) {
+    public <T extends Serializable> TriggerEntity queue(AddTriggerRequest<T> tigger) {
         taskService.assertIsKnown(tigger.taskId());
-        return editTrigger.addTrigger(tigger).getId();
+        return editTrigger.addTrigger(tigger);
     }
 
     @NonNull
-    public <T extends Serializable> List<TriggerId> queueAll(Collection<AddTriggerRequest<T>> triggers) {
+    public <T extends Serializable> List<TriggerEntity> queueAll(Collection<AddTriggerRequest<T>> triggers) {
         triggers.forEach(t -> taskService.assertIsKnown(t.taskId()));
         return editTrigger.addTriggers(triggers);
     }
@@ -129,7 +132,7 @@ public class TriggerService {
         if (taskId == null || taskId.name() == null) {
             return 0L;
         }
-        return this.readTrigger.countByName(taskId.name());
+        return this.readTrigger.countByTaskName(taskId.name());
     }
     
     public long countTriggers(@Nullable TriggerStatus status) {

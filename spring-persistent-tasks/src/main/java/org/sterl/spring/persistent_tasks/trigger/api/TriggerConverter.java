@@ -16,10 +16,7 @@ class TriggerConverter {
         @Override
         public Trigger convert(TriggerHistoryEntity source) {
             var result = ToTriggerView.INSTANCE.convert(source.getData());
-            
-            result.setId(source.getTriggerId());
-            result.setKey(source.getId() + "");
-
+            result.setId(source.getId());
             return result;
         }
     }
@@ -31,11 +28,8 @@ class TriggerConverter {
         @Override
         public Trigger convert(TriggerEntity source) {
             var result = ToTriggerView.INSTANCE.convert(source.getData());
-            
             result.setId(source.getId());
-            result.setKey(source.getId().toString());
             result.setRunningOn(source.getRunningOn());
-
             return result;
         }
     }
@@ -48,6 +42,7 @@ class TriggerConverter {
         public Trigger convert(TriggerData source) {
             var result = new Trigger();
             
+            result.setKey(source.getKey());
             result.setCreatedTime(source.getCreatedTime());
             result.setEnd(source.getEnd());
             result.setExceptionName(source.getExceptionName());

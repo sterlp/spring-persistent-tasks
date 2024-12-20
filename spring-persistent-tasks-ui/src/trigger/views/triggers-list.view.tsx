@@ -1,11 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-    Col,
-    Form,
-    Pagination,
-    Row,
-    Stack
-} from "react-bootstrap";
+import { Col, Form, Pagination, Row, Stack } from "react-bootstrap";
 import { PagedModel, Trigger } from "../../server-api";
 import { useServerObject } from "../../shared/http-request";
 import ReloadButton from "../../shared/reload-button";
@@ -29,12 +23,12 @@ const TriggersView = () => {
         return () => clearInterval(intervalId);
     }, [page, selectedTask]);
 
-// className="d-flex justify-content-between align-items-center"
+    // className="d-flex justify-content-between align-items-center"
     return (
         <Stack gap={1}>
             <Row className="align-items-center">
-                <Col >
-                    <TaskSelect onTaskChange={setSelectedTask}  />
+                <Col>
+                    <TaskSelect onTaskChange={setSelectedTask} />
                 </Col>
                 <Col>
                     <PageView
@@ -44,21 +38,21 @@ const TriggersView = () => {
                     />
                 </Col>
                 <Col>
-                    <ReloadButton className="float-end"
+                    <ReloadButton
+                        className="float-end"
                         isLoading={triggers.isLoading}
                         onClick={doReload}
                     />
                 </Col>
             </Row>
             {triggers.data?.content.map((t) => (
-                <TriggerItemView key={t.key} trigger={t} />
+                <TriggerItemView key={t.id + ""} trigger={t} />
             ))}
         </Stack>
     );
 };
 
 export default TriggersView;
-
 
 const PageView = ({
     data,

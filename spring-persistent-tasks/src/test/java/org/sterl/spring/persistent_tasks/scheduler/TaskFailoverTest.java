@@ -18,7 +18,7 @@ import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
 
 class TaskFailoverTest extends AbstractSpringTest {
 
-    @Autowired TriggerRepository triggerRepository;
+    @Autowired private TriggerRepository triggerRepository;
     private SchedulerService schedulerA;
 
     @BeforeEach
@@ -36,21 +36,18 @@ class TaskFailoverTest extends AbstractSpringTest {
     @Test
     void rescheduleAbandonedTasksTest() throws Exception {
         // GIVEN
-        var trigger = triggerRepository.save(TriggerEntity.builder()
-                .id(new TriggerId("slowTask"))
-                .build()
+        var trigger = triggerRepository.save(
+                new TriggerEntity(new TriggerId("slowTask"))
                 .runOn("schedulerB"));
 
         // WHEN
         Thread.sleep(19);
         // AND add one which looks like it is running :-)
-        triggerRepository.save(TriggerEntity.builder()
-                .id(new TriggerId("slowTask"))
-                .build()
+        triggerRepository.save(new TriggerEntity(new TriggerId("slowTask"))
                 .runOn("schedulerA"));
 
         // AND check status
-        var state = triggerService.get(trigger.getId());
+        var state = triggerService.get(trigger.getKey());
         assertThat(state.get().getData().getStatus()).isEqualTo(TriggerStatus.RUNNING);
         assertThat(state.get().getRunningOn()).isEqualTo("schedulerB");
         assertThat(state.get().getData().getEnd()).isNull();
@@ -72,7 +69,7 @@ class TaskFailoverTest extends AbstractSpringTest {
         assertThat(tasks.get(0).getId()).isEqualTo(trigger.getId());
         
         // AND date should be set after the retry
-        var data = historyService.findLastKnownStatus(trigger.getId()).get().getData();
+        var data = historyService.findLastKnownStatus(trigger.getKey()).get().getData();
         assertThat(data.getEnd()).isNotNull();
         assertThat(data.getStart()).isAfter(retryTime);
         // AND execution duration should be reflected

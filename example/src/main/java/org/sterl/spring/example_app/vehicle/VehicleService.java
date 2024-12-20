@@ -26,7 +26,6 @@ import uk.co.jemos.podam.api.PodamFactoryImpl;
 public class VehicleService {
 
     private final ApplicationEventPublisher eventPublisher;
-    private final TaskId<Vehicle> failingBuildVehicleTaskId;
     
     private static final Random RANDOM = new Random();
     private static final PodamFactory PODAM = new PodamFactoryImpl();
@@ -49,7 +48,7 @@ public class VehicleService {
                         .build()));
         
         eventPublisher.publishEvent(
-                TriggerTaskCommand.of(failingBuildVehicleTaskId.newUniqueTrigger(v)));
+                TriggerTaskCommand.of(FailingBuildVehicleTask.ID.newUniqueTrigger(v)));
     }
     
     public void buildVehicle(String type) {

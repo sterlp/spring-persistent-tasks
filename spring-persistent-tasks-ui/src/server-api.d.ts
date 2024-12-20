@@ -43,8 +43,8 @@ export interface TaskTriggerBuilder<T> {
 }
 
 export interface Trigger {
-    key: string;
-    id: TriggerId;
+    id: number;
+    key: TriggerId;
     runningOn: string;
     createdTime: string;
     runAt: string;
@@ -61,7 +61,7 @@ export interface Trigger {
 
 export interface TriggerId extends Serializable {
     id: string;
-    name: string;
+    taskName: string;
 }
 
 export interface TriggerIdBuilder {

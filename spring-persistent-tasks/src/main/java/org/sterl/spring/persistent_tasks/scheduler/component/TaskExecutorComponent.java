@@ -64,7 +64,7 @@ public class TaskExecutorComponent implements Closeable {
     private TriggerId runTrigger(TriggerEntity trigger) {
         try {
             triggerService.run(trigger);
-            return trigger.getId();
+            return trigger.getKey();
         } finally {
             runningTasks.decrementAndGet();
         }

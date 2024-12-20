@@ -2,6 +2,7 @@ package org.sterl.spring.persistent_tasks.trigger.repository;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.hibernate.LockOptions;
@@ -20,15 +21,18 @@ import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
 
-public interface TriggerRepository extends JpaRepository<TriggerEntity, TriggerId> {
+public interface TriggerRepository extends JpaRepository<TriggerEntity, Long> {
+    
+    @Query("SELECT e FROM #{#entityName} e WHERE e.data.key = :key")
+    Optional<TriggerEntity> findByKey(@Param("key") TriggerId key);
 
     
     @Query("""
            SELECT e FROM #{#entityName} e
-           WHERE e.id.name = :name
+           WHERE e.data.key.taskName = :taskName
            """)
     Page<TriggerEntity> findAll(
-            @Param("name") String name, Pageable page);
+            @Param("taskName") String taskName, Pageable page);
     
     // https://jakarta.ee/specifications/persistence/3.0/jakarta-persistence-spec-3.0.html#a2132
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -38,9 +42,9 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, TriggerI
     })
     @Query("""
            SELECT e FROM #{#entityName} e
-           WHERE data.runAt <= :runAt
-           AND data.status = :status
-           ORDER BY data.priority DESC, data.executionCount ASC
+           WHERE e.data.runAt <= :runAt
+           AND e.data.status = :status
+           ORDER BY e.data.priority DESC, e.data.executionCount ASC
            """)
     List<TriggerEntity> loadNextTasks(
             @Param("runAt") OffsetDateTime runAt,
@@ -49,8 +53,8 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, TriggerI
 
     long countByDataStatusIn(Set<TriggerStatus> status);
 
-    @Query("SELECT count(1) FROM #{#entityName} e WHERE e.id.name = :name")
-    long countByTriggerName(@Param("name") String name);
+    @Query("SELECT count(1) FROM #{#entityName} e WHERE e.data.key.taskName = :taskName")
+    long countByTaskName(@Param("taskName") String taskName);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @QueryHints({
@@ -59,9 +63,9 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, TriggerI
     })
     @Query("""
            SELECT e FROM #{#entityName} e
-           WHERE e.id <= :id
+           WHERE e.data.key = :key
            """)
-    TriggerEntity lockById(@Param("id") TriggerId id);
+    TriggerEntity lockById(@Param("key") TriggerId key);
 
     @Query("""
            SELECT e FROM #{#entityName} e

@@ -6,7 +6,6 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
@@ -19,6 +18,7 @@ import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.task.repository.TaskRepository;
+import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 class TriggerServiceTest extends AbstractSpringTest {
 
@@ -49,7 +49,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         final var trigger = task1Id.newTrigger().runAt(triggerTime).build();
 
         // WHEN
-        final var triggerId = subject.queue(trigger);
+        final var triggerId = subject.queue(trigger).getKey();
 
         // THEN
         final var e = subject.get(triggerId);
@@ -81,8 +81,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         final var trigger = TaskTriggerBuilder.newTrigger(Task3.NAME).state("trigger3").build();
 
         // WHEN
-        var id = subject.queue(trigger);
-        subject.run(subject.get(id).get());
+        subject.run(subject.queue(trigger));
 
         // THEN
         assertThat(taskRepository.contains(Task3.NAME)).isTrue();
@@ -94,7 +93,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         // GIVEN
         TaskId<String> taskId = taskService.replace("foo", c -> asserts.info("foo"));
         taskService.<String>replace("bar", c -> asserts.info("bar"));
-        TriggerId triggerId = subject.queue(taskId.newTrigger().build());
+        TriggerId triggerId = subject.queue(taskId.newTrigger().build()).getKey();
 
         // WHEN
         subject.run(triggerId);
@@ -119,7 +118,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         final var trigger = task1Id.newTrigger().state("aa").build();
 
         // WHEN
-        final var triggerId = subject.queue(trigger);
+        final var triggerId = subject.queue(trigger).getKey();
         subject.run(subject.lockNextTrigger());
         subject.run(subject.lockNextTrigger());
 
@@ -143,11 +142,11 @@ class TriggerServiceTest extends AbstractSpringTest {
         });
 
         // WHEN
-        final var triggerId = subject.queue(task.newTrigger().state("Hallo :-)").build());
+        var trigger = subject.queue(task.newTrigger().state("Hallo :-)").build());
         subject.run(subject.lockNextTrigger());
 
         // THEN
-        final var trigger = triggerService.get(triggerId).get();
+        trigger = triggerService.get(trigger.getKey()).get();
         assertThat(trigger.getData().getExecutionCount()).isEqualTo(1);
         assertThat(trigger.getData().getExceptionName()).isEqualTo(IllegalArgumentException.class.getName());
         assertThat(trigger.getData().getLastException()).contains("Nope! Hallo :-)");
@@ -161,11 +160,11 @@ class TriggerServiceTest extends AbstractSpringTest {
         });
 
         // WHEN
-        final var triggerId = subject.queue(task.newTrigger().state("Hallo :-)").build());
+        var trigger = subject.queue(task.newTrigger().state("Hallo :-)").build());
         subject.run(subject.lockNextTrigger());
 
         // THEN
-        final var trigger = triggerService.get(triggerId).get();
+        trigger = triggerService.get(trigger.getKey()).get();
         assertThat(trigger.getData().getEnd()).isAfter(trigger.getData().getStart());
         assertThat(trigger.getData().getRunningDurationInMs())
             .isEqualTo(Duration.between(
@@ -177,10 +176,14 @@ class TriggerServiceTest extends AbstractSpringTest {
     void testTriggerPriority() throws Exception {
         // GIVEN
         TaskId<String> task = taskService.<String>replace("aha", s -> asserts.info(s));
-        List<TriggerId> triggers = triggerService.queueAll(Arrays.asList(
+        var triggers = triggerService.queueAll(Arrays.asList(
                 task.newTrigger().state("mid").priority(5).build(), //
                 task.newTrigger().state("low").priority(4).build(), //
-                task.newTrigger().state("high").priority(6).build()));
+                task.newTrigger().state("high").priority(6).build())
+            )
+                .stream()
+                .map(TriggerEntity::getKey)
+                .toList();
         // WHEN
         runNextTrigger();
         runNextTrigger();
@@ -206,8 +209,7 @@ class TriggerServiceTest extends AbstractSpringTest {
                 subject.queue(taskId.newUniqueTrigger("nope2"));
                 throw new RuntimeException("we are doomed!");
             });
-        } catch (Exception idc) {
-        }
+        } catch (Exception idc) {}
 
         // THEN
         assertThat(triggerService.countTriggers()).isZero();

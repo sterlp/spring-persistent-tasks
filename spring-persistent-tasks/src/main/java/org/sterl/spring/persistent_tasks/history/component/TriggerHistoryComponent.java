@@ -19,7 +19,7 @@ public class TriggerHistoryComponent {
     public TriggerHistoryEntity write(TriggerEntity e) {
         var result = new TriggerHistoryEntity();
         result.setData(e.getData().toBuilder().build());
-        result.setTriggerId(e.getId().toBuilder().build());
+        result.setInstanceId(e.getId());
         return historyRepository.save(result);
     }
     

@@ -116,23 +116,23 @@ public class SchedulerService {
     /**
      * Runs the next trigger if free threads are available.
      */
-    public Optional<Future<TriggerId>> runOrQueue(AddTriggerRequest<? extends Serializable> trigger) {
+    public Optional<Future<TriggerId>> runOrQueue(AddTriggerRequest<? extends Serializable> triggerRequest) {
         return trx.execute(t -> {
             Optional<Future<TriggerId>> result = Optional.empty();
-            final TriggerId id = triggerService.queue(trigger);
+            var trigger = triggerService.queue(triggerRequest);
             if (taskExecutor.getFreeThreads() > 0) {
-                var toRun = triggerService.markTriggerInExecution(id, name).get();
-                result = Optional.of(taskExecutor.submit(toRun));
+                trigger = triggerService.markTriggerInExecution(trigger, name);
+                result = Optional.of(taskExecutor.submit(trigger));
                 pingRegistry();
             } else {
                 log.debug("Currently not enough free thread available {} of {} in use. Task {} queued.", 
-                        taskExecutor.getFreeThreads(), taskExecutor.getMaxThreads(), id);
+                        taskExecutor.getFreeThreads(), taskExecutor.getMaxThreads(), trigger.getKey());
             }
             return result;
         });
     }
 
-    public <T extends Serializable> TriggerId queue(TaskId<T> taskId, T state) {
+    public <T extends Serializable> TriggerEntity queue(TaskId<T> taskId, T state) {
         return triggerService.queue(taskId.newUniqueTrigger(state));
     }
 

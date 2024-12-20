@@ -65,7 +65,7 @@ class SchedulerServiceTest extends AbstractSpringTest {
                 .newTrigger("slowTask")
                 .state(50L)
                 .build()
-            );
+            ).getKey();
 
         // WHEN
         final Future<TriggerId> running = subject.triggerNextTasks().get(0);

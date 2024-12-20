@@ -3,8 +3,13 @@ package org.sterl.spring.persistent_tasks.shared.model;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 
+import org.sterl.spring.persistent_tasks.api.TriggerId;
+
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Lob;
@@ -23,7 +28,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Embeddable
-@ToString(of = {"status", "priority", "executionCount", "createdTime", "runAt", "start", "end"})
+@ToString(of = {"key", "status", "priority", "executionCount", "createdTime", "runAt", "start", "end"})
 @Builder(toBuilder = true)
 public class TriggerData {
     
@@ -33,6 +38,14 @@ public class TriggerData {
             runningDurationInMs = Duration.between(start, end).toMillis();
         }
     }
+    
+    @Embedded
+    @AttributeOverrides(@AttributeOverride(
+            name = "id",
+            column = @Column(name = "trigger_id", nullable = false)
+        )
+    )
+    private TriggerId key;
 
     @Default
     @Column(updatable = false, name = "created_time")

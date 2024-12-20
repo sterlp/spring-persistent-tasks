@@ -16,10 +16,10 @@ public interface TriggerHistoryRepository extends JpaRepository<TriggerHistoryEn
 
     @Query("""
             SELECT e FROM #{#entityName} e
-            WHERE e.triggerId = :triggerId
+            WHERE e.data.key = :key
             """)
     List<TriggerHistoryEntity> findByTriggerId(
-            @Param("triggerId") TriggerId triggerId,
+            @Param("key") TriggerId key,
             Pageable page);
     
     @Query("""
@@ -30,7 +30,7 @@ public interface TriggerHistoryRepository extends JpaRepository<TriggerHistoryEn
     long deleteHistoryOlderThan(@Param("age") OffsetDateTime age);
 
     @Query("""
-            SELECT COUNT(DISTINCT triggerId.id) 
+            SELECT COUNT(DISTINCT e.data.key) 
             FROM #{#entityName} e
             WHERE e.data.status = :status
             """)

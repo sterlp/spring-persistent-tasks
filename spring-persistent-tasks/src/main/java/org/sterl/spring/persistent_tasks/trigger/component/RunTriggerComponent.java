@@ -31,9 +31,9 @@ public class RunTriggerComponent {
         }
         Task<Serializable> task = null;
         try {
-            task = taskService.assertIsKnown(trigger.getId().toTaskId());
+            task = taskService.assertIsKnown(trigger.newTaskId());
             task.accept(serializer.deserialize(trigger.getData().getState()));
-            var result = editTrigger.completeTaskWithSuccess(trigger.getId());
+            var result = editTrigger.completeTaskWithSuccess(trigger.getKey());
             editTrigger.deleteTrigger(trigger);
             return result;
         } catch (Exception e) {
@@ -45,18 +45,18 @@ public class RunTriggerComponent {
             @Nullable Task<Serializable> task,
             @Nullable Exception e) {
 
-        var result = editTrigger.completeTaskWithStatus(trigger.getId(), e);
+        var result = editTrigger.completeTaskWithStatus(trigger.getKey(), e);
 
         if (task != null &&
                 task.retryStrategy().shouldRetry(trigger.getData().getExecutionCount(), e)) {
 
             final OffsetDateTime retryAt = task.retryStrategy().retryAt(trigger.getData().getExecutionCount(), e);
             log.warn("{} failed, retry will be done at={}!",
-                    trigger.getId(), retryAt, e);
+                    trigger.getKey(), retryAt, e);
 
-            result = editTrigger.retryTrigger(trigger.getId(), retryAt);
+            result = editTrigger.retryTrigger(trigger.getKey(), retryAt);
         } else {
-            log.error("{} failed, no more retries! {}", trigger.getId(), 
+            log.error("{} failed, no more retries! {}", trigger.getKey(), 
                     e == null ? "No exception given." : e.getMessage());
             
             editTrigger.deleteTrigger(trigger);

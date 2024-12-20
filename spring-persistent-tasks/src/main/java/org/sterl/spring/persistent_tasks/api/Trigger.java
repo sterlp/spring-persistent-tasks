@@ -9,9 +9,11 @@ import lombok.Data;
 @Data
 public class Trigger {
     
-    private String key;
+    /** just a unique id of this trigger */
+    private Long id;
     
-    private TriggerId id;
+    /** the business key which is unique it is combination for triggers but not the history! */
+    private TriggerId key;
     
     private String runningOn;
 

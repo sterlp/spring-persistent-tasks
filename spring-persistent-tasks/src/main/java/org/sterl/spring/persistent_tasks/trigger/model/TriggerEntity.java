@@ -9,9 +9,12 @@ import org.sterl.spring.persistent_tasks.api.TriggerId;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
-import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -23,9 +26,10 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "SPT_TASK_TRIGGERS", indexes = {
-        @Index(name = "IDX_TASK_TRIGGERS_PRIORITY", columnList = "priority"),
-        @Index(name = "IDX_TASK_TRIGGERS_RUN_AT", columnList = "run_at"),
-        @Index(name = "IDX_TASK_TRIGGERS_STATUS", columnList = "status"),
+        @Index(name = "UNQ_SPT_TRIGGERS_KEY", columnList = "trigger_id, task_name", unique = true),
+        @Index(name = "IDX_SPT_TRIGGERS_PRIORITY", columnList = "priority"),
+        @Index(name = "IDX_SPT_TRIGGERS_RUN_AT", columnList = "run_at"),
+        @Index(name = "IDX_SPT_TRIGGERS_STATUS", columnList = "status"),
 })
 @Data
 @NoArgsConstructor
@@ -34,17 +38,30 @@ import lombok.NoArgsConstructor;
 @Builder
 public class TriggerEntity {
 
-    @EmbeddedId
-    private TriggerId id;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(updatable = false)
+    @Id
+    private Long id;
 
     @Default
     @Embedded
     private TriggerData data = new TriggerData();
 
     private String runningOn;
+    
+    public TriggerEntity(TriggerId key) {
+        if (this.data == null) this.data = new TriggerData();
+        this.data.setKey(key);
+    }
 
     public TaskId<Serializable> newTaskId() {
-        return id.toTaskId();
+        if (data == null || data.getKey() == null) return null;
+        return data.getKey().toTaskId();
+    }
+    
+    public TriggerId getKey() {
+        if (data == null) return null;
+        return data.getKey();
     }
 
     public TriggerEntity cancel() {
@@ -87,5 +104,9 @@ public class TriggerEntity {
         data.setStatus(TriggerStatus.NEW);
         data.setRunAt(runAt);
         return this;
+    }
+
+    public boolean isRunning() {
+        return data.getStatus() == TriggerStatus.RUNNING;
     }
 }

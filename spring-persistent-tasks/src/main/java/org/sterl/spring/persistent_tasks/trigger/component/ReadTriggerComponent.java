@@ -21,8 +21,8 @@ public class ReadTriggerComponent {
     private final TriggerRepository triggerRepository;
     
 
-    public long countByName(@NotNull String name) {
-        return triggerRepository.countByTriggerName(name);
+    public long countByTaskName(@NotNull String name) {
+        return triggerRepository.countByTaskName(name);
     }
 
     public long countByStatus(@Nullable TriggerStatus status) {
@@ -31,7 +31,7 @@ public class ReadTriggerComponent {
     }
 
     public Optional<TriggerEntity> get(TriggerId id) {
-        return triggerRepository.findById(id);
+        return triggerRepository.findByKey(id);
     }
 
     /**

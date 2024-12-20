@@ -11,7 +11,7 @@ const TriggerItemView = ({ trigger }: TriggerProps) => {
     // className="d-flex justify-content-between align-items-center"
     return (
         <Accordion>
-            <Accordion.Item eventKey={trigger.key}>
+            <Accordion.Item eventKey={trigger.id + ""}>
                 <Accordion.Header>
                     <Container>
                         <Row>
@@ -20,10 +20,10 @@ const TriggerItemView = ({ trigger }: TriggerProps) => {
                             </Col>
                             <Col>
                                 <small className="text-truncate text-muted">
-                                    {trigger.id.id}
+                                    {trigger.key.id}
                                 </small>
                                 <br />
-                                {" " + trigger.id.name}
+                                {" " + trigger.key.taskName}
                             </Col>
                             <Col>
                                 <LabeledText
@@ -43,10 +43,13 @@ const TriggerItemView = ({ trigger }: TriggerProps) => {
                 <Accordion.Body>
                     <Row>
                         <Col>
-                            <LabeledText label="Task" value={trigger.id.name} />
+                            <LabeledText
+                                label="Task"
+                                value={trigger.key.taskName}
+                            />
                         </Col>
                         <Col>
-                            <LabeledText label="ID" value={trigger.id.id} />
+                            <LabeledText label="ID" value={trigger.key.id} />
                         </Col>
                         <Col>
                             <LabeledText
@@ -93,7 +96,7 @@ const TriggerItemView = ({ trigger }: TriggerProps) => {
                         </Col>
                         <Col>
                             <ExceptionView
-                                key={trigger.key + "-error-view"}
+                                key={trigger.id + "-error-view"}
                                 trigger={trigger}
                             />
                         </Col>
@@ -122,9 +125,6 @@ const ExceptionView = ({ trigger }: TriggerProps) => {
     );
 };
 
-function isString(value: any): value is string {
-    return typeof value === "string" || value instanceof String;
-}
 function isObject(value: any): boolean {
     if (value === undefined || value === null) return false;
     return typeof value === "object" || Array.isArray(value);

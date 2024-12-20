@@ -48,19 +48,19 @@ public class EditTriggerComponent {
     /**
      * Sets success or error based on the fact if an exception is given or not.
      */
-    public Optional<TriggerEntity> completeTaskWithStatus(TriggerId id, Exception e) {
-        final Optional<TriggerEntity> result = triggerRepository.findById(id);
+    public Optional<TriggerEntity> completeTaskWithStatus(TriggerId key, Exception e) {
+        final Optional<TriggerEntity> result = triggerRepository.findByKey(key);
 
         result.ifPresent(t -> {
             t.complete(e);
 
             if (t.getData().getStatus() != TriggerStatus.FAILED) {
                 publisher.publishEvent(new TriggerCompleteEvent(t));
-                log.debug("Setting task={} to status={} {}", id, t.getData().getStatus(),
+                log.debug("Setting {} to status={} {}", key, t.getData().getStatus(),
                         e == null ? "" : "error=" + e.getClass().getSimpleName());
             } else {
                 publisher.publishEvent(new TriggerFailedEvent(t));
-                log.info("Setting task={} to status={} {}", id, t.getData().getStatus(),
+                log.info("Setting {} to status={} {}", key, t.getData().getStatus(),
                         e == null ? "" : "error=" + e.getClass().getSimpleName());
             }
 
@@ -71,13 +71,13 @@ public class EditTriggerComponent {
 
     public Optional<TriggerEntity> retryTrigger(TriggerId id, OffsetDateTime retryAt) {
         return triggerRepository //
-                .findById(id) //
+                .findByKey(id) //
                 .map(t -> t.runAt(retryAt));
     }
 
     public Optional<TriggerEntity> cancelTask(TriggerId id) {
         return triggerRepository //
-                .findById(id) //
+                .findByKey(id) //
                 .map(t -> {
                     t.cancel();
                     publisher.publishEvent(new TriggerCanceledEvent(t));
@@ -87,32 +87,38 @@ public class EditTriggerComponent {
 
     public <T extends Serializable> TriggerEntity addTrigger(AddTriggerRequest<T> tigger) {
         var result = toTriggerEntity(tigger);
-        result = triggerRepository.save(result);
-        log.debug("Added trigger={}", result);
+        final Optional<TriggerEntity> existing = triggerRepository.findByKey(result.getKey());
+        if (existing.isPresent()) {
+            if (existing.get().isRunning()) 
+                throw new IllegalStateException("Cannot update running trigger " + result.getKey());
+            
+            existing.get().setData(result.getData());
+            result = existing.get();
+            log.debug("Updated trigger={}", result);
+        } else {
+            result = triggerRepository.save(result);
+            log.debug("Added trigger={}", result);
+        }
         return result;
     }
 
     @NonNull
-    public <T extends Serializable> List<TriggerId> addTriggers(Collection<AddTriggerRequest<T>> newTriggers) {
-        var result = triggerRepository
-            .saveAll(newTriggers.stream().map(this::toTriggerEntity).toList())
-            .stream().map(TriggerEntity::getId)
-            .toList();
-        log.debug("Added triggers={}", result);
-        return result;
+    public <T extends Serializable> List<TriggerEntity> addTriggers(Collection<AddTriggerRequest<T>> newTriggers) {
+        return newTriggers.stream()
+                .map(this::addTrigger)
+                .toList();
     }
 
     private <T extends Serializable> TriggerEntity toTriggerEntity(AddTriggerRequest<T> trigger) {
         byte[] state = stateSerializer.serialize(trigger.state());
-        var t = new TriggerEntity(
-            trigger.toTaskTriggerId(),
-            TriggerData.builder()
-                .runAt(trigger.runtAt())
-                .priority(trigger.priority())
-                .state(state)
-                .build(),
-            null
-        );
+        final var t = TriggerEntity.builder()
+            .data(TriggerData.builder()
+                    .key(trigger.toTaskTriggerId())
+                    .runAt(trigger.runtAt())
+                    .priority(trigger.priority())
+                    .state(state)
+                    .build())
+            .build();
         return t;
     }
 

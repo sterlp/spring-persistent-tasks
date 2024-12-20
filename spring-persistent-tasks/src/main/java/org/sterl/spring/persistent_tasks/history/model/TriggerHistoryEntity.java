@@ -3,8 +3,6 @@ package org.sterl.spring.persistent_tasks.history.model;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 
-import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -21,14 +19,12 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "SPT_TASK_TRIGGERS_HISTORY",
+@Table(name = "SPT_TRIGGERS_HISTORY",
     indexes = {
-        @Index(name = "IDX_TASK_TRIGGERS_HISTORY_CREATE_DATE", columnList = "created_time"),
-        @Index(name = "IDX_TASK_TRIGGERS_HISTORY_TASK_ID", columnList = "task_id"),
-        @Index(name = "IDX_TASK_TRIGGERS_HISTORY_NAME", columnList = "name"),
-        @Index(name = "IDX_TASK_TRIGGERS_HISTORY_PRIORITY", columnList = "priority"),
-        @Index(name = "IDX_TASK_TRIGGERS_HISTORY_RUN_AT", columnList = "run_at"),
-        @Index(name = "IDX_TASK_TRIGGERS_HISTORY_STATUS", columnList = "status"),
+        @Index(name = "IDX_SPT_TRIGGERS_HISTORY_INSTANCE_ID", columnList = "instance_id"),
+        @Index(name = "IDX_SPT_TRIGGERS_HISTORY_TRIGGER_ID", columnList = "trigger_id"),
+        @Index(name = "IDX_SPT_TRIGGERS_HISTORY_TASK_NAME", columnList = "task_name"),
+        @Index(name = "IDX_SPT_TRIGGERS_HISTORY_STATUS", columnList = "status"),
     }
 )
 @Data
@@ -43,15 +39,17 @@ public class TriggerHistoryEntity {
     @Id
     private Long id;
 
-    @Embedded
-    @AttributeOverrides(@AttributeOverride(
-            name = "id",
-            column = @Column(name = "task_id", nullable = false))
-    )
-    @NotNull
-    private TriggerId triggerId;
+    /**
+     * The original ID of this trigger in case grouping is needed
+     * as for each trigger multiple history entries are added.
+     */
+    private Long instanceId;
 
     @Embedded
     @NotNull
     private TriggerData data;
+    
+    public TriggerId getKey() {
+        return data.getKey();
+    }
 }

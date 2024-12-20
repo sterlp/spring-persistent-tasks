@@ -17,17 +17,17 @@ public class TriggerId implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String id;
-    private String name;
+    private String taskName;
 
     public TaskId<Serializable> toTaskId() {
-        return new TaskId<>(name);
+        return new TaskId<>(taskName);
     }
     /**
      * Builds a trigger for the given task name
      */
     public TriggerId(String taskName) {
         id = UUID.randomUUID().toString();
-        this.name = taskName;
+        this.taskName = taskName;
     }
 
     /**
