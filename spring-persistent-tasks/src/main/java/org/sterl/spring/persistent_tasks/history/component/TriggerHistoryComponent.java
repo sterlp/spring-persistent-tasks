@@ -1,5 +1,7 @@
 package org.sterl.spring.persistent_tasks.history.component;
 
+import java.time.OffsetDateTime;
+
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryEntity;
@@ -19,6 +21,7 @@ public class TriggerHistoryComponent {
     public TriggerHistoryEntity write(TriggerEntity e) {
         var result = new TriggerHistoryEntity();
         result.setData(e.getData().toBuilder().build());
+        result.getData().setCreatedTime(OffsetDateTime.now());
         result.setInstanceId(e.getId());
         return historyRepository.save(result);
     }

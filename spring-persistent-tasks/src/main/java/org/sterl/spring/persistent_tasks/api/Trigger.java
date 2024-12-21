@@ -12,6 +12,8 @@ public class Trigger {
     /** just a unique id of this trigger */
     private Long id;
     
+    private Long instanceId;
+    
     /** the business key which is unique it is combination for triggers but not the history! */
     private TriggerId key;
     

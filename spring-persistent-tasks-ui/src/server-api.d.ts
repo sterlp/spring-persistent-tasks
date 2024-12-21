@@ -25,6 +25,17 @@ export interface AddTriggerRequest<T> {
     priority: number;
 }
 
+export interface HistoryOverview {
+    instanceId: number;
+    taskName: string;
+    entryCount: number;
+    start: string;
+    end: string;
+    createdTime: string;
+    executionCount: number;
+    runningDurationInMs: number;
+}
+
 export interface RetryStrategy {
 }
 
@@ -44,6 +55,7 @@ export interface TaskTriggerBuilder<T> {
 
 export interface Trigger {
     id: number;
+    instanceId: number;
     key: TriggerId;
     runningOn: string;
     createdTime: string;

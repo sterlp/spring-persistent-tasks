@@ -7,9 +7,10 @@ import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 import org.sterl.spring.persistent_tasks.trigger.component.StateSerializer;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
-class TriggerConverter {
+public class TriggerConverter {
     private final static StateSerializer SERIALIZER = new StateSerializer();
-    enum FromTriggerHistoryEntity implements ExtendetConvert<TriggerHistoryEntity, Trigger> {
+    
+    public enum FromTriggerHistoryEntity implements ExtendetConvert<TriggerHistoryEntity, Trigger> {
 
         INSTANCE;
 
@@ -17,6 +18,7 @@ class TriggerConverter {
         public Trigger convert(TriggerHistoryEntity source) {
             var result = ToTriggerView.INSTANCE.convert(source.getData());
             result.setId(source.getId());
+            result.setInstanceId(source.getInstanceId());
             return result;
         }
     }
@@ -29,6 +31,7 @@ class TriggerConverter {
         public Trigger convert(TriggerEntity source) {
             var result = ToTriggerView.INSTANCE.convert(source.getData());
             result.setId(source.getId());
+            result.setInstanceId(source.getId());
             result.setRunningOn(source.getRunningOn());
             return result;
         }

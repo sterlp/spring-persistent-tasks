@@ -47,4 +47,8 @@ public class HistoryService {
     public long countTriggers(TriggerStatus status) {
         return triggerHistoryRepository.countTriggers(status);
     }
+
+    public List<TriggerHistoryEntity> findAllForInstance(long instanceId) {
+        return triggerHistoryRepository.findAllByInstanceId(instanceId);
+    }
 }

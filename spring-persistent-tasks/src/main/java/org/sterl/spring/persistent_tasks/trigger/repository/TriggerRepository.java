@@ -26,14 +26,13 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, Long> {
     @Query("SELECT e FROM #{#entityName} e WHERE e.data.key = :key")
     Optional<TriggerEntity> findByKey(@Param("key") TriggerId key);
 
-    
     @Query("""
            SELECT e FROM #{#entityName} e
-           WHERE e.data.key.taskName = :taskName
+           WHERE  e.data.key.taskName = :taskName
            """)
     Page<TriggerEntity> findAll(
             @Param("taskName") String taskName, Pageable page);
-    
+
     // https://jakarta.ee/specifications/persistence/3.0/jakarta-persistence-spec-3.0.html#a2132
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @QueryHints({
@@ -41,9 +40,9 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, Long> {
         @QueryHint(name = SpecHints.HINT_SPEC_QUERY_TIMEOUT, value = "4500")
     })
     @Query("""
-           SELECT e FROM #{#entityName} e
-           WHERE e.data.runAt <= :runAt
-           AND e.data.status = :status
+           SELECT   e FROM #{#entityName} e
+           WHERE    e.data.runAt <= :runAt
+           AND      e.data.status = :status
            ORDER BY e.data.priority DESC, e.data.executionCount ASC
            """)
     List<TriggerEntity> loadNextTasks(
@@ -63,14 +62,14 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, Long> {
     })
     @Query("""
            SELECT e FROM #{#entityName} e
-           WHERE e.data.key = :key
+           WHERE  e.data.key = :key
            """)
     TriggerEntity lockById(@Param("key") TriggerId key);
 
     @Query("""
            SELECT e FROM #{#entityName} e
-           WHERE e.runningOn NOT IN ( :runningOn )
-           AND e.data.status = :status
+           WHERE  e.runningOn NOT IN ( :runningOn )
+           AND    e.data.status = :status
            """)
     List<TriggerEntity> findNotRunningOn(
             @Param("runningOn") Set<String> runningOn,

@@ -31,6 +31,8 @@ import org.sterl.spring.sample_app.SampleApp;
 import org.sterl.test.AsyncAsserts;
 
 import lombok.RequiredArgsConstructor;
+import uk.co.jemos.podam.api.PodamFactory;
+import uk.co.jemos.podam.api.PodamFactoryImpl;
 
 @SpringBootTest(classes = SampleApp.class)
 public class AbstractSpringTest {
@@ -56,6 +58,8 @@ public class AbstractSpringTest {
     protected TransactionTemplate trx;
     @Autowired
     protected AsyncAsserts asserts;
+    
+    protected final PodamFactory pm = new PodamFactoryImpl();
 
     @Configuration
     public static class TaskConfig {
