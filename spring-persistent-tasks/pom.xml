@@ -66,6 +66,12 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>uk.co.jemos.podam</groupId>
+            <artifactId>podam</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -91,12 +97,14 @@
                     </customTypeMappings>
                     <classes>
                         <class>org.springframework.data.web.PagedModel</class>
-                        <class>org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity</class>
+                        <class>
+                            org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity</class>
                     </classes>
                     <classPatterns>
                         <pattern>org.sterl.spring.persistent_tasks.api.**</pattern>
                     </classPatterns>
-                    <outputFile>../spring-persistent-tasks-ui/src/server-api.d.ts</outputFile>
+                    <outputFile>
+                        ../spring-persistent-tasks-ui/src/server-api.d.ts</outputFile>
                     <outputKind>module</outputKind>
                 </configuration>
             </plugin>
