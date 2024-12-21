@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.lang.NonNull;
-import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
@@ -44,8 +44,8 @@ public class TaskExecutorComponent implements Closeable {
     }
 
     @NonNull
-    public List<Future<TriggerId>> submit(List<TriggerEntity> trigger) {
-        final List<Future<TriggerId>> result = new ArrayList<>(trigger.size());
+    public List<Future<TriggerKey>> submit(List<TriggerEntity> trigger) {
+        final List<Future<TriggerKey>> result = new ArrayList<>(trigger.size());
         for (TriggerEntity triggerEntity : trigger) {
             result.add(submit(triggerEntity));
         }
@@ -53,7 +53,7 @@ public class TaskExecutorComponent implements Closeable {
     }
 
     @NonNull
-    public Future<TriggerId> submit(@Nullable TriggerEntity trigger) {
+    public Future<TriggerKey> submit(@Nullable TriggerEntity trigger) {
         if (trigger == null) {
             return CompletableFuture.completedFuture(null);
         }
@@ -61,7 +61,7 @@ public class TaskExecutorComponent implements Closeable {
         return executor.submit(() -> runTrigger(trigger));
     }
 
-    private TriggerId runTrigger(TriggerEntity trigger) {
+    private TriggerKey runTrigger(TriggerEntity trigger) {
         try {
             triggerService.run(trigger);
             return trigger.getKey();

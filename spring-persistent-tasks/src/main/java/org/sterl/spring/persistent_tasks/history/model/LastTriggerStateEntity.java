@@ -2,7 +2,7 @@ package org.sterl.spring.persistent_tasks.history.model;
 
 import java.time.OffsetDateTime;
 
-import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 
 import jakarta.persistence.Column;
@@ -42,7 +42,7 @@ public class LastTriggerStateEntity {
     @NotNull
     private TriggerData data;
     
-    public TriggerId getKey() {
+    public TriggerKey getKey() {
         return data.getKey();
     }
 

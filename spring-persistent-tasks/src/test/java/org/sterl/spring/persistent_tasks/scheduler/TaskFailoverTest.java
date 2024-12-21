@@ -11,7 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
-import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
@@ -37,13 +37,13 @@ class TaskFailoverTest extends AbstractSpringTest {
     void rescheduleAbandonedTasksTest() throws Exception {
         // GIVEN
         var trigger = triggerRepository.save(
-                new TriggerEntity(new TriggerId("slowTask"))
+                new TriggerEntity(new TriggerKey("slowTask"))
                 .runOn("schedulerB"));
 
         // WHEN
         Thread.sleep(19);
         // AND add one which looks like it is running :-)
-        triggerRepository.save(new TriggerEntity(new TriggerId("slowTask"))
+        triggerRepository.save(new TriggerEntity(new TriggerKey("slowTask"))
                 .runOn("schedulerA"));
 
         // AND check status
@@ -61,7 +61,7 @@ class TaskFailoverTest extends AbstractSpringTest {
 
         // WHEN
         final var retryTime = OffsetDateTime.now();
-        final List<Future<TriggerId>> runWaitingTasks = schedulerService.triggerNextTasks();
+        final List<Future<TriggerKey>> runWaitingTasks = schedulerService.triggerNextTasks();
 
         // THEN
         assertThat(runWaitingTasks).hasSize(1);

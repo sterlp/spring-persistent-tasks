@@ -3,7 +3,7 @@ package org.sterl.spring.persistent_tasks.shared.model;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 
-import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.api.TriggerKey;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
@@ -45,7 +45,7 @@ public class TriggerData {
             column = @Column(name = "trigger_id", nullable = false)
         )
     )
-    private TriggerId key;
+    private TriggerKey key;
 
     @Default
     @Column(updatable = false, name = "created_time")

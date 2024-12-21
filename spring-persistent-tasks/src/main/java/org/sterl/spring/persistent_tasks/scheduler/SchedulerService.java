@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
-import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
 import org.sterl.spring.persistent_tasks.scheduler.component.TaskExecutorComponent;
 import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity;
@@ -86,7 +86,7 @@ public class SchedulerService {
      * Simply triggers the next task which is now due to be executed
      */
     @NonNull
-    public List<Future<TriggerId>> triggerNextTasks() {
+    public List<Future<TriggerKey>> triggerNextTasks() {
         return triggerNextTasks(OffsetDateTime.now());
     }
 
@@ -95,7 +95,7 @@ public class SchedulerService {
      * tasks which wouldn't be triggered now.
      */
     @NonNull
-    public List<Future<TriggerId>> triggerNextTasks(OffsetDateTime timeDue) {
+    public List<Future<TriggerKey>> triggerNextTasks(OffsetDateTime timeDue) {
         var triggers = trx.execute(t -> {
             List<TriggerEntity> result;
             // in any case we say hello
@@ -116,9 +116,9 @@ public class SchedulerService {
     /**
      * Runs the next trigger if free threads are available.
      */
-    public Optional<Future<TriggerId>> runOrQueue(AddTriggerRequest<? extends Serializable> triggerRequest) {
+    public Optional<Future<TriggerKey>> runOrQueue(AddTriggerRequest<? extends Serializable> triggerRequest) {
         return trx.execute(t -> {
-            Optional<Future<TriggerId>> result = Optional.empty();
+            Optional<Future<TriggerKey>> result = Optional.empty();
             var trigger = triggerService.queue(triggerRequest);
             if (taskExecutor.getFreeThreads() > 0) {
                 trigger = triggerService.markTriggerInExecution(trigger, name);

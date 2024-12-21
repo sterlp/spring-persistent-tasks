@@ -15,7 +15,7 @@ import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
-import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.task.repository.TaskRepository;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
@@ -93,14 +93,14 @@ class TriggerServiceTest extends AbstractSpringTest {
         // GIVEN
         TaskId<String> taskId = taskService.replace("foo", c -> asserts.info("foo"));
         taskService.<String>replace("bar", c -> asserts.info("bar"));
-        TriggerId triggerId = subject.queue(taskId.newTrigger().build()).getKey();
+        TriggerKey triggerKey = subject.queue(taskId.newTrigger().build()).getKey();
 
         // WHEN
-        subject.run(triggerId);
+        subject.run(triggerKey);
 
         // THEN
         assertThat(historyService.countTriggers(TriggerStatus.SUCCESS)).isOne();
-        final var historyEntity = historyService.findLastKnownStatus(triggerId).get();
+        final var historyEntity = historyService.findLastKnownStatus(triggerKey).get();
         assertThat(historyEntity.getData().getExecutionCount()).isEqualTo(1);
         assertThat(historyEntity.getData().getEnd()).isAfterOrEqualTo(historyEntity.getData().getStart());
         assertThat(historyEntity.getData().getRunningDurationInMs())

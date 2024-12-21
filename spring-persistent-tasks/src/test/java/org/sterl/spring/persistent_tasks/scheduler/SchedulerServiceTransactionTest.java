@@ -17,7 +17,7 @@ import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.api.RetryStrategy;
 import org.sterl.spring.persistent_tasks.api.SpringBeanTask;
 import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
-import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 import org.sterl.spring.sample_app.person.PersonBE;
@@ -67,7 +67,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         final var trigger = TaskTriggerBuilder.newTrigger("savePerson").state("Paul").build();
 
         // WHEN
-        final Optional<Future<TriggerId>> t = subject.runOrQueue(trigger);
+        final Optional<Future<TriggerKey>> t = subject.runOrQueue(trigger);
 
         // THEN
         assertThat(t).isPresent();
@@ -81,25 +81,25 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         final var trigger = TaskTriggerBuilder.newTrigger("savePerson").state("Paul").build();
         sendError.set(true);
         // WHEN
-        Optional<Future<TriggerId>> triggerId = subject.runOrQueue(trigger);
+        Optional<Future<TriggerKey>> triggerKey = subject.runOrQueue(trigger);
         // THEN
-        assertExecutionCount(triggerId, 1);
+        assertExecutionCount(triggerKey, 1);
         assertThat(personRepository.count()).isZero();
 
         // WHEN
         sendError.set(false);
         subject.triggerNextTasks().get(0).get();
         // THEN
-        assertExecutionCount(triggerId, 2);
+        assertExecutionCount(triggerKey, 2);
         assertThat(personRepository.count()).isOne();
     }
 
-    private void assertExecutionCount(Optional<Future<TriggerId>> refId, int count) throws InterruptedException, ExecutionException {
-        final TriggerId triggerId = refId.get().get();
-        final Optional<TriggerEntity> t = triggerService.get(triggerId);
+    private void assertExecutionCount(Optional<Future<TriggerKey>> refId, int count) throws InterruptedException, ExecutionException {
+        final TriggerKey triggerKey = refId.get().get();
+        final Optional<TriggerEntity> t = triggerService.get(triggerKey);
         TriggerData data;
         if (t.isEmpty()) {
-            data = historyService.findLastKnownStatus(triggerId).get().getData();
+            data = historyService.findLastKnownStatus(triggerKey).get().getData();
         } else {
             data = t.get().getData();
         }

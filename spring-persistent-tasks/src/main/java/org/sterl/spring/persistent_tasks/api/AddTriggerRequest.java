@@ -15,7 +15,7 @@ public record AddTriggerRequest<T extends Serializable>(
 
     public static final int DEFAULT_PRIORITY = 4;
 
-    public TriggerId toTaskTriggerId() {
-        return new TriggerId(id, taskId.name());
+    public TriggerKey toTaskTriggerId() {
+        return new TriggerKey(id, taskId.name());
     }
 }

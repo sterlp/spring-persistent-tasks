@@ -12,7 +12,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
-import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.repository.TriggerDataRepository;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
@@ -22,7 +22,7 @@ import jakarta.persistence.QueryHint;
 
 public interface TriggerRepository extends TriggerDataRepository<TriggerEntity> {
     @Query("SELECT e FROM #{#entityName} e WHERE e.data.key = :key")
-    Optional<TriggerEntity> findByKey(@Param("key") TriggerId key);
+    Optional<TriggerEntity> findByKey(@Param("key") TriggerKey key);
 
     // https://jakarta.ee/specifications/persistence/3.0/jakarta-persistence-spec-3.0.html#a2132
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -50,7 +50,7 @@ public interface TriggerRepository extends TriggerDataRepository<TriggerEntity> 
            SELECT e FROM #{#entityName} e
            WHERE  e.data.key = :key
            """)
-    TriggerEntity lockByKey(@Param("key") TriggerId key);
+    TriggerEntity lockByKey(@Param("key") TriggerKey key);
 
     @Query("""
            SELECT e FROM #{#entityName} e

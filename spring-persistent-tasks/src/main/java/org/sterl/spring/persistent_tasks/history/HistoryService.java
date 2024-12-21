@@ -6,7 +6,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
-import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.history.model.LastTriggerStateEntity;
 import org.sterl.spring.persistent_tasks.history.model.TriggerStateHistoryEntity;
 import org.sterl.spring.persistent_tasks.history.repository.LastTriggerStateRepository;
@@ -26,9 +26,9 @@ public class HistoryService {
         return lastTriggerStateRepository.findById(triggerId);
     }
     
-    public Optional<LastTriggerStateEntity> findLastKnownStatus(TriggerId triggerId) {
+    public Optional<LastTriggerStateEntity> findLastKnownStatus(TriggerKey triggerKey) {
         PageRequest page = PageRequest.of(0, 1).withSort(Direction.DESC, "e.data.createdTime", "id");
-        var result = lastTriggerStateRepository.listKnownStatusFor(triggerId, page);
+        var result = lastTriggerStateRepository.listKnownStatusFor(triggerKey, page);
         return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
     }
 

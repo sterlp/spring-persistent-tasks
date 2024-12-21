@@ -5,7 +5,7 @@ import java.time.OffsetDateTime;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.sterl.spring.persistent_tasks.api.TaskId;
-import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 
@@ -49,7 +49,7 @@ public class TriggerEntity {
 
     private String runningOn;
     
-    public TriggerEntity(TriggerId key) {
+    public TriggerEntity(TriggerKey key) {
         if (this.data == null) this.data = new TriggerData();
         this.data.setKey(key);
     }
@@ -59,7 +59,7 @@ public class TriggerEntity {
         return data.getKey().toTaskId();
     }
     
-    public TriggerId getKey() {
+    public TriggerKey getKey() {
         if (data == null) return null;
         return data.getKey();
     }

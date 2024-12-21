@@ -9,11 +9,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Unique key of a trigger during it's execution. But it after that the same key
+ * can be added if needed. Ensures that only one trigger with the same key
+ * is currently scheduled for execution.
+ */
 @Data
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class TriggerId implements Serializable {
+public class TriggerKey implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String id;
@@ -25,7 +30,7 @@ public class TriggerId implements Serializable {
     /**
      * Builds a trigger for the given task name
      */
-    public TriggerId(String taskName) {
+    public TriggerKey(String taskName) {
         id = UUID.randomUUID().toString();
         this.taskName = taskName;
     }

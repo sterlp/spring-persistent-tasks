@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
-import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerCanceledEvent;
@@ -41,14 +41,14 @@ public class EditTriggerComponent {
         return triggerRepository.findAll(task.name(), page);
     }
 
-    public Optional<TriggerEntity> completeTaskWithSuccess(TriggerId id) {
-        return this.completeTaskWithStatus(id, null);
+    public Optional<TriggerEntity> completeTaskWithSuccess(TriggerKey key) {
+        return this.completeTaskWithStatus(key, null);
     }
 
     /**
      * Sets success or error based on the fact if an exception is given or not.
      */
-    public Optional<TriggerEntity> completeTaskWithStatus(TriggerId key, Exception e) {
+    public Optional<TriggerEntity> completeTaskWithStatus(TriggerKey key, Exception e) {
         final Optional<TriggerEntity> result = triggerRepository.findByKey(key);
 
         result.ifPresent(t -> {
@@ -69,13 +69,13 @@ public class EditTriggerComponent {
         return result;
     }
 
-    public Optional<TriggerEntity> retryTrigger(TriggerId id, OffsetDateTime retryAt) {
+    public Optional<TriggerEntity> retryTrigger(TriggerKey id, OffsetDateTime retryAt) {
         return triggerRepository //
                 .findByKey(id) //
                 .map(t -> t.runAt(retryAt));
     }
 
-    public Optional<TriggerEntity> cancelTask(TriggerId id) {
+    public Optional<TriggerEntity> cancelTask(TriggerKey id) {
         return triggerRepository //
                 .findByKey(id) //
                 .map(t -> {

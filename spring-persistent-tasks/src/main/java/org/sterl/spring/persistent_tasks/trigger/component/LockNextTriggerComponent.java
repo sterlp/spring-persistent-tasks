@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
@@ -32,7 +32,7 @@ public class LockNextTriggerComponent {
         return tasks;
     }
 
-    public TriggerEntity lock(TriggerId id, String runningOn) {
+    public TriggerEntity lock(TriggerKey id, String runningOn) {
         final TriggerEntity result = triggerRepository.lockByKey(id);
         if (result != null) {
             result.runOn(runningOn);

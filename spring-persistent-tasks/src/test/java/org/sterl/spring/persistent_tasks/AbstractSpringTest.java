@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.api.SpringBeanTask;
-import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
 import org.sterl.spring.persistent_tasks.history.HistoryService;
 import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
@@ -143,8 +143,8 @@ public class AbstractSpringTest {
         return triggerService.run(triggerService.lockNextTrigger());
     }
 
-    protected List<TriggerId> runTriggersAndWait() {
-        final List<Future<TriggerId>> triggers = schedulerA.triggerNextTasks();
+    protected List<TriggerKey> runTriggersAndWait() {
+        final List<Future<TriggerKey>> triggers = schedulerA.triggerNextTasks();
         return triggers.stream().map(t -> {
             try {
                 return t.get();

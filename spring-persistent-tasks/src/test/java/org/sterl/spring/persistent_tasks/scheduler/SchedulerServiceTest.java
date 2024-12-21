@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
-import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity;
 import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity.TaskSchedulerStatus;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
@@ -61,24 +61,24 @@ class SchedulerServiceTest extends AbstractSpringTest {
     @Test
     void verifyRunningStatusTest() throws Exception {
         // GIVEN
-        final TriggerId triggerId = triggerService.queue(TaskTriggerBuilder
+        final TriggerKey triggerKey = triggerService.queue(TaskTriggerBuilder
                 .newTrigger("slowTask")
                 .state(50L)
                 .build()
             ).getKey();
 
         // WHEN
-        final Future<TriggerId> running = subject.triggerNextTasks().get(0);
+        final Future<TriggerKey> running = subject.triggerNextTasks().get(0);
 
         // THEN
         Thread.sleep(40);
-        var runningTrigger = triggerService.get(triggerId).get();
+        var runningTrigger = triggerService.get(triggerKey).get();
         assertThat(runningTrigger.getData().getStatus()).isEqualTo(TriggerStatus.RUNNING);
         // AND
         running.get();
-        assertThat(triggerService.get(triggerId)).isEmpty();
+        assertThat(triggerService.get(triggerKey)).isEmpty();
         // AND
-        var history = historyService.findLastKnownStatus(triggerId).get();
+        var history = historyService.findLastKnownStatus(triggerKey).get();
         assertThat(history.getData().getStatus()).isEqualTo(TriggerStatus.SUCCESS);
     }
 

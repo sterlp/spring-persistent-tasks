@@ -5,7 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.lang.Nullable;
-import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalCompontant;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
@@ -29,7 +29,7 @@ public class ReadTriggerComponent {
         return triggerRepository.countByStatus(status);
     }
 
-    public Optional<TriggerEntity> get(TriggerId id) {
+    public Optional<TriggerEntity> get(TriggerKey id) {
         return triggerRepository.findByKey(id);
     }
 

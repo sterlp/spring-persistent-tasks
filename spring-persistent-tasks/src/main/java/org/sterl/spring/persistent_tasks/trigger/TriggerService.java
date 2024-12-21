@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
-import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
@@ -53,15 +53,15 @@ public class TriggerService {
     }
 
     @Transactional(propagation = Propagation.NEVER)
-    public Optional<TriggerEntity> run(TriggerId triggerId) {
-        final TriggerEntity trigger = lockNextTrigger.lock(triggerId, MANUAL_TAG);
+    public Optional<TriggerEntity> run(TriggerKey triggerKey) {
+        final TriggerEntity trigger = lockNextTrigger.lock(triggerKey, MANUAL_TAG);
         if (trigger == null) {
             return Optional.empty();
         }
         return run(trigger);
     }
 
-    public Optional<TriggerEntity> markTriggerInExecution(TriggerId id, String runOn) {
+    public Optional<TriggerEntity> markTriggerInExecution(TriggerKey id, String runOn) {
         return readTrigger.get(id).map(t -> t.runOn(runOn));
     }
     public TriggerEntity markTriggerInExecution(TriggerEntity trigger, String runOn) {
@@ -77,8 +77,8 @@ public class TriggerService {
         return lockNextTrigger.loadNext(runOn, count, timeDueAt);
     }
 
-    public Optional<TriggerEntity> get(TriggerId triggerId) {
-        return readTrigger.get(triggerId);
+    public Optional<TriggerEntity> get(TriggerKey triggerKey) {
+        return readTrigger.get(triggerKey);
     }
 
     @Transactional(readOnly = true , timeout = 10)
@@ -117,7 +117,7 @@ public class TriggerService {
     /**
      * If you changed your mind, cancel the task
      */
-    public Optional<TriggerEntity> cancel(TriggerId id) {
+    public Optional<TriggerEntity> cancel(TriggerKey id) {
         return editTrigger.cancelTask(id);
     }
 
