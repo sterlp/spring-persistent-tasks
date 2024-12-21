@@ -4,10 +4,12 @@ import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.sterl.spring.persistent_tasks.api.Task;
 import org.sterl.spring.persistent_tasks.task.TaskService;
+import org.sterl.spring.persistent_tasks.trigger.event.TriggerRunningEvent;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ public class RunTriggerComponent {
 
     private final TaskService taskService;
     private final EditTriggerComponent editTrigger;
+    private final ApplicationEventPublisher eventPublisher;
     private final StateSerializer serializer = new StateSerializer();
 
     /**
@@ -32,6 +35,9 @@ public class RunTriggerComponent {
         Task<Serializable> task = null;
         try {
             task = taskService.assertIsKnown(trigger.newTaskId());
+            
+            eventPublisher.publishEvent(new TriggerRunningEvent(trigger));
+            
             task.accept(serializer.deserialize(trigger.getData().getState()));
             var result = editTrigger.completeTaskWithSuccess(trigger.getKey());
             editTrigger.deleteTrigger(trigger);

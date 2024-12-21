@@ -61,9 +61,6 @@ public class TriggerService {
         return run(trigger);
     }
 
-    public Optional<TriggerEntity> markTriggerInExecution(TriggerKey id, String runOn) {
-        return readTrigger.get(id).map(t -> t.runOn(runOn));
-    }
     public TriggerEntity markTriggerInExecution(TriggerEntity trigger, String runOn) {
         return trigger.runOn(runOn);
     }
@@ -117,8 +114,8 @@ public class TriggerService {
     /**
      * If you changed your mind, cancel the task
      */
-    public Optional<TriggerEntity> cancel(TriggerKey id) {
-        return editTrigger.cancelTask(id);
+    public Optional<TriggerEntity> cancel(TriggerKey key) {
+        return editTrigger.cancelTask(key);
     }
 
     /**

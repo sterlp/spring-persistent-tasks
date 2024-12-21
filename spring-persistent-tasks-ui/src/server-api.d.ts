@@ -56,7 +56,7 @@ export interface TaskTriggerBuilder<T> {
 export interface Trigger {
     id: number;
     instanceId: number;
-    key: TriggerId;
+    key: TriggerKey;
     runningOn: string;
     createdTime: string;
     runAt: string;
@@ -71,12 +71,12 @@ export interface Trigger {
     lastException: string;
 }
 
-export interface TriggerId extends Serializable {
+export interface TriggerKey extends Serializable {
     id: string;
     taskName: string;
 }
 
-export interface TriggerIdBuilder {
+export interface TriggerKeyBuilder {
 }
 
 export interface TriggerTaskCommand<T> {
