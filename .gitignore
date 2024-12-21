@@ -32,3 +32,4 @@ build/
 
 ### VS Code ###
 .vscode/
+example/src/test/java/org/sterl/spring/persistent_tasks/example/FooTest.java

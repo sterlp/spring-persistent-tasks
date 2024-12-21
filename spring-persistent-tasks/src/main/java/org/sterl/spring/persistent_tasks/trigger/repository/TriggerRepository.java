@@ -32,6 +32,11 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, Long> {
            """)
     Page<TriggerEntity> findAll(
             @Param("taskName") String taskName, Pageable page);
+    
+    long countByDataStatusIn(Set<TriggerStatus> status);
+
+    @Query("SELECT count(1) FROM #{#entityName} e WHERE e.data.key.taskName = :taskName")
+    long countByTaskName(@Param("taskName") String taskName);
 
     // https://jakarta.ee/specifications/persistence/3.0/jakarta-persistence-spec-3.0.html#a2132
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -49,11 +54,6 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, Long> {
             @Param("runAt") OffsetDateTime runAt,
             @Param("status") TriggerStatus status,
             Pageable page);
-
-    long countByDataStatusIn(Set<TriggerStatus> status);
-
-    @Query("SELECT count(1) FROM #{#entityName} e WHERE e.data.key.taskName = :taskName")
-    long countByTaskName(@Param("taskName") String taskName);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @QueryHints({

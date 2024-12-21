@@ -21,11 +21,11 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "SPT_TRIGGERS_HISTORY",
+@Table(name = "SPT_TRIGGERS_HISTORY_ENTRIES",
     indexes = {
         @Index(name = "IDX_SPT_TRIGGERS_HISTORY_INSTANCE_ID", columnList = "instance_id"),
-        @Index(name = "IDX_SPT_TRIGGERS_HISTORY_TRIGGER_ID", columnList = "trigger_id"),
         @Index(name = "IDX_SPT_TRIGGERS_HISTORY_TASK_NAME", columnList = "task_name"),
+        @Index(name = "IDX_SPT_TRIGGERS_HISTORY_TRIGGER_ID", columnList = "trigger_id"),
         @Index(name = "IDX_SPT_TRIGGERS_HISTORY_STATUS", columnList = "status"),
         @Index(name = "IDX_SPT_TRIGGERS_HISTORY_CREATED_TIME", columnList = "created_time"),
     }
@@ -35,7 +35,7 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class TriggerHistoryEntity {
+public class TriggerStateDetailEntity {
 
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(updatable = false)
@@ -47,7 +47,7 @@ public class TriggerHistoryEntity {
      * as for each trigger multiple history entries are added.
      */
     private Long instanceId;
-
+    
     @Embedded
     @NotNull
     private TriggerData data;

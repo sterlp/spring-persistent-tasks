@@ -8,8 +8,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
+import org.sterl.spring.persistent_tasks.history.model.LastTriggerStateEntity;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryEntity;
+import org.sterl.spring.persistent_tasks.history.model.TriggerStateDetailEntity;
+import org.sterl.spring.persistent_tasks.history.repository.LastTriggerStateRepository;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryRepository;
+import org.sterl.spring.persistent_tasks.history.repository.TriggerStateDetailRepository;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
 
@@ -18,16 +22,17 @@ import lombok.RequiredArgsConstructor;
 @TransactionalService
 @RequiredArgsConstructor
 public class HistoryService {
-    private final TriggerHistoryRepository triggerHistoryRepository;
+    private final LastTriggerStateRepository lastTriggerStateRepository;
+    private final TriggerStateDetailRepository triggerStateDetailRepository;
     
-    public List<TriggerHistoryEntity> listHistoryForTrigger(TriggerId id, PageRequest page) {
+    public List<TriggerStateDetailEntity> listHistoryForTrigger(TriggerId id, PageRequest page) {
         if (page.getSort() == Sort.unsorted()) {
             page = page.withSort(Sort.by(Direction.DESC, "id"));
         }
-        return triggerHistoryRepository.findByTriggerId(id, page);
+        return triggerStateDetailRepository.findByTriggerId(id, page);
     }
     
-    public Optional<TriggerHistoryEntity> findLastKnownStatus(TriggerId id) {
+    public Optional<LastTriggerStateRepository> findLastKnownStatus(TriggerId id) {
         final List<TriggerHistoryEntity> result = listHistoryForTrigger(id, PageRequest.of(0, 1));
         if (result.isEmpty()) return Optional.empty();
         return Optional.of(result.getFirst());
