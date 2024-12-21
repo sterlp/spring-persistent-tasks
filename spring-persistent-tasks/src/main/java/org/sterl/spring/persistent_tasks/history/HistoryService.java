@@ -5,14 +5,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
 import org.sterl.spring.persistent_tasks.history.model.LastTriggerStateEntity;
-import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryEntity;
-import org.sterl.spring.persistent_tasks.history.model.TriggerStateDetailEntity;
+import org.sterl.spring.persistent_tasks.history.model.TriggerStateHistoryEntity;
 import org.sterl.spring.persistent_tasks.history.repository.LastTriggerStateRepository;
-import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryRepository;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerStateDetailRepository;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
@@ -25,35 +22,34 @@ public class HistoryService {
     private final LastTriggerStateRepository lastTriggerStateRepository;
     private final TriggerStateDetailRepository triggerStateDetailRepository;
     
-    public List<TriggerStateDetailEntity> listHistoryForTrigger(TriggerId id, PageRequest page) {
-        if (page.getSort() == Sort.unsorted()) {
-            page = page.withSort(Sort.by(Direction.DESC, "id"));
-        }
-        return triggerStateDetailRepository.findByTriggerId(id, page);
+    public Optional<LastTriggerStateEntity> findStatus(long triggerId) {
+        return lastTriggerStateRepository.findById(triggerId);
     }
     
-    public Optional<LastTriggerStateRepository> findLastKnownStatus(TriggerId id) {
-        final List<TriggerHistoryEntity> result = listHistoryForTrigger(id, PageRequest.of(0, 1));
-        if (result.isEmpty()) return Optional.empty();
-        return Optional.of(result.getFirst());
+    public Optional<LastTriggerStateEntity> findLastKnownStatus(TriggerId triggerId) {
+        PageRequest page = PageRequest.of(0, 1).withSort(Direction.DESC, "e.data.createdTime", "id");
+        var result = lastTriggerStateRepository.listKnownStatusFor(triggerId, page);
+        return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
     }
-    
+
     public void deleteAll() {
-        triggerHistoryRepository.deleteAllInBatch();
+        triggerStateDetailRepository.deleteAllInBatch();
+        lastTriggerStateRepository.deleteAllInBatch();
     }
     
     public void deleteAllOlderThan(OffsetDateTime age) {
-        triggerHistoryRepository.deleteHistoryOlderThan(age);
+        triggerStateDetailRepository.deleteOlderThan(age);
+        lastTriggerStateRepository.deleteOlderThan(age);
     }
 
     /**
      * Counts the <b>unique</b> triggers in the history.
      */
     public long countTriggers(TriggerStatus status) {
-        return triggerHistoryRepository.countTriggers(status);
+        return lastTriggerStateRepository.countByStatus(status);
     }
 
-    public List<TriggerHistoryEntity> findAllForInstance(long instanceId) {
-        return triggerHistoryRepository.findAllByInstanceId(instanceId);
+    public List<TriggerStateHistoryEntity> findAllForInstance(long instanceId) {
+        return triggerStateDetailRepository.findAllByInstanceId(instanceId);
     }
 }

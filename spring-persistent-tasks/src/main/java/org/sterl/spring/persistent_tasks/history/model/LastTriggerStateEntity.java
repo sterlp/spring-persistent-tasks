@@ -21,10 +21,10 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "SPT_LAST_TRIGGERS_STATES",
     indexes = {
-        @Index(name = "IDX_SPT_TRIGGERS_HISTORY_TASK_NAME", columnList = "task_name"),
-        @Index(name = "IDX_SPT_TRIGGERS_HISTORY_TRIGGER_ID", columnList = "trigger_id"),
-        @Index(name = "IDX_SPT_TRIGGERS_HISTORY_STATUS", columnList = "status"),
-        @Index(name = "IDX_SPT_TRIGGERS_HISTORY_CREATED_TIME", columnList = "created_time"),
+        @Index(name = "IDX_SPT_LAST_TRIGGERS_STATES_TASK_NAME", columnList = "task_name"),
+        @Index(name = "IDX_SPT_LAST_TRIGGERS_STATES_TRIGGER_ID", columnList = "trigger_id"),
+        @Index(name = "IDX_SPT_LAST_TRIGGERS_STATES_STATUS", columnList = "status"),
+        @Index(name = "IDX_SPT_LAST_TRIGGERS_STATES_CREATED_TIME", columnList = "created_time"),
     }
 )
 @Data

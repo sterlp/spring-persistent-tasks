@@ -7,36 +7,22 @@ import java.util.Set;
 
 import org.hibernate.LockOptions;
 import org.hibernate.jpa.SpecHints;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 import org.sterl.spring.persistent_tasks.api.TriggerId;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
+import org.sterl.spring.persistent_tasks.shared.repository.TriggerDataRepository;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
 
-public interface TriggerRepository extends JpaRepository<TriggerEntity, Long> {
-    
+public interface TriggerRepository extends TriggerDataRepository<TriggerEntity> {
     @Query("SELECT e FROM #{#entityName} e WHERE e.data.key = :key")
     Optional<TriggerEntity> findByKey(@Param("key") TriggerId key);
-
-    @Query("""
-           SELECT e FROM #{#entityName} e
-           WHERE  e.data.key.taskName = :taskName
-           """)
-    Page<TriggerEntity> findAll(
-            @Param("taskName") String taskName, Pageable page);
-    
-    long countByDataStatusIn(Set<TriggerStatus> status);
-
-    @Query("SELECT count(1) FROM #{#entityName} e WHERE e.data.key.taskName = :taskName")
-    long countByTaskName(@Param("taskName") String taskName);
 
     // https://jakarta.ee/specifications/persistence/3.0/jakarta-persistence-spec-3.0.html#a2132
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -64,7 +50,7 @@ public interface TriggerRepository extends JpaRepository<TriggerEntity, Long> {
            SELECT e FROM #{#entityName} e
            WHERE  e.data.key = :key
            """)
-    TriggerEntity lockById(@Param("key") TriggerId key);
+    TriggerEntity lockByKey(@Param("key") TriggerId key);
 
     @Query("""
            SELECT e FROM #{#entityName} e

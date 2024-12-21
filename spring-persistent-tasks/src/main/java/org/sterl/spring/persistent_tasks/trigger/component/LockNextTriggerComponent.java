@@ -33,7 +33,7 @@ public class LockNextTriggerComponent {
     }
 
     public TriggerEntity lock(TriggerId id, String runningOn) {
-        final TriggerEntity result = triggerRepository.lockById(id);
+        final TriggerEntity result = triggerRepository.lockByKey(id);
         if (result != null) {
             result.runOn(runningOn);
         }

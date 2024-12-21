@@ -1,6 +1,5 @@
 package org.sterl.spring.persistent_tasks.trigger.component;
 
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -27,7 +26,7 @@ public class ReadTriggerComponent {
 
     public long countByStatus(@Nullable TriggerStatus status) {
         if (status == null) return triggerRepository.count();
-        return triggerRepository.countByDataStatusIn(EnumSet.of(status));
+        return triggerRepository.countByStatus(status);
     }
 
     public Optional<TriggerEntity> get(TriggerId id) {
@@ -38,7 +37,7 @@ public class ReadTriggerComponent {
      * Checks if any job is still running or waiting for it's execution.
      */
     public boolean hasPendingTriggers() {
-        if (triggerRepository.countByDataStatusIn(TriggerStatus.ACTIVE_STATES) > 0) {
+        if (triggerRepository.countByStatus(TriggerStatus.ACTIVE_STATES) > 0) {
             return true;
         }
         return false;

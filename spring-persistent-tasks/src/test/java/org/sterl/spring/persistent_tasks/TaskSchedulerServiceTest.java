@@ -29,7 +29,7 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
                         return RetryStrategy.TRY_THREE_TIMES_IMMEDIATELY;
                     }
                 });
-        var id = triggerService.queue(task.newTrigger().state("hallo").build()).getKey();
+        var runTrigger = triggerService.queue(task.newTrigger().state("hallo").build());
 
         // WHEN
         runTriggersAndWait();
@@ -41,7 +41,7 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
         assertThat(asserts.getCount("hallo")).isEqualTo(3);
         assertThat(triggerService.countTriggers()).isZero();
         // AND
-        var trigger = historyService.findLastKnownStatus(id).get();
+        var trigger = historyService.findStatus(runTrigger.getId()).get();
         assertThat(trigger.getData().getExecutionCount()).isEqualTo(3);
         assertThat(trigger.getData().getExceptionName()).isEqualTo(RuntimeException.class.getName());
         assertThat(trigger.getData().getLastException()).contains("NOPE!");

@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.history.HistoryService;
-import org.sterl.spring.persistent_tasks.trigger.api.TriggerConverter.FromTriggerHistoryEntity;
+import org.sterl.spring.persistent_tasks.history.api.HistoryConverter.FromTriggerStateDetailEntity;
 
 import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public class TriggerHistoryResource {
     public List<Trigger> list(
             @PathParam("instanceId") Long instanceId) {
         
-        return FromTriggerHistoryEntity.INSTANCE.convert(
+        return FromTriggerStateDetailEntity.INSTANCE.convert(
                 historyService.findAllForInstance(instanceId));
     }
 }

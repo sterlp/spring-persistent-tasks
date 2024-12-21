@@ -35,7 +35,7 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class TriggerStateDetailEntity {
+public class TriggerStateHistoryEntity {
 
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(updatable = false)
