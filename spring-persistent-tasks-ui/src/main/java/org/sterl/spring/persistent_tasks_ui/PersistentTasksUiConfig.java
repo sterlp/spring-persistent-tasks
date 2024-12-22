@@ -13,13 +13,13 @@ public class PersistentTasksUiConfig implements WebMvcConfigurer {
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/task-ui").setViewName("/task-ui/index.html");
-        registry.addRedirectViewController("/task-ui/", "/task-ui");
+        //registry.addRedirectViewController("/task-ui/", "/task-ui");
     }
     
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/task-ui/assets/**") 
-                .addResourceLocations("classpath:/static/task-ui/assets/") 
-                .setCacheControl(CacheControl.maxAge(365, TimeUnit.DAYS));
+            .addResourceLocations("classpath:/static/task-ui/assets/") 
+            .setCacheControl(CacheControl.maxAge(365, TimeUnit.DAYS));
     }
 }

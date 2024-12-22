@@ -14,7 +14,7 @@ const TriggerItemView = ({ trigger }: TriggerProps) => {
             <Accordion.Item eventKey={trigger.id + ""}>
                 <Accordion.Header>
                     <Container>
-                        <Row>
+                        <Row className="align-items-center">
                             <Col xs="3" xl="1">
                                 <TriggerStatusView data={trigger} />
                             </Col>

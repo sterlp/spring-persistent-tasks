@@ -2,6 +2,7 @@ import Router, { Route, Switch } from "crossroad";
 import TriggersPage from "./trigger/triggers.page";
 import { Container, Nav, Navbar } from "react-bootstrap";
 import SchedulersPage from "./scheduler/scheduler.page";
+import HistoryPage from "./history/history.page";
 
 const App = () => {
     return (
@@ -19,6 +20,7 @@ const App = () => {
                             <Nav.Link href="/task-ui/triggers">
                                 Trigger
                             </Nav.Link>
+                            <Nav.Link href="/task-ui/history">History</Nav.Link>
                         </Nav>
                     </Navbar.Collapse>
                 </Container>
@@ -28,6 +30,7 @@ const App = () => {
                 <Switch>
                     <Route path="/task-ui" component={SchedulersPage} />
                     <Route path="/task-ui/triggers" component={TriggersPage} />
+                    <Route path="/task-ui/history" component={HistoryPage} />
                 </Switch>
             </Container>
         </Router>

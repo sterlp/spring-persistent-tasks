@@ -3,27 +3,25 @@ import { useServerObject } from "@src/shared/http-request";
 import { PagedModel, Trigger } from "@src/server-api";
 import { Col, Row, Stack } from "react-bootstrap";
 import HttpErrorView from "@src/shared/http-error.view";
-import TaskSelect from "@src/task/view/task-select.view";
 import PageView from "@src/shared/page.view";
 import ReloadButton from "@src/shared/reload-button";
-import TriggerItemView from "./views/trigger-list-item.view";
+import TriggerItemView from "@src/trigger/views/trigger-list-item.view";
 
-const TriggersPage = () => {
+const HistoryPage = () => {
     const [page, setPage] = useState(0);
-    const [selectedTask, setSelectedTask] = useState("");
     const triggers = useServerObject<PagedModel<Trigger>>(
-        "/spring-tasks-api/triggers"
+        "/spring-tasks-api/history"
     );
 
     const doReload = () => {
-        triggers.doGet("?size=5&page=" + page + "&taskId=" + selectedTask);
+        triggers.doGet("?size=5&page=" + page);
     };
 
-    useEffect(doReload, [page, selectedTask]);
+    useEffect(doReload, [page]);
     useEffect(() => {
         const intervalId = setInterval(doReload, 10000);
         return () => clearInterval(intervalId);
-    }, [page, selectedTask]);
+    }, [page]);
 
     return (
         <>
@@ -32,9 +30,7 @@ const TriggersPage = () => {
             </Row>
             <Stack gap={1}>
                 <Row className="align-items-center">
-                    <Col>
-                        <TaskSelect onTaskChange={setSelectedTask} />
-                    </Col>
+                    <div></div>
                     <Col>
                         <PageView
                             onPage={(p) => setPage(p)}
@@ -58,4 +54,4 @@ const TriggersPage = () => {
     );
 };
 
-export default TriggersPage;
+export default HistoryPage;
