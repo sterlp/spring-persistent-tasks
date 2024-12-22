@@ -1,49 +1,36 @@
-import { useEffect } from "react";
-import { Col, Container, Navbar, Row } from "react-bootstrap";
-import SchedulerStatusView from "./scheduler/views/scheduler.view";
-import { useServerObject } from "./shared/http-request";
-import HttpErrorView from "./shared/http-error.view";
-import TriggersView from "./trigger/views/triggers-list.view";
+import Router, { Route, Switch } from "crossroad";
+import TriggersPage from "./trigger/triggers.page";
+import { Container, Nav, Navbar } from "react-bootstrap";
+import SchedulersPage from "./scheduler/scheduler.page";
 
 const App = () => {
-    const schedulers = useServerObject<string[]>(
-        "/spring-tasks-api/schedulers"
-    );
-
-    useEffect(schedulers.doGet, []);
-    // Poll every 10 seconds
-    useEffect(() => {
-        const intervalId = setInterval(schedulers.doGet, 10000);
-        return () => clearInterval(intervalId);
-    }, []);
-
     return (
-        <>
+        <Router>
             <Navbar expand="lg" className="bg-body-tertiary">
                 <Container>
                     <Navbar.Brand href="#home">
                         Persistent Tasks UI
                     </Navbar.Brand>
+
+                    <Navbar.Toggle aria-controls="basic-navbar-nav" />
+                    <Navbar.Collapse id="basic-navbar-nav">
+                        <Nav className="me-auto">
+                            <Nav.Link href="/task-ui">Home</Nav.Link>
+                            <Nav.Link href="/task-ui/triggers">
+                                Trigger
+                            </Nav.Link>
+                        </Nav>
+                    </Navbar.Collapse>
                 </Container>
             </Navbar>
-            <Container as="main" className="py-4 px-0 mx-auto">
-                <Container>
-                    <Row>
-                        <HttpErrorView error={schedulers.error} />
-                    </Row>
-                    <Row>
-                        {schedulers.data?.map((i) => (
-                            <Col key={i} xl="6" md="12" className="mb-2">
-                                <SchedulerStatusView name={i} />
-                            </Col>
-                        ))}
-                    </Row>
-                    <Row>
-                        <TriggersView />
-                    </Row>
-                </Container>
+
+            <Container as="main">
+                <Switch>
+                    <Route path="/task-ui" component={SchedulersPage} />
+                    <Route path="/task-ui/triggers" component={TriggersPage} />
+                </Switch>
             </Container>
-        </>
+        </Router>
     );
 };
 

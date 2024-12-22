@@ -13,6 +13,7 @@
     "@uiw/react-json-view": "^2.0.0-alpha.30",
     "axios": "^1.7.9",
     "bootstrap": "^5.3.3",
+    "crossroad": "^1.3.3",
     "luxon": "^3.5.0",
     "react": "^19.0.0",
     "react-bootstrap": "^2.10.7",
