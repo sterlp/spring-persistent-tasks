@@ -6,6 +6,7 @@ import java.time.OffsetDateTime;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 
@@ -36,7 +37,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 @Builder
-public class TriggerEntity {
+public class TriggerEntity implements HasTriggerData {
 
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(updatable = false)

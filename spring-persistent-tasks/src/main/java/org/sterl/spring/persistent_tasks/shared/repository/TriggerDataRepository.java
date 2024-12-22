@@ -10,11 +10,12 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.query.Param;
+import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 @NoRepositoryBean
-public interface TriggerDataRepository<T> extends JpaRepository<T, Long> {
+public interface TriggerDataRepository<T extends HasTriggerData> extends JpaRepository<T, Long> {
 
     @Query("""
            SELECT e FROM #{#entityName} e

@@ -3,6 +3,7 @@ package org.sterl.spring.persistent_tasks.history.model;
 import java.time.OffsetDateTime;
 
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 
 import jakarta.persistence.Column;
@@ -32,7 +33,7 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class LastTriggerStateEntity {
+public class LastTriggerStateEntity implements HasTriggerData {
 
     @Column(updatable = false)
     @Id
