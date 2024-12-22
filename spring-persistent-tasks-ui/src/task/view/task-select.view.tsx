@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Col, Form, Row, Spinner } from "react-bootstrap";
-import { useServerObject } from "@/shared/http-request";
+import { useServerObject } from "@src/shared/http-request";
 
 interface TaskSelectProps {
     onTaskChange?: (task: string) => void; // Define type for the callback

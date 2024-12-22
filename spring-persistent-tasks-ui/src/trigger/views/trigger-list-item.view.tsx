@@ -1,8 +1,8 @@
 import { Accordion, Col, Container, Row } from "react-bootstrap";
 import TriggerStatusView from "./trigger-staus.view";
 import JsonView from "@uiw/react-json-view";
-import { Trigger } from "@/server-api";
-import LabeledText from "@/shared/labled-text";
+import { Trigger } from "@src/server-api";
+import LabeledText from "@src/shared/labled-text";
 
 interface TriggerProps {
     trigger: Trigger;

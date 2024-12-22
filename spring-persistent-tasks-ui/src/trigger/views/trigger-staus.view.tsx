@@ -1,5 +1,5 @@
 import { Badge } from "react-bootstrap";
-import { Trigger } from "@/server-api";
+import { Trigger } from "@src/server-api";
 
 interface Props {
     data?: Trigger;
