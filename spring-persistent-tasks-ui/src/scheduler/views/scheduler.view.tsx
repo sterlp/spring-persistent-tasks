@@ -124,7 +124,7 @@ function durationSince(from: Date) {
 }
 
 function formatMemory(value: number) {
-    var result = value / 1024 / 1024;
+    const result = value / 1024 / 1024;
 
     if (result > 999) {
         return Math.round((result / 1024) * 10) / 10 + "GB";

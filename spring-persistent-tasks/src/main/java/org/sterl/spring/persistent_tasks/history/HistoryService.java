@@ -4,8 +4,11 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
+import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.history.model.LastTriggerStateEntity;
 import org.sterl.spring.persistent_tasks.history.model.TriggerStateHistoryEntity;
@@ -73,5 +76,9 @@ public class HistoryService {
 
     public long countTriggers(TriggerKey key) {
         return lastTriggerStateRepository.countByKey(key);
+    }
+
+    public Page<LastTriggerStateEntity> findTriggerState(TaskId<?> taskId, Pageable page) {
+        return lastTriggerStateRepository.findAll(page);
     }
 }
