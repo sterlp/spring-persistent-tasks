@@ -2,11 +2,14 @@ package org.sterl.spring.persistent_tasks.scheduler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
 import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
+import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
+import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
@@ -80,6 +83,23 @@ class SchedulerServiceTest extends AbstractSpringTest {
         // AND
         var history = historyService.findLastKnownStatus(triggerKey).get();
         assertThat(history.getData().getStatus()).isEqualTo(TriggerStatus.SUCCESS);
+    }
+    
+    @Test
+    void testQueuedInFuture() {
+        // GIVEN
+        final AddTriggerRequest<String> triggerRequest = Task3.ID
+                .newTrigger("Hallo")
+                .runAfter(Duration.ofMinutes(5))
+                .build();
+        subject.runOrQueue(triggerRequest);
+        
+        // WHEN
+        runTriggersAndWait();
+        
+        // THEN
+        asserts.assertMissing(Task3.NAME + "::Hallo");
+        assertThat(triggerService.countTriggers(TriggerStatus.NEW)).isOne();
     }
 
     @Test

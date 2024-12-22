@@ -14,7 +14,7 @@ import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 class TriggerStateDetailRepositoryTest extends AbstractSpringTest {
 
     @Autowired private TriggerStateDetailRepository subject;
-    
+
     @Test
     void testGrouping() {
         // GIVEN

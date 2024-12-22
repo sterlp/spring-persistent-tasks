@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
+import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
@@ -264,5 +265,40 @@ class TriggerServiceTest extends AbstractSpringTest {
             }
             assertThat(historyService.countTriggers(TriggerStatus.SUCCESS)).isEqualTo(100);
         }
+    }
+    
+    @Test
+    void testQueuedInFuture() {
+        // GIVEN
+        final AddTriggerRequest<String> triggerRequest = Task3.ID
+                .newTrigger("Hallo")
+                .runAfter(Duration.ofMinutes(5))
+                .build();
+        subject.queue(triggerRequest);
+        
+        // WHEN
+        runTriggersAndWait();
+        
+        // THEN
+        asserts.assertMissing(Task3.NAME + "::Hallo");
+        assertThat(triggerService.countTriggers(TriggerStatus.NEW)).isOne();
+    }
+    
+    @Test
+    void testUpdateRunAt() {
+        // GIVEN
+        final var request = Task3.ID
+                .newTrigger("Hallo")
+                .runAfter(Duration.ofMinutes(5))
+                .build();
+        subject.queue(request);
+        
+        // WHEN
+        subject.updateRunAt(request.key(), OffsetDateTime.now());
+        
+        // THEN
+        runTriggersAndWait();
+        asserts.assertValue(Task3.NAME + "::Hallo");
+        assertThat(triggerService.countTriggers(TriggerStatus.NEW)).isZero();
     }
 }

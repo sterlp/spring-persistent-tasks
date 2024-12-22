@@ -1,10 +1,8 @@
 package org.sterl.spring.persistent_tasks.trigger.model;
 
-import java.io.Serializable;
 import java.time.OffsetDateTime;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
@@ -55,11 +53,6 @@ public class TriggerEntity implements HasTriggerData {
         this.data.setKey(key);
     }
 
-    public TaskId<Serializable> newTaskId() {
-        if (data == null || data.getKey() == null) return null;
-        return data.getKey().toTaskId();
-    }
-    
     public TriggerKey getKey() {
         if (data == null) return null;
         return data.getKey();
@@ -105,9 +98,5 @@ public class TriggerEntity implements HasTriggerData {
         data.setStatus(TriggerStatus.NEW);
         data.setRunAt(runAt);
         return this;
-    }
-
-    public boolean isRunning() {
-        return data.getStatus() == TriggerStatus.RUNNING;
     }
 }

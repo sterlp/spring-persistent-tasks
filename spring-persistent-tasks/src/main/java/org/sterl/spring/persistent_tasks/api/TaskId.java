@@ -1,8 +1,8 @@
 package org.sterl.spring.persistent_tasks.api;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.time.OffsetDateTime;
-import java.util.UUID;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +14,10 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
 
     public TaskTriggerBuilder<T> newTrigger() {
         return new TaskTriggerBuilder<>(this);
+    }
+    
+    public TaskTriggerBuilder<T> newTrigger(T state) {
+        return new TaskTriggerBuilder<>(this).state(state);
     }
 
     public AddTriggerRequest<T> newUniqueTrigger(T state) {
@@ -38,9 +42,8 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
             return new TaskTriggerBuilder<>(new TaskId<T>(name));
         }
         public AddTriggerRequest<T> build() {
-            return new AddTriggerRequest<>(
-                    id == null ? UUID.randomUUID().toString() : id,
-                    taskId, state, when, priority);
+            var key = TriggerKey.of(id, taskId);
+            return new AddTriggerRequest<>(key, state, when, priority);
         }
         public TaskTriggerBuilder<T> id(String id) {
             this.id = id;
@@ -62,6 +65,10 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
         }
         public TaskTriggerBuilder<T> runAt(OffsetDateTime when) {
             this.when = when;
+            return this;
+        }
+        public TaskTriggerBuilder<T> runAfter(Duration duration) {
+            runAt(OffsetDateTime.now().plus(duration));
             return this;
         }
     }

@@ -10,13 +10,14 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.query.Param;
+import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 @NoRepositoryBean
 public interface TriggerDataRepository<T extends HasTriggerData> extends JpaRepository<T, Long> {
-
+    
     @Query("""
            SELECT e FROM #{#entityName} e
            WHERE  e.data.key.taskName = :taskName
@@ -25,20 +26,26 @@ public interface TriggerDataRepository<T extends HasTriggerData> extends JpaRepo
             @Param("taskName") String taskName, Pageable page);
     
     @Query("""
-           SELECT COUNT(DISTINCT e.data.key) 
+           SELECT COUNT(e.data.key) 
            FROM #{#entityName} e WHERE e.data.key.taskName = :taskName
            """)
     long countByTaskName(@Param("taskName") String taskName);
-    
+
     @Query("""
-           SELECT COUNT(DISTINCT e.data.key) 
+            SELECT COUNT(e.data.key) 
+            FROM #{#entityName} e WHERE e.data.key = :key
+            """)
+    long countByKey(@Param("key") TriggerKey key);
+
+    @Query("""
+           SELECT COUNT(e.data.key) 
            FROM #{#entityName} e
            WHERE e.data.status = :status
            """)
     long countByStatus(@Param("status") TriggerStatus status);
 
     @Query("""
-            SELECT COUNT(DISTINCT e.data.key) 
+            SELECT COUNT(e.data.key) 
             FROM #{#entityName} e
             WHERE e.data.status IN ( :status )
             """)

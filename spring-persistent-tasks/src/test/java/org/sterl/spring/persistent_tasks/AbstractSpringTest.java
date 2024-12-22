@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.api.SpringBeanTask;
+import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
 import org.sterl.spring.persistent_tasks.history.HistoryService;
@@ -114,6 +115,8 @@ public class AbstractSpringTest {
         @RequiredArgsConstructor
         public static class Task3 implements SpringBeanTask<String> {
             public static final String NAME = "task3";
+            public static final TaskId<String> ID = new TaskId<>(NAME);
+
             private final AsyncAsserts asserts;
 
             @Override

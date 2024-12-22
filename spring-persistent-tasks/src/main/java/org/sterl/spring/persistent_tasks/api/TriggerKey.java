@@ -23,6 +23,10 @@ public class TriggerKey implements Serializable {
 
     private String id;
     private String taskName;
+    
+    public static TriggerKey of(String id, TaskId<?> taskId) {
+        return new TriggerKey(id == null ? UUID.randomUUID().toString() : id, taskId.name());
+    }
 
     public TaskId<Serializable> toTaskId() {
         return new TaskId<>(taskName);

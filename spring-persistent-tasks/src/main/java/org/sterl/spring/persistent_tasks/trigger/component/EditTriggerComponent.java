@@ -113,7 +113,7 @@ public class EditTriggerComponent {
         byte[] state = stateSerializer.serialize(trigger.state());
         final var t = TriggerEntity.builder()
             .data(TriggerData.builder()
-                    .key(trigger.toTaskTriggerId())
+                    .key(trigger.key())
                     .runAt(trigger.runtAt())
                     .priority(trigger.priority())
                     .state(state)

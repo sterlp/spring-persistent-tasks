@@ -60,6 +60,13 @@ public class TriggerService {
         }
         return run(trigger);
     }
+    
+    @Transactional(propagation = Propagation.NEVER)
+    public Optional<TriggerEntity> run(@Nullable AddTriggerRequest<?> request) {
+        var trigger = queue(request);
+        trigger = lockNextTrigger.lock(trigger.getKey(), MANUAL_TAG);
+        return run(trigger);
+    }
 
     public TriggerEntity markTriggerInExecution(TriggerEntity trigger, String runOn) {
         return trigger.runOn(runOn);
@@ -154,5 +161,12 @@ public class TriggerService {
 
     public long countTriggers() {
         return readTrigger.countByStatus(null);
+    }
+
+    public Optional<TriggerEntity> updateRunAt(TriggerKey key, OffsetDateTime time) {
+        return readTrigger.get(key).map(t -> {
+            t.getData().setRunAt(time);
+            return t;
+        });
     }
 }

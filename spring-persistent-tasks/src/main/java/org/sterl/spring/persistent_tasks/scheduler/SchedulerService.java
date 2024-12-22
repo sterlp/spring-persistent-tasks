@@ -6,6 +6,7 @@ import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import org.springframework.lang.NonNull;
@@ -114,12 +115,17 @@ public class SchedulerService {
     }
 
     /**
-     * Runs the next trigger if free threads are available.
+     * Runs the next trigger if free threads are available
+     * and the runAt time is not in the future.
      */
     public Optional<Future<TriggerKey>> runOrQueue(AddTriggerRequest<? extends Serializable> triggerRequest) {
         return trx.execute(t -> {
             Optional<Future<TriggerKey>> result = Optional.empty();
             var trigger = triggerService.queue(triggerRequest);
+            // exit now if this trigger is for the future ...
+            if (trigger.shouldRunInFuture()) return Optional.of(
+                    CompletableFuture.completedFuture(trigger.getKey()));
+            
             if (taskExecutor.getFreeThreads() > 0) {
                 trigger = triggerService.markTriggerInExecution(trigger, name);
                 result = Optional.of(taskExecutor.submit(trigger));

@@ -13,9 +13,9 @@ public class StateSerializer {
         if (obj == null) {
             return null;
         }
+        if (obj instanceof byte[] b) return b;
 
         var bos = new ByteArrayOutputStream(512);
-
         try (var out = new ObjectOutputStream(bos)) {
             out.writeObject(obj);
             return bos.toByteArray();

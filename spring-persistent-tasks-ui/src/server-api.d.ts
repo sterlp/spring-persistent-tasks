@@ -18,8 +18,7 @@ export interface SchedulerEntity {
 }
 
 export interface AddTriggerRequest<T> {
-    id: string;
-    taskId: TaskId<T>;
+    key: TriggerKey;
     state: T;
     runtAt: string;
     priority: number;

@@ -13,6 +13,8 @@ import org.sterl.spring.persistent_tasks.history.repository.LastTriggerStateRepo
 import org.sterl.spring.persistent_tasks.history.repository.TriggerStateDetailRepository;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
+import org.sterl.spring.persistent_tasks.trigger.TriggerService;
+import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class HistoryService {
     private final LastTriggerStateRepository lastTriggerStateRepository;
     private final TriggerStateDetailRepository triggerStateDetailRepository;
+    private final TriggerService triggerService;
     
     public Optional<LastTriggerStateEntity> findStatus(long triggerId) {
         return lastTriggerStateRepository.findById(triggerId);
@@ -51,5 +54,24 @@ public class HistoryService {
 
     public List<TriggerStateHistoryEntity> findAllForInstance(long instanceId) {
         return triggerStateDetailRepository.findAllByInstanceId(instanceId);
+    }
+
+    public Optional<TriggerEntity> reQueue(Long id, OffsetDateTime runAt) {
+        final var lastState = lastTriggerStateRepository.findById(id);
+        if (lastState.isEmpty()) return Optional.empty();
+        
+        final var data = lastState.get().getData();
+        final var trigger = lastState.get().newTaskId().newTrigger()
+            .state(data.getState())
+            .runAt(runAt)
+            .priority(data.getPriority())
+            .id(data.getKey().getId())
+            .build();
+        
+        return Optional.of(triggerService.queue(trigger));
+    }
+
+    public long countTriggers(TriggerKey key) {
+        return lastTriggerStateRepository.countByKey(key);
     }
 }
