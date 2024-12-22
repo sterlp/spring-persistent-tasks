@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Col, Form, Pagination, Row, Stack } from "react-bootstrap";
-import { PagedModel, Trigger } from "../../server-api";
-import { useServerObject } from "../../shared/http-request";
-import ReloadButton from "../../shared/reload-button";
-import TaskSelect from "../../task/view/task-select.view";
 import TriggerItemView from "./trigger-list-item.view";
+import { useServerObject } from "@/shared/http-request";
+import TaskSelect from "@/task/view/task-select.view";
+import { PagedModel, Trigger } from "@/server-api";
+import ReloadButton from "@/shared/reload-button";
 
 const TriggersView = () => {
     const [page, setPage] = useState(0);

@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { Badge, Card, Col, Form, ProgressBar, Row } from "react-bootstrap";
-import { SchedulerEntity, TaskSchedulerStatus } from "../../server-api";
-import { useServerObject } from "../../shared/http-request";
-import ReloadButton from "../../shared/reload-button";
+import { SchedulerEntity, TaskSchedulerStatus } from "@/server-api";
+import { useServerObject } from "@/shared/http-request";
+import ReloadButton from "@/shared/reload-button";
 import { DateTime } from "luxon";
 
 interface Props {
