@@ -19,7 +19,9 @@ const SchedulersPage = () => {
     return (
         <>
             <Row>
-                <HttpErrorView error={schedulers.error} />
+                <Col>
+                    <HttpErrorView error={schedulers.error} />
+                </Col>
             </Row>
             <Row>
                 {schedulers.data?.map((i) => (

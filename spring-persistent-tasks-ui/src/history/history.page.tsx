@@ -25,10 +25,8 @@ const HistoryPage = () => {
 
     return (
         <>
-            <Row>
-                <HttpErrorView error={triggers.error} />
-            </Row>
             <Stack gap={1}>
+                <HttpErrorView error={triggers.error} />
                 <Row className="align-items-center">
                     <div></div>
                     <Col>

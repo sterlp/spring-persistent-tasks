@@ -16,7 +16,7 @@ public class RegisteredTask<T extends Serializable> implements Task<T> {
     private final TaskId<T> id;
     private final SpringBeanTask<T> fun;
     @Getter
-    private RetryStrategy retryStrategy = RetryStrategy.TRY_THREE_TIMES;
+    private RetryStrategy retryStrategy = RetryStrategy.THREE_RETRIES;
 
     public RegisteredTask(String name, SpringBeanTask<T> fun) {
         super();

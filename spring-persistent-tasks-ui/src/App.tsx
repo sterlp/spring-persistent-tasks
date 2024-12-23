@@ -26,7 +26,7 @@ const App = () => {
                 </Container>
             </Navbar>
 
-            <Container as="main">
+            <Container as="main" className="mt-3">
                 <Switch>
                     <Route path="/task-ui" component={SchedulersPage} />
                     <Route path="/task-ui/triggers" component={TriggersPage} />

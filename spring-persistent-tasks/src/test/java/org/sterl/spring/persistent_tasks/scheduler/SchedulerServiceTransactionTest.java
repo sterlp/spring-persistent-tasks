@@ -47,7 +47,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
                     }
                 }
                 public RetryStrategy retryStrategy() {
-                    return RetryStrategy.TRY_THREE_TIMES_IMMEDIATELY;
+                    return RetryStrategy.THREE_RETRIES_IMMEDIATELY;
                 }
             };
         }

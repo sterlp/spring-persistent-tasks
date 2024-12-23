@@ -9,6 +9,6 @@ public interface SpringBeanTask<T extends Serializable> extends Consumer<T> {
     void accept(T state);
 
     default RetryStrategy retryStrategy() {
-        return RetryStrategy.TRY_THREE_TIMES;
+        return RetryStrategy.THREE_RETRIES;
     }
 }

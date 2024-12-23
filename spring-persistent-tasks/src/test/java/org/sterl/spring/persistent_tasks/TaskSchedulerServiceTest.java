@@ -26,7 +26,7 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
 
                     @Override
                     public RetryStrategy retryStrategy() {
-                        return RetryStrategy.TRY_THREE_TIMES_IMMEDIATELY;
+                        return RetryStrategy.THREE_RETRIES_IMMEDIATELY;
                     }
                 });
         var runTrigger = triggerService.queue(task.newTrigger().state("hallo").build());

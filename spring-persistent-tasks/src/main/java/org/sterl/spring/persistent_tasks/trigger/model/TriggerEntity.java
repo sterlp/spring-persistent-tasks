@@ -46,7 +46,7 @@ public class TriggerEntity implements HasTriggerData {
     @Default
     @Embedded
     private TriggerData data = new TriggerData();
-
+    
     private String runningOn;
     
     @Default

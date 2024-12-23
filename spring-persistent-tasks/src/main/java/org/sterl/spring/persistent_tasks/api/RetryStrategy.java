@@ -7,8 +7,8 @@ import org.springframework.lang.Nullable;
 @FunctionalInterface
 public interface RetryStrategy {
     RetryStrategy NO_RETRY = (c, e) -> false;
-    RetryStrategy TRY_THREE_TIMES = (c, e) -> c < 3;
-    RetryStrategy TRY_THREE_TIMES_IMMEDIATELY = new RetryStrategy() {
+    RetryStrategy THREE_RETRIES = (c, e) -> c < 3;
+    RetryStrategy THREE_RETRIES_IMMEDIATELY = new RetryStrategy() {
         @Override
         public boolean shouldRetry(int executionCount, Exception error) {
             return executionCount < 3;

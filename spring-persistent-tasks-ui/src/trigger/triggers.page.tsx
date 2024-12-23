@@ -26,35 +26,31 @@ const TriggersPage = () => {
     }, [page, selectedTask]);
 
     return (
-        <>
-            <Row>
-                <HttpErrorView error={triggers.error} />
+        <Stack gap={1}>
+            <HttpErrorView error={triggers.error} />
+            <Row className="align-items-center">
+                <Col>
+                    <TaskSelect onTaskChange={setSelectedTask} />
+                </Col>
+                <Col>
+                    <PageView
+                        onPage={(p) => setPage(p)}
+                        data={triggers.data}
+                        className="mt-2 mb-2"
+                    />
+                </Col>
+                <Col>
+                    <ReloadButton
+                        className="float-end"
+                        isLoading={triggers.isLoading}
+                        onClick={doReload}
+                    />
+                </Col>
             </Row>
-            <Stack gap={1}>
-                <Row className="align-items-center">
-                    <Col>
-                        <TaskSelect onTaskChange={setSelectedTask} />
-                    </Col>
-                    <Col>
-                        <PageView
-                            onPage={(p) => setPage(p)}
-                            data={triggers.data}
-                            className="mt-2 mb-2"
-                        />
-                    </Col>
-                    <Col>
-                        <ReloadButton
-                            className="float-end"
-                            isLoading={triggers.isLoading}
-                            onClick={doReload}
-                        />
-                    </Col>
-                </Row>
-                {triggers.data?.content.map((t) => (
-                    <TriggerItemView key={t.id + ""} trigger={t} />
-                ))}
-            </Stack>
-        </>
+            {triggers.data?.content.map((t) => (
+                <TriggerItemView key={t.id + ""} trigger={t} />
+            ))}
+        </Stack>
     );
 };
 
