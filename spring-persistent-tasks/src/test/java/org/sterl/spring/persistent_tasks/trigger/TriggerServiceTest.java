@@ -97,7 +97,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         TriggerKey triggerKey = subject.queue(taskId.newTrigger().build()).getKey();
 
         // WHEN
-        subject.run(triggerKey);
+        subject.run(triggerKey, "test");
 
         // THEN
         assertThat(historyService.countTriggers(TriggerStatus.SUCCESS)).isOne();
@@ -120,8 +120,8 @@ class TriggerServiceTest extends AbstractSpringTest {
 
         // WHEN
         final var triggerId = subject.queue(trigger).getKey();
-        subject.run(subject.lockNextTrigger());
-        subject.run(subject.lockNextTrigger());
+        subject.run(subject.lockNextTrigger("test"));
+        subject.run(subject.lockNextTrigger("test"));
 
         // THEN
         // AND
@@ -144,7 +144,7 @@ class TriggerServiceTest extends AbstractSpringTest {
 
         // WHEN
         var trigger = subject.queue(task.newTrigger().state("Hallo :-)").build());
-        subject.run(subject.lockNextTrigger());
+        subject.run(subject.lockNextTrigger("test"));
 
         // THEN
         trigger = triggerService.get(trigger.getKey()).get();
@@ -162,7 +162,7 @@ class TriggerServiceTest extends AbstractSpringTest {
 
         // WHEN
         var trigger = subject.queue(task.newTrigger().state("Hallo :-)").build());
-        subject.run(subject.lockNextTrigger());
+        subject.run(subject.lockNextTrigger("test"));
 
         // THEN
         trigger = triggerService.get(trigger.getKey()).get();

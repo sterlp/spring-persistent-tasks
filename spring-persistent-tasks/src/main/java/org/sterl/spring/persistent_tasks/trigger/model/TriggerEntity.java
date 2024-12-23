@@ -29,6 +29,7 @@ import lombok.NoArgsConstructor;
         @Index(name = "IDX_SPT_TRIGGERS_PRIORITY", columnList = "priority"),
         @Index(name = "IDX_SPT_TRIGGERS_RUN_AT", columnList = "run_at"),
         @Index(name = "IDX_SPT_TRIGGERS_STATUS", columnList = "status"),
+        @Index(name = "IDX_SPT_TRIGGERS_PING", columnList = "last_ping"),
 })
 @Data
 @NoArgsConstructor
@@ -48,6 +49,9 @@ public class TriggerEntity implements HasTriggerData {
 
     private String runningOn;
     
+    @Default
+    private OffsetDateTime lastPing = OffsetDateTime.now();
+    
     public TriggerEntity(TriggerKey key) {
         if (this.data == null) this.data = new TriggerData();
         this.data.setKey(key);
@@ -59,17 +63,20 @@ public class TriggerEntity implements HasTriggerData {
     }
 
     public TriggerEntity cancel() {
-        data.setEnd(OffsetDateTime.now());
-        data.setStatus(TriggerStatus.CANCELED);
-        data.setExceptionName("Task canceled");
+        this.data.setEnd(OffsetDateTime.now());
+        this.data.setStatus(TriggerStatus.CANCELED);
+        this.data.setExceptionName("Task canceled");
+        this.data.setRunningDurationInMs(null);
         return this;
     }
 
     public TriggerEntity runOn(String runningOn) {
-        data.setStart(OffsetDateTime.now());
-        data.setEnd(null);
-        data.setExecutionCount(data.getExecutionCount() + 1);
-        data.setStatus(TriggerStatus.RUNNING);
+        this.data.setStart(OffsetDateTime.now());
+        this.data.setEnd(null);
+        this.data.setExecutionCount(data.getExecutionCount() + 1);
+        this.data.setStatus(TriggerStatus.RUNNING);
+        this.data.updateRunningDuration();
+        this.lastPing = OffsetDateTime.now();
         this.runningOn = runningOn;
         return this;
     }
@@ -84,13 +91,6 @@ public class TriggerEntity implements HasTriggerData {
             data.setLastException(ExceptionUtils.getStackTrace(e));
         }
 
-        return this;
-    }
-
-    public TriggerEntity failWithMessage(String message) {
-        this.data.setStatus(TriggerStatus.FAILED);
-        this.data.setExceptionName(message);
-        this.data.setLastException(null);
         return this;
     }
 

@@ -1,9 +1,9 @@
-import { useEffect } from "react";
-import { Badge, Card, Col, Form, ProgressBar, Row } from "react-bootstrap";
-import { SchedulerEntity, TaskSchedulerStatus } from "@src/server-api";
+import { SchedulerEntity } from "@src/server-api";
 import { useServerObject } from "@src/shared/http-request";
 import ReloadButton from "@src/shared/reload-button";
 import { DateTime } from "luxon";
+import { useEffect } from "react";
+import { Card, Col, Form, ProgressBar, Row } from "react-bootstrap";
 
 interface Props {
     name: string;
@@ -27,10 +27,7 @@ const SchedulerStatusView = ({ name }: Props) => {
                 as="h5"
                 className="d-flex justify-content-between align-items-center"
             >
-                <span>
-                    {name}{" "}
-                    <TaskSchedulerStatusView status={status.data?.status} />
-                </span>
+                <span>{name}</span>
                 <ReloadButton
                     isLoading={status.isLoading}
                     onClick={() => status.doGet()}
@@ -131,23 +128,3 @@ function formatMemory(value: number) {
     }
     return Math.round(result) + "MB";
 }
-
-const TaskSchedulerStatusView = ({
-    status,
-}: {
-    status?: TaskSchedulerStatus;
-}) => {
-    if (!status) return undefined;
-    if (status === "ONLINE") {
-        return (
-            <Badge pill bg="success">
-                {status}
-            </Badge>
-        );
-    }
-    return (
-        <Badge pill bg="warning" text="dark">
-            {status}
-        </Badge>
-    );
-};

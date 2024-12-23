@@ -17,8 +17,8 @@ class EditSchedulerStatusComponentTest extends AbstractSpringTest {
     @Test
     void setSchedulersOfflineTest() throws Exception {
         // WHEN & THEN
-        assertThat(subject.findOnlineSchedulers(Duration.ofSeconds(5)).countOffline()).isZero();
+        assertThat(subject.findOnlineSchedulers(Duration.ofSeconds(5)).size()).isEqualTo(2);
         // WHEN & THEN
-        assertThat(subject.findOnlineSchedulers(Duration.ofSeconds(-1)).countOffline()).isEqualTo(2);
+        assertThat(subject.findOnlineSchedulers(Duration.ofSeconds(-1)).size()).isZero();
     }
 }

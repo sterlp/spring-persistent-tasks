@@ -6,12 +6,11 @@ import java.lang.management.OperatingSystemMXBean;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.sterl.spring.persistent_tasks.scheduler.entity.OnlineSchedulersEntity;
 import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity;
-import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity.TaskSchedulerStatus;
 import org.sterl.spring.persistent_tasks.scheduler.repository.TaskSchedulerRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -24,10 +23,8 @@ public class EditSchedulerStatusComponent {
     private final MemoryMXBean memory = ManagementFactory.getMemoryMXBean();
     private final TaskSchedulerRepository schedulerRepository;
 
-    public SchedulerEntity checkinToRegistry(String name, TaskSchedulerStatus status) {
+    public SchedulerEntity checkinToRegistry(String name) {
         var result = get(name);
-
-        result.setStatus(status);
 
         result.setSystemLoadAverage(os.getSystemLoadAverage());
         result.setMaxHeap(memory.getHeapMemoryUsage().getMax());
@@ -46,10 +43,9 @@ public class EditSchedulerStatusComponent {
         return schedulerRepository.findById(name);
     }
 
-    public OnlineSchedulersEntity findOnlineSchedulers(Duration lastPingWas) {
+    public Set<String> findOnlineSchedulers(Duration lastPingWas) {
         final var timeout = OffsetDateTime.now().minus(lastPingWas);
-        int countOffline = schedulerRepository.setSchedulersStatusByLastPing(timeout, TaskSchedulerStatus.OFFLINE);
-        var online = schedulerRepository.findIdByStatus(TaskSchedulerStatus.ONLINE);
-        return new OnlineSchedulersEntity(online, countOffline);
+        schedulerRepository.deleteOldSchedulers(timeout);
+        return schedulerRepository.findSchedulerNames();
     }
 }

@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class SchedulerTimer {
+class SchedulerTimer {
 
     @Value("${spring.persistent-tasks.task-timeout:PT5M}")
     private Duration taskTimeout = Duration.ofMinutes(5);
@@ -44,10 +44,5 @@ public class SchedulerTimer {
                 log.error("Scheduler {} failed schedule abandoned tasks", s.getName(), e);
             }
         }
-    }
-
-    @Scheduled(fixedDelayString = "${spring.persistent-tasks.clean-trigger-rate:7200}", timeUnit = TimeUnit.SECONDS)
-    void cleanupFinishedTriggers() {
-        // TODO
     }
 }

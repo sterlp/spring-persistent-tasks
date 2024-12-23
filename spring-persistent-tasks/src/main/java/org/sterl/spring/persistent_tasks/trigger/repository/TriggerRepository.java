@@ -1,14 +1,15 @@
 package org.sterl.spring.persistent_tasks.trigger.repository;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import org.hibernate.LockOptions;
 import org.hibernate.jpa.SpecHints;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
@@ -51,13 +52,24 @@ public interface TriggerRepository extends TriggerDataRepository<TriggerEntity> 
            WHERE  e.data.key = :key
            """)
     TriggerEntity lockByKey(@Param("key") TriggerKey key);
+    
+    @Query("""
+            UPDATE TriggerEntity
+            SET lastPing = :lastPing, runningOn = :runningOn, data.status = :status
+            WHERE data.key IN ( :keys )
+            """)
+    @Modifying
+    int markTriggersAsRunning(
+            @Param("keys") Collection<TriggerKey> keys,
+            @Param("runningOn") String runningOn,
+            @Param("lastPing") OffsetDateTime lastPing,
+            @Param("status") TriggerStatus status
+        );
 
     @Query("""
-           SELECT e FROM #{#entityName} e
-           WHERE  e.runningOn NOT IN ( :runningOn )
-           AND    e.data.status = :status
-           """)
-    List<TriggerEntity> findNotRunningOn(
-            @Param("runningOn") Set<String> runningOn,
-            @Param("status") TriggerStatus status);
+            SELECT e FROM #{#entityName} e
+            WHERE  e.lastPing < :lastPing
+            """)
+    List<TriggerEntity> findTriggersLastPingAfter(
+            @Param("lastPing") OffsetDateTime lastPing);
 }

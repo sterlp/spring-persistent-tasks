@@ -8,25 +8,19 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity;
-import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity.TaskSchedulerStatus;
 
 public interface TaskSchedulerRepository extends JpaRepository<SchedulerEntity, String>{
 
     @Query("""
-            UPDATE SchedulerEntity
-            SET status = :status
-            WHERE status != :status
-            AND lastPing < :timeout
+            DELETE FROM #{#entityName}
+            WHERE lastPing < :timeout
             """)
     @Modifying
-    int setSchedulersStatusByLastPing(
-            @Param("timeout") OffsetDateTime timeout,
-            @Param("status") TaskSchedulerStatus status);
-
+    int deleteOldSchedulers(@Param("timeout") OffsetDateTime timeout);
+    
     @Query("""
             SELECT e.id FROM #{#entityName} e
-            WHERE e.status = :status
             """)
-    Set<String> findIdByStatus(@Param("status") TaskSchedulerStatus status);
+    Set<String> findSchedulerNames();
 
 }

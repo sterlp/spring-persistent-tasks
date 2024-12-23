@@ -47,7 +47,7 @@ const HistoryPage = () => {
                     </Col>
                 </Row>
                 {triggers.data?.content.map((t) => (
-                    <TriggerItemView key={t.id + ""} trigger={t} />
+                    <TriggerItemView key={"history-" + t.id} trigger={t} />
                 ))}
             </Stack>
         </>

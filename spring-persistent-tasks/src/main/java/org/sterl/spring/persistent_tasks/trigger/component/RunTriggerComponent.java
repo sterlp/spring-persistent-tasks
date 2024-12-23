@@ -35,12 +35,14 @@ public class RunTriggerComponent {
         Task<Serializable> task = null;
         try {
             task = taskService.assertIsKnown(trigger.newTaskId());
-            
+
             eventPublisher.publishEvent(new TriggerRunningEvent(trigger));
-            
+
             task.accept(serializer.deserialize(trigger.getData().getState()));
+
             var result = editTrigger.completeTaskWithSuccess(trigger.getKey());
             editTrigger.deleteTrigger(trigger);
+
             return result;
         } catch (Exception e) {
             return handleTaskException(trigger, task, e);

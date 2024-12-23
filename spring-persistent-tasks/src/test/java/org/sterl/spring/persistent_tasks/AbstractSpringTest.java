@@ -143,7 +143,7 @@ public class AbstractSpringTest {
     }
 
     protected Optional<TriggerEntity> runNextTrigger() {
-        return triggerService.run(triggerService.lockNextTrigger());
+        return triggerService.run(triggerService.lockNextTrigger("test"));
     }
 
     protected List<TriggerKey> runTriggersAndWait() {

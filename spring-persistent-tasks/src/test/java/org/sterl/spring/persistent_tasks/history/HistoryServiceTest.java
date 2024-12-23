@@ -20,7 +20,7 @@ class HistoryServiceTest extends AbstractSpringTest {
     void testReQueueTrigger() {
         // GIVEN
         final AddTriggerRequest<String> triggerRequest = Task3.ID.newUniqueTrigger("Hallo");
-        var trigger = triggerService.run(triggerRequest).get();
+        var trigger = triggerService.run(triggerRequest, "test").get();
         asserts.assertValue(Task3.NAME + "::Hallo");
         
         // WHEN

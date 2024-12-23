@@ -13,7 +13,6 @@ export interface SchedulerEntity {
     systemLoadAverage: number;
     maxHeap: number;
     usedHeap: number;
-    status: TaskSchedulerStatus;
     lastPing: string;
 }
 
@@ -94,7 +93,5 @@ export interface Serializable {
 
 export interface Consumer<T> {
 }
-
-export type TaskSchedulerStatus = "ONLINE" | "OFFLINE";
 
 export type TriggerStatus = "NEW" | "RUNNING" | "SUCCESS" | "FAILED" | "CANCELED";

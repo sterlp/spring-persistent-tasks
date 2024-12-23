@@ -3,14 +3,17 @@ package org.sterl.spring.persistent_tasks.scheduler.component;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.lang.NonNull;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
@@ -34,7 +37,7 @@ public class TaskExecutorComponent implements Closeable {
     @Setter
     private Duration maxShutdownWaitTime = Duration.ofSeconds(10);
     private ExecutorService executor;
-    private final AtomicInteger runningTasks = new AtomicInteger(0);
+    private final ConcurrentHashMap<TriggerEntity, Future<TriggerKey>> runningTasks = new ConcurrentHashMap<>();
     private final AtomicBoolean stopped = new AtomicBoolean(true);
     
     public TaskExecutorComponent(TriggerService triggerService, int maxThreads) {
@@ -57,8 +60,9 @@ public class TaskExecutorComponent implements Closeable {
         if (trigger == null) {
             return CompletableFuture.completedFuture(null);
         }
-        runningTasks.incrementAndGet();
-        return executor.submit(() -> runTrigger(trigger));
+        final var result = executor.submit(() -> runTrigger(trigger));
+        runningTasks.put(trigger, result);
+        return result;
     }
 
     private TriggerKey runTrigger(TriggerEntity trigger) {
@@ -66,7 +70,7 @@ public class TaskExecutorComponent implements Closeable {
             triggerService.run(trigger);
             return trigger.getKey();
         } finally {
-            runningTasks.decrementAndGet();
+            runningTasks.remove(trigger);
         }
     }
 
@@ -74,7 +78,7 @@ public class TaskExecutorComponent implements Closeable {
     public void start() {
         if (stopped.compareAndExchange(true, false)) {
             synchronized (stopped) {
-                runningTasks.set(0);
+                runningTasks.clear();
                 executor = Executors.newFixedThreadPool(maxThreads);
             }
         }
@@ -95,9 +99,9 @@ public class TaskExecutorComponent implements Closeable {
     }
 
     private void waitForRunningTasks() {
-        if (runningTasks.get() > 0) {
+        if (runningTasks.size() > 0) {
             log.info("Shutdown executor with {} running tasks, waiting for {}.",
-                    runningTasks.get(), maxShutdownWaitTime);
+                    runningTasks.size(), maxShutdownWaitTime);
 
             try {
                 executor.awaitTermination(maxShutdownWaitTime.getSeconds(), TimeUnit.SECONDS);
@@ -118,14 +122,18 @@ public class TaskExecutorComponent implements Closeable {
         if (stopped.get()) {
             return 0;
         }
-        return Math.max(maxThreads - runningTasks.get(), 0);
+        return Math.max(maxThreads - runningTasks.size(), 0);
     }
 
     public int getRunningTasks() {
-        return runningTasks.get();
+        return runningTasks.size();
     }
 
     public boolean isStopped() {
         return stopped.get() || maxThreads <= 0;
+    }
+    
+    public List<TriggerEntity> getRunningTriggers() {
+        return Collections.list(this.runningTasks.keys());
     }
 }

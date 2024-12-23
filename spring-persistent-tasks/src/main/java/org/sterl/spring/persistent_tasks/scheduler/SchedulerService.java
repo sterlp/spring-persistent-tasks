@@ -12,13 +12,12 @@ import java.util.concurrent.Future;
 import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
+import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
 import org.sterl.spring.persistent_tasks.scheduler.component.TaskExecutorComponent;
 import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity;
-import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity.TaskSchedulerStatus;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
@@ -49,25 +48,25 @@ public class SchedulerService {
     @PostConstruct
     public void start() {
         taskExecutor.start();
-        final var s = editSchedulerStatus.checkinToRegistry(name, TaskSchedulerStatus.ONLINE);
+        final var s = editSchedulerStatus.checkinToRegistry(name);
         log.info("Started {} on {} threads.", s, taskExecutor.getMaxThreads());
     }
 
     @PreDestroy
     public void stop() {
         taskExecutor.close();
-        var s = editSchedulerStatus.checkinToRegistry(name, TaskSchedulerStatus.OFFLINE);
+        var s = editSchedulerStatus.checkinToRegistry(name);
         log.info("Stopped {}", s);
     }
 
     public void shutdownNow() {
         taskExecutor.shutdownNow();
-        var s = editSchedulerStatus.checkinToRegistry(name, TaskSchedulerStatus.OFFLINE);
+        var s = editSchedulerStatus.checkinToRegistry(name);
         log.info("Force stop {}", s);
     }
 
     public SchedulerEntity pingRegistry() {
-        var result = editSchedulerStatus.checkinToRegistry(name, TaskSchedulerStatus.ONLINE);
+        var result = editSchedulerStatus.checkinToRegistry(name);
         result.setRunnungTasks(taskExecutor.getRunningTasks());
         result.setTasksSlotCount(taskExecutor.getMaxThreads());
         log.debug("Ping {}", result);
@@ -127,7 +126,7 @@ public class SchedulerService {
                     CompletableFuture.completedFuture(trigger.getKey()));
             
             if (taskExecutor.getFreeThreads() > 0) {
-                trigger = triggerService.markTriggerInExecution(trigger, name);
+                trigger = triggerService.markTriggersAsRunning(trigger, name);
                 result = Optional.of(taskExecutor.submit(trigger));
                 pingRegistry();
             } else {
@@ -149,8 +148,13 @@ public class SchedulerService {
     @Transactional
     public List<TriggerEntity> rescheduleAbandonedTasks(Duration timeout) {
         final var onlineSchedulers = editSchedulerStatus.findOnlineSchedulers(timeout);
-        final List<TriggerEntity> result = triggerService.rescheduleAbandonedTasks(onlineSchedulers.online());
-        log.info("Reschedule {} abandoned triggers for {}.", result.size(), onlineSchedulers);
-        return result;
+
+        final List<TriggerKey> runningKeys = this.taskExecutor
+                .getRunningTriggers().stream()
+                .map(TriggerEntity::getKey)
+                .toList();
+
+        triggerService.markTriggersAsRunning(runningKeys, name);
+        return triggerService.rescheduleAbandonedTasks(timeout);
     }
 }

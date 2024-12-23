@@ -3,6 +3,7 @@ package org.sterl.spring.persistent_tasks.scheduler;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +15,6 @@ import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity;
-import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity.TaskSchedulerStatus;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 
 class SchedulerServiceTest extends AbstractSpringTest {
@@ -30,12 +30,12 @@ class SchedulerServiceTest extends AbstractSpringTest {
     @Test
     void schedulerShouldBeOnlineTest() {
         // GIVEN
-
+        final var time = OffsetDateTime.now(); 
         // WHEN spring started
         final SchedulerEntity status = subject.getStatus();
 
         // THEN
-        assertThat(status.getStatus()).isEqualTo(TaskSchedulerStatus.ONLINE);
+        assertThat(status.getLastPing()).isBeforeOrEqualTo(time);
     }
     
     @Test

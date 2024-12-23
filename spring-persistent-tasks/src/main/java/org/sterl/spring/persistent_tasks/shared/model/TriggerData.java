@@ -13,7 +13,6 @@ import jakarta.persistence.Embedded;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Lob;
-import jakarta.persistence.PrePersist;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -32,10 +31,11 @@ import lombok.ToString;
 @Builder(toBuilder = true)
 public class TriggerData {
     
-    @PrePersist
     public void updateRunningDuration() {
         if (start != null && end != null) {
             runningDurationInMs = Duration.between(start, end).toMillis();
+        } else {
+            runningDurationInMs = null;
         }
     }
     

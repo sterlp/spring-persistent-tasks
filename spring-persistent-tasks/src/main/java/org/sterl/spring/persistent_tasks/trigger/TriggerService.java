@@ -1,11 +1,11 @@
 package org.sterl.spring.persistent_tasks.trigger;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
@@ -28,12 +28,13 @@ import org.sterl.spring.persistent_tasks.trigger.component.RunTriggerComponent;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @TransactionalService
 @RequiredArgsConstructor
+@Slf4j
 public class TriggerService {
 
-    private static final String MANUAL_TAG = "manual";
     private final TaskService taskService;
     private final RunTriggerComponent runTrigger;
     private final ReadTriggerComponent readTrigger;
@@ -53,8 +54,8 @@ public class TriggerService {
     }
 
     @Transactional(propagation = Propagation.NEVER)
-    public Optional<TriggerEntity> run(TriggerKey triggerKey) {
-        final TriggerEntity trigger = lockNextTrigger.lock(triggerKey, MANUAL_TAG);
+    public Optional<TriggerEntity> run(TriggerKey triggerKey, String runningOn) {
+        final TriggerEntity trigger = lockNextTrigger.lock(triggerKey, runningOn);
         if (trigger == null) {
             return Optional.empty();
         }
@@ -62,18 +63,22 @@ public class TriggerService {
     }
     
     @Transactional(propagation = Propagation.NEVER)
-    public Optional<TriggerEntity> run(@Nullable AddTriggerRequest<?> request) {
+    public Optional<TriggerEntity> run(@Nullable AddTriggerRequest<?> request, String runningOn) {
         var trigger = queue(request);
-        trigger = lockNextTrigger.lock(trigger.getKey(), MANUAL_TAG);
+        trigger = lockNextTrigger.lock(trigger.getKey(), runningOn);
         return run(trigger);
     }
 
-    public TriggerEntity markTriggerInExecution(TriggerEntity trigger, String runOn) {
+    public TriggerEntity markTriggersAsRunning(TriggerEntity trigger, String runOn) {
         return trigger.runOn(runOn);
     }
+    
+    public int markTriggersAsRunning(Collection<TriggerKey> keys, String runOn) {
+        return this.editTrigger.markTriggersAsRunning(keys, runOn);
+    }
 
-    public TriggerEntity lockNextTrigger() {
-        final List<TriggerEntity> r = lockNextTrigger.loadNext(MANUAL_TAG, 1, OffsetDateTime.now());
+    public TriggerEntity lockNextTrigger(String runOn) {
+        final List<TriggerEntity> r = lockNextTrigger.loadNext(runOn, 1, OffsetDateTime.now());
         return r.isEmpty() ? null : r.get(0);
     }
 
@@ -142,20 +147,21 @@ public class TriggerService {
     public long countTriggers(@Nullable TriggerStatus status) {
         return readTrigger.countByStatus(status);
     }
-
+    
     /**
      * Marks any tasks which are not on the given executors/schedulers abandoned for .
      *
      * Retry will be triggered based on the set strategy.
      */
-    public List<TriggerEntity> rescheduleAbandonedTasks(Set<String> onlineRunner) {
-        onlineRunner.add(MANUAL_TAG);
-        final List<TriggerEntity> result = readTrigger.findNotRunningOn(onlineRunner);
+    public List<TriggerEntity> rescheduleAbandonedTasks(Duration timeout) {
+        final List<TriggerEntity> result = readTrigger.triggerLastPingAfter(
+                OffsetDateTime.now().minus(timeout));
         result.forEach(t -> {
             t.setRunningOn(null);
             t.getData().setStatus(TriggerStatus.NEW);
             t.getData().setExceptionName("Abandoned tasks");
         });
+        log.debug("rescheduled {} triggers", result.size());
         return result;
     }
 

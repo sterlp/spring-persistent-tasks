@@ -1,8 +1,8 @@
 package org.sterl.spring.persistent_tasks.trigger.component;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import org.springframework.lang.Nullable;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
@@ -42,8 +42,8 @@ public class ReadTriggerComponent {
         }
         return false;
     }
-
-    public List<TriggerEntity> findNotRunningOn(Set<String> names) {
-        return triggerRepository.findNotRunningOn(names, TriggerStatus.RUNNING);
+    
+    public List<TriggerEntity> triggerLastPingAfter(OffsetDateTime dateTime) {
+        return triggerRepository.findTriggersLastPingAfter(dateTime);
     }
 }
