@@ -8,6 +8,7 @@ import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -16,6 +17,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -38,7 +40,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class TriggerEntity implements HasTriggerData {
 
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(generator = "SEQ_SPT_TASK_TRIGGERS", strategy = GenerationType.SEQUENCE)
     @Column(updatable = false)
     @Id
     private Long id;
@@ -47,10 +49,11 @@ public class TriggerEntity implements HasTriggerData {
     @Embedded
     private TriggerData data = new TriggerData();
     
+    @Column(length = 200)
     private String runningOn;
     
-    @Default
-    private OffsetDateTime lastPing = OffsetDateTime.now();
+    @Nullable
+    private OffsetDateTime lastPing;
     
     public TriggerEntity(TriggerKey key) {
         if (this.data == null) this.data = new TriggerData();

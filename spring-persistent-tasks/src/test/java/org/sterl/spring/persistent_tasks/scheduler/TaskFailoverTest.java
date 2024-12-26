@@ -2,23 +2,19 @@ package org.sterl.spring.persistent_tasks.scheduler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.Duration;
 import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
-import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
-import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
 
 class TaskFailoverTest extends AbstractSpringTest {
 
-    @Autowired private TriggerRepository triggerRepository;
+    @Autowired 
+    private TaskId<Long> slowTaskId;
     private SchedulerService schedulerA;
 
     @BeforeEach
@@ -36,45 +32,33 @@ class TaskFailoverTest extends AbstractSpringTest {
     @Test
     void rescheduleAbandonedTasksTest() throws Exception {
         // GIVEN
-        var trigger = triggerRepository.save(
-                new TriggerEntity(new TriggerKey("slowTask"))
-                .runOn("schedulerB"));
+        schedulerA.setMaxThreads(1);
+        schedulerB.setMaxThreads(1);
+        var willTimeout = triggerService.queue(slowTaskId.newTrigger(20000L).build());
 
+        var running = runTriggers();
+        assertThat(running.size()).isEqualTo(1);
+        // AND we wait a bit
+        Thread.sleep(250);
+        final var timeout = OffsetDateTime.now();
+
+        triggerService.queue(slowTaskId.newTrigger(20000L).build());
+        running = runTriggers();
+        assertThat(running.size()).isEqualTo(1);
+        // AND
+        assertThat(triggerService.countTriggers(TriggerStatus.RUNNING))
+            .isEqualTo(2);
+        
         // WHEN
-        Thread.sleep(19);
-        // AND add one which looks like it is running :-)
-        triggerRepository.save(new TriggerEntity(new TriggerKey("slowTask"))
-                .runOn("schedulerA"));
-
-        // AND check status
-        var state = triggerService.get(trigger.getKey());
-        assertThat(state.get().getData().getStatus()).isEqualTo(TriggerStatus.RUNNING);
-        assertThat(state.get().getRunningOn()).isEqualTo("schedulerB");
-        assertThat(state.get().getData().getEnd()).isNull();
-        // AND re-run abandoned tasks
-        schedulerA.pingRegistry();
-        final var tasks = schedulerA.rescheduleAbandonedTasks(Duration.ofMillis(20));
+        final var tasks = schedulerB.rescheduleAbandonedTasks(timeout);
 
         // THEN
         assertThat(tasks).hasSize(1);
-        assertThat(tasks.get(0).getId()).isEqualTo(trigger.getId());
-
-        // WHEN
-        final var retryTime = OffsetDateTime.now();
-        final List<Future<TriggerKey>> runWaitingTasks = schedulerService.triggerNextTasks();
-
-        // THEN
-        assertThat(runWaitingTasks).hasSize(1);
-        runWaitingTasks.get(0).get();
-        assertThat(tasks.get(0).getId()).isEqualTo(trigger.getId());
-        
-        // AND date should be set after the retry
-        var data = historyService.findLastKnownStatus(trigger.getKey()).get().getData();
-        assertThat(data.getEnd()).isNotNull();
-        assertThat(data.getStart()).isAfter(retryTime);
-        // AND execution duration should be reflected
-        assertThat(data.getEnd()).isAfter(state.get().getData().getStart());
-        assertThat(data.getStatus()).isEqualTo(TriggerStatus.SUCCESS);
+        assertThat(tasks.get(0).getId()).isEqualTo(willTimeout.getId());
+        // AND
+        assertThat(triggerService.countTriggers(TriggerStatus.RUNNING))
+            .isEqualTo(1);
+        assertThat(triggerService.countTriggers(TriggerStatus.NEW))
+            .isEqualTo(1);
     }
-
 }

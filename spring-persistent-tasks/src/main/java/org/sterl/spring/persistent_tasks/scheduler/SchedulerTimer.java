@@ -1,6 +1,7 @@
 package org.sterl.spring.persistent_tasks.scheduler;
 
 import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
@@ -36,10 +37,12 @@ class SchedulerTimer {
 
     @Scheduled(fixedDelayString = "${spring.persistent-tasks.poll-task-timeout:300}", timeUnit = TimeUnit.SECONDS)
     void rescheduleAbandonedTasks() {
+        var timeout = OffsetDateTime.now().minus(taskTimeout);
         for (SchedulerService s : schedulerServices) {
             try {
-                final var count = s.rescheduleAbandonedTasks(taskTimeout);
-                log.debug("Found {} abandoned tasks for {}.", count.size(), s.getName());
+                final var count = s.rescheduleAbandonedTasks(timeout);
+                log.debug("Found {} abandoned tasks for {}. Timeout={}", 
+                        count.size(), s.getName(), timeout);
             } catch (Exception e) {
                 log.error("Scheduler {} failed schedule abandoned tasks", s.getName(), e);
             }

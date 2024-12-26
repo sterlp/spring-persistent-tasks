@@ -57,6 +57,9 @@ public class AsyncAsserts {
     public int getCount(String value) {
         return counts.getOrDefault(value, 0);
     }
+    public int getCount() {
+        return counts.size();
+    }
 
     public void awaitValue(String value) {
         final var start = Instant.now();

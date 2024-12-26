@@ -3,10 +3,8 @@ package org.sterl.spring.persistent_tasks.scheduler.component;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -14,6 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.lang.NonNull;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
@@ -31,8 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TaskExecutorComponent implements Closeable {
 
     private final TriggerService triggerService;
-    @Getter
-    private final int maxThreads;
+    private final AtomicInteger maxThreads = new AtomicInteger(0);
     @Getter
     @Setter
     private Duration maxShutdownWaitTime = Duration.ofSeconds(10);
@@ -43,7 +41,7 @@ public class TaskExecutorComponent implements Closeable {
     public TaskExecutorComponent(TriggerService triggerService, int maxThreads) {
         super();
         this.triggerService = triggerService;
-        this.maxThreads = maxThreads;
+        this.maxThreads.set(maxThreads);
     }
 
     @NonNull
@@ -79,7 +77,7 @@ public class TaskExecutorComponent implements Closeable {
         if (stopped.compareAndExchange(true, false)) {
             synchronized (stopped) {
                 runningTasks.clear();
-                executor = Executors.newFixedThreadPool(maxThreads);
+                executor = Executors.newFixedThreadPool(maxThreads.get());
             }
         }
     }
@@ -122,7 +120,7 @@ public class TaskExecutorComponent implements Closeable {
         if (stopped.get()) {
             return 0;
         }
-        return Math.max(maxThreads - runningTasks.size(), 0);
+        return Math.max(maxThreads.get() - runningTasks.size(), 0);
     }
 
     public int getRunningTasks() {
@@ -130,10 +128,17 @@ public class TaskExecutorComponent implements Closeable {
     }
 
     public boolean isStopped() {
-        return stopped.get() || maxThreads <= 0;
+        return stopped.get() || maxThreads.get() <= 0;
     }
     
     public List<TriggerEntity> getRunningTriggers() {
         return Collections.list(this.runningTasks.keys());
+    }
+
+    public void setMaxThreads(int value) {
+        this.maxThreads.set(value);
+    }
+    public int getMaxThreads() {
+        return this.maxThreads.get();
     }
 }

@@ -1,7 +1,6 @@
 package org.sterl.spring.persistent_tasks.trigger;
 
 import java.io.Serializable;
-import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -153,9 +152,9 @@ public class TriggerService {
      *
      * Retry will be triggered based on the set strategy.
      */
-    public List<TriggerEntity> rescheduleAbandonedTasks(Duration timeout) {
-        final List<TriggerEntity> result = readTrigger.triggerLastPingAfter(
-                OffsetDateTime.now().minus(timeout));
+    public List<TriggerEntity> rescheduleAbandonedTasks(OffsetDateTime timeout) {
+        final List<TriggerEntity> result = readTrigger.findTriggersLastPingAfter(
+                timeout);
         result.forEach(t -> {
             t.setRunningOn(null);
             t.getData().setStatus(TriggerStatus.NEW);

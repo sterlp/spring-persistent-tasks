@@ -43,7 +43,7 @@ public class ReadTriggerComponent {
         return false;
     }
     
-    public List<TriggerEntity> triggerLastPingAfter(OffsetDateTime dateTime) {
+    public List<TriggerEntity> findTriggersLastPingAfter(OffsetDateTime dateTime) {
         return triggerRepository.findTriggersLastPingAfter(dateTime);
     }
 }

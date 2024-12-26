@@ -1,7 +1,6 @@
 package org.sterl.spring.persistent_tasks.scheduler;
 
 import java.io.Serializable;
-import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -50,6 +49,10 @@ public class SchedulerService {
         taskExecutor.start();
         final var s = editSchedulerStatus.checkinToRegistry(name);
         log.info("Started {} on {} threads.", s, taskExecutor.getMaxThreads());
+    }
+
+    public void setMaxThreads(int value) {
+        this.taskExecutor.setMaxThreads(value);
     }
 
     @PreDestroy
@@ -146,15 +149,17 @@ public class SchedulerService {
     }
 
     @Transactional
-    public List<TriggerEntity> rescheduleAbandonedTasks(Duration timeout) {
-        final var onlineSchedulers = editSchedulerStatus.findOnlineSchedulers(timeout);
+    public List<TriggerEntity> rescheduleAbandonedTasks(OffsetDateTime timeout) {
+        var schedulers = editSchedulerStatus.findOnlineSchedulers(timeout);
 
         final List<TriggerKey> runningKeys = this.taskExecutor
                 .getRunningTriggers().stream()
                 .map(TriggerEntity::getKey)
                 .toList();
 
-        triggerService.markTriggersAsRunning(runningKeys, name);
+        int running = triggerService.markTriggersAsRunning(runningKeys, name);
+        log.debug("({}) - {} trigger(s) are running on {} schedulers", 
+                running, runningKeys, schedulers);
         return triggerService.rescheduleAbandonedTasks(timeout);
     }
 }

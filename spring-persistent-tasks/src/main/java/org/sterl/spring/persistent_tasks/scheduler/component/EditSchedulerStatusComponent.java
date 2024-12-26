@@ -43,8 +43,7 @@ public class EditSchedulerStatusComponent {
         return schedulerRepository.findById(name);
     }
 
-    public Set<String> findOnlineSchedulers(Duration lastPingWas) {
-        final var timeout = OffsetDateTime.now().minus(lastPingWas);
+    public Set<String> findOnlineSchedulers(OffsetDateTime timeout) {
         schedulerRepository.deleteOldSchedulers(timeout);
         return schedulerRepository.findSchedulerNames();
     }

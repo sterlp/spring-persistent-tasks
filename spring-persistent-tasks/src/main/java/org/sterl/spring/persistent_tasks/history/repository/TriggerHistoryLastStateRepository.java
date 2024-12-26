@@ -7,9 +7,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.sterl.spring.persistent_tasks.api.HistoryOverview;
-import org.sterl.spring.persistent_tasks.history.model.TriggerStateHistoryEntity;
+import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryDetailEntity;
 
-public interface TriggerStateDetailRepository extends HistoryTriggerRepository<TriggerStateHistoryEntity> {
+public interface TriggerHistoryLastStateRepository extends HistoryTriggerRepository<TriggerHistoryDetailEntity> {
 
     @Query("""
            SELECT new org.sterl.spring.persistent_tasks.api.HistoryOverview(
@@ -36,5 +36,5 @@ public interface TriggerStateDetailRepository extends HistoryTriggerRepository<T
             WHERE e.instanceId = :instanceId
             ORDER BY e.data.createdTime ASC
             """)
-    List<TriggerStateHistoryEntity> findAllByInstanceId(@Param("instanceId") long instanceId);
+    List<TriggerHistoryDetailEntity> findAllByInstanceId(@Param("instanceId") long instanceId);
 }

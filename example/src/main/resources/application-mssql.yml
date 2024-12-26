@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    username: sa
+    password: veryStrong123
+    url: jdbc:sqlserver://localhost:1433;encrypt=false;trustServerCertificate=true
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    hikari:
+      maximum-pool-size: 100
+  jpa:
+    hibernate:
+      ddl-auto: update

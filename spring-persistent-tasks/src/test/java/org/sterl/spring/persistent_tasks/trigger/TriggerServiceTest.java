@@ -20,9 +20,12 @@ import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.task.repository.TaskRepository;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
 
 class TriggerServiceTest extends AbstractSpringTest {
 
+    @Autowired
+    private TriggerRepository triggerRepository;
     @Autowired
     private TriggerService subject;
     @Autowired
@@ -257,12 +260,15 @@ class TriggerServiceTest extends AbstractSpringTest {
             for (int i = 1; i <= 100; ++i) {
                 lockInvocations.add(() -> runNextTrigger());
             }
+            
             executor.invokeAll(lockInvocations);
+            runAllTriggersAndWait();
 
             // THEN
             for (int i = 1; i <= 100; ++i) {
                 asserts.awaitValueOnce("t" + i);
             }
+            assertThat(asserts.getCount()).isEqualTo(100);
             assertThat(historyService.countTriggers(TriggerStatus.SUCCESS)).isEqualTo(100);
         }
     }
@@ -300,5 +306,27 @@ class TriggerServiceTest extends AbstractSpringTest {
         runTriggersAndWait();
         asserts.assertValue(Task3.NAME + "::Hallo");
         assertThat(triggerService.countTriggers(TriggerStatus.NEW)).isZero();
+    }
+    
+    @Test
+    void testRescheduleAbandonedTasks() {
+        // GIVEN
+        var now = OffsetDateTime.now();
+        var t1 = new TriggerEntity(new TriggerKey("fooTask"))
+                .runOn("fooScheduler");
+        t1.setLastPing(now.minusSeconds(60));
+        triggerRepository.save(t1);
+        
+        var t2 = new TriggerEntity(new TriggerKey("barTask"))
+                .runOn("barScheduler");
+        t2.setLastPing(now.minusSeconds(59));
+        triggerRepository.save(t2);
+
+        // WHEN
+        final var rescheduledTasks = subject.rescheduleAbandonedTasks(now.minusSeconds(59));
+
+        // THEN
+        assertThat(rescheduledTasks).hasSize(1);
+        assertThat(rescheduledTasks.get(0).getKey()).isEqualTo(t1.getKey());
     }
 }

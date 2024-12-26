@@ -22,7 +22,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "SPT_TRIGGERS_HISTORY_ENTRIES",
+@Table(name = "SPT_TRIGGER_HISTORY_DETAILS",
     indexes = {
         @Index(name = "IDX_SPT_TRIGGERS_HISTORY_INSTANCE_ID", columnList = "instance_id"),
         @Index(name = "IDX_SPT_TRIGGERS_HISTORY_TASK_NAME", columnList = "task_name"),
@@ -36,9 +36,9 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class TriggerStateHistoryEntity implements HasTriggerData {
+public class TriggerHistoryDetailEntity implements HasTriggerData {
 
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(generator = "SEQ_SPT_TRIGGER_HISTORY_DETAILS", strategy = GenerationType.SEQUENCE)
     @Column(updatable = false)
     @Id
     private Long id;

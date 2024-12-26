@@ -2,6 +2,7 @@ package org.sterl.spring.persistent_tasks;
 
 import java.net.UnknownHostException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Future;
@@ -16,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.api.SpringBeanTask;
 import org.sterl.spring.persistent_tasks.api.TaskId;
@@ -35,6 +37,7 @@ import lombok.RequiredArgsConstructor;
 import uk.co.jemos.podam.api.PodamFactory;
 import uk.co.jemos.podam.api.PodamFactoryImpl;
 
+// @ActiveProfiles("mssql")
 @SpringBootTest(classes = SampleApp.class)
 public class AbstractSpringTest {
 
@@ -51,7 +54,7 @@ public class AbstractSpringTest {
     protected TriggerService triggerService;
     @Autowired
     protected TaskService taskService;
-    
+
     @Autowired
     protected HistoryService historyService;
 
@@ -59,7 +62,7 @@ public class AbstractSpringTest {
     protected TransactionTemplate trx;
     @Autowired
     protected AsyncAsserts asserts;
-    
+
     protected final PodamFactory pm = new PodamFactoryImpl();
 
     @Configuration
@@ -133,7 +136,7 @@ public class AbstractSpringTest {
                         sleepTime = 1L;
                     }
                     Thread.sleep(sleepTime.longValue());
-                    asserts.info("Complete " + sleepTime);
+                    asserts.info("slowTask complete after=" + sleepTime + "ms");
                 } catch (InterruptedException e) {
                     Thread.interrupted();
                     throw new RuntimeException("OH NO!", e);
@@ -146,8 +149,17 @@ public class AbstractSpringTest {
         return triggerService.run(triggerService.lockNextTrigger("test"));
     }
 
+    protected List<TriggerKey> runAllTriggersAndWait() {
+        List<TriggerKey> result = new ArrayList<>();
+        while (triggerService.hasPendingTriggers()) {
+            result.addAll(runTriggersAndWait());
+        }
+        return result;
+    }
+
     protected List<TriggerKey> runTriggersAndWait() {
-        final List<Future<TriggerKey>> triggers = schedulerA.triggerNextTasks();
+        final var triggers = runTriggers();
+
         return triggers.stream().map(t -> {
             try {
                 return t.get();
@@ -157,11 +169,19 @@ public class AbstractSpringTest {
         }).toList();
     }
 
+    protected List<Future<TriggerKey>> runTriggers() {
+        final var triggers = schedulerA.triggerNextTasks();
+        triggers.addAll(schedulerB.triggerNextTasks());
+        return triggers;
+    }
+
     @BeforeEach
     public void beforeEach() throws Exception {
         triggerService.deleteAll();
         historyService.deleteAll();
         asserts.clear();
+        schedulerA.setMaxThreads(10);
+        schedulerB.setMaxThreads(20);
         schedulerA.start();
         schedulerB.start();
     }

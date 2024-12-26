@@ -8,12 +8,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
-import org.sterl.spring.persistent_tasks.history.model.TriggerStateHistoryEntity;
+import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryDetailEntity;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 
-class TriggerStateDetailRepositoryTest extends AbstractSpringTest {
+class TriggerHistoryLastStateRepositoryTest extends AbstractSpringTest {
 
-    @Autowired private TriggerStateDetailRepository subject;
+    @Autowired private TriggerHistoryLastStateRepository subject;
 
     @Test
     void testGrouping() {
@@ -34,8 +34,8 @@ class TriggerStateDetailRepositoryTest extends AbstractSpringTest {
         assertThat(result.getTotalElements()).isEqualTo(2L);
     }
 
-    private TriggerStateHistoryEntity newHistoryEntry(TriggerStatus s, OffsetDateTime created) {
-        var history = pm.manufacturePojo(TriggerStateHistoryEntity.class);
+    private TriggerHistoryDetailEntity newHistoryEntry(TriggerStatus s, OffsetDateTime created) {
+        var history = pm.manufacturePojo(TriggerHistoryDetailEntity.class);
         history.setId(null);
         history.setCreatedTime(created);
         history.getData().setStatus(s);

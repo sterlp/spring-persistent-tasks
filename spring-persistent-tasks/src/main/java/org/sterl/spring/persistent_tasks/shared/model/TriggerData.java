@@ -13,6 +13,7 @@ import jakarta.persistence.Embedded;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Lob;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -42,16 +43,18 @@ public class TriggerData {
     @Embedded
     @AttributeOverrides(@AttributeOverride(
             name = "id",
-            column = @Column(name = "trigger_id", nullable = false)
+            column = @Column(name = "trigger_id", nullable = false, length = 200)
         )
     )
     private TriggerKey key;
 
     @Default
+    @NotNull
     @Column(updatable = false, name = "created_time")
     private OffsetDateTime createdTime = OffsetDateTime.now();
 
     @Default
+    @NotNull
     @Column(nullable = false)
     private OffsetDateTime runAt = OffsetDateTime.now();
 

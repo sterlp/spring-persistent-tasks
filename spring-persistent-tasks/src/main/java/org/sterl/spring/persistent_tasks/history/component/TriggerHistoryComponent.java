@@ -4,10 +4,10 @@ import java.time.OffsetDateTime;
 
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import org.sterl.spring.persistent_tasks.history.model.LastTriggerStateEntity;
-import org.sterl.spring.persistent_tasks.history.model.TriggerStateHistoryEntity;
-import org.sterl.spring.persistent_tasks.history.repository.LastTriggerStateRepository;
-import org.sterl.spring.persistent_tasks.history.repository.TriggerStateDetailRepository;
+import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryLastStateEntity;
+import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryDetailEntity;
+import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryDetailRepository;
+import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryLastStateRepository;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalCompontant;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerLifeCycleEvent;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
@@ -18,21 +18,21 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TriggerHistoryComponent {
 
-    private final LastTriggerStateRepository lastTriggerStateRepository;
-    private final TriggerStateDetailRepository triggerStateDetailRepository;
+    private final TriggerHistoryDetailRepository triggerHistoryDetailRepository;
+    private final TriggerHistoryLastStateRepository triggerHistoryLastStateRepository;
 
     public void write(TriggerEntity e) {
-        var state = new LastTriggerStateEntity();
+        var state = new TriggerHistoryLastStateEntity();
         state.setId(e.getId());
         state.setData(e.getData().toBuilder().build());
-        lastTriggerStateRepository.save(state);
+        triggerHistoryDetailRepository.save(state);
         
         
-        var detail = new TriggerStateHistoryEntity();
+        var detail = new TriggerHistoryDetailEntity();
         detail.setInstanceId(e.getId());
         detail.setData(e.getData().toBuilder().build());
         detail.getData().setCreatedTime(OffsetDateTime.now());
-        triggerStateDetailRepository.save(detail);
+        triggerHistoryLastStateRepository.save(detail);
     }
     
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
