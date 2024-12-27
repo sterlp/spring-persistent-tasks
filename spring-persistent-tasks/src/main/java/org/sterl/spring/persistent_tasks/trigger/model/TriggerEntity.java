@@ -17,7 +17,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -26,12 +25,12 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "SPT_TASK_TRIGGERS", indexes = {
-        @Index(name = "UNQ_SPT_TRIGGERS_KEY", columnList = "trigger_id, task_name", unique = true),
-        @Index(name = "IDX_SPT_TRIGGERS_PRIORITY", columnList = "priority"),
-        @Index(name = "IDX_SPT_TRIGGERS_RUN_AT", columnList = "run_at"),
-        @Index(name = "IDX_SPT_TRIGGERS_STATUS", columnList = "status"),
-        @Index(name = "IDX_SPT_TRIGGERS_PING", columnList = "last_ping"),
+@Table(name = "PT_TASK_TRIGGERS", indexes = {
+        @Index(name = "UNQ_PT_TRIGGERS_KEY", columnList = "trigger_id, task_name", unique = true),
+        @Index(name = "IDX_PT_TRIGGERS_PRIORITY", columnList = "priority"),
+        @Index(name = "IDX_PT_TRIGGERS_RUN_AT", columnList = "run_at"),
+        @Index(name = "IDX_PT_TRIGGERS_STATUS", columnList = "status"),
+        @Index(name = "IDX_PT_TRIGGERS_PING", columnList = "last_ping"),
 })
 @Data
 @NoArgsConstructor
@@ -40,7 +39,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class TriggerEntity implements HasTriggerData {
 
-    @GeneratedValue(generator = "SEQ_SPT_TASK_TRIGGERS", strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(generator = "SEQ_PT_TASK_TRIGGERS", strategy = GenerationType.SEQUENCE)
     @Column(updatable = false)
     @Id
     private Long id;
@@ -48,20 +47,22 @@ public class TriggerEntity implements HasTriggerData {
     @Default
     @Embedded
     private TriggerData data = new TriggerData();
-    
+
     @Column(length = 200)
     private String runningOn;
-    
+
     @Nullable
     private OffsetDateTime lastPing;
-    
+
     public TriggerEntity(TriggerKey key) {
-        if (this.data == null) this.data = new TriggerData();
+        if (this.data == null)
+            this.data = new TriggerData();
         this.data.setKey(key);
     }
 
     public TriggerKey getKey() {
-        if (data == null) return null;
+        if (data == null)
+            return null;
         return data.getKey();
     }
 

@@ -50,7 +50,7 @@ public class TriggerData {
 
     @Default
     @NotNull
-    @Column(updatable = false, name = "created_time")
+    @Column(nullable = false, updatable = false, name = "created_time")
     private OffsetDateTime createdTime = OffsetDateTime.now();
 
     @Default

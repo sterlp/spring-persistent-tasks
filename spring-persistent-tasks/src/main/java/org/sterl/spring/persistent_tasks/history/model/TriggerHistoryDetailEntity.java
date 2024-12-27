@@ -22,15 +22,13 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "SPT_TRIGGER_HISTORY_DETAILS",
-    indexes = {
-        @Index(name = "IDX_SPT_TRIGGERS_HISTORY_INSTANCE_ID", columnList = "instance_id"),
-        @Index(name = "IDX_SPT_TRIGGERS_HISTORY_TASK_NAME", columnList = "task_name"),
-        @Index(name = "IDX_SPT_TRIGGERS_HISTORY_TRIGGER_ID", columnList = "trigger_id"),
-        @Index(name = "IDX_SPT_TRIGGERS_HISTORY_STATUS", columnList = "status"),
-        @Index(name = "IDX_SPT_TRIGGERS_HISTORY_CREATED_TIME", columnList = "created_time"),
-    }
-)
+@Table(name = "PT_TRIGGER_HISTORY_DETAILS", indexes = {
+        @Index(name = "IDX_PT_TRIGGERS_HISTORY_INSTANCE_ID", columnList = "instance_id"),
+        @Index(name = "IDX_PT_TRIGGERS_HISTORY_TASK_NAME", columnList = "task_name"),
+        @Index(name = "IDX_PT_TRIGGERS_HISTORY_TRIGGER_ID", columnList = "trigger_id"),
+        @Index(name = "IDX_PT_TRIGGERS_HISTORY_STATUS", columnList = "status"),
+        @Index(name = "IDX_PT_TRIGGERS_HISTORY_CREATED_TIME", columnList = "created_time"),
+})
 @Data
 @NoArgsConstructor
 @Builder(toBuilder = true)
@@ -38,7 +36,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(of = "id")
 public class TriggerHistoryDetailEntity implements HasTriggerData {
 
-    @GeneratedValue(generator = "SEQ_SPT_TRIGGER_HISTORY_DETAILS", strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(generator = "SEQ_PT_TRIGGER_HISTORY_DETAILS", strategy = GenerationType.SEQUENCE)
     @Column(updatable = false)
     @Id
     private Long id;
@@ -48,11 +46,11 @@ public class TriggerHistoryDetailEntity implements HasTriggerData {
      * as for each trigger multiple history entries are added.
      */
     private Long instanceId;
-    
+
     @Embedded
     @NotNull
     private TriggerData data;
-    
+
     public TriggerKey getKey() {
         return data.getKey();
     }

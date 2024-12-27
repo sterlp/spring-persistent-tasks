@@ -24,21 +24,22 @@ class ApplyLiquibaseTest {
                 .findCorrectDatabaseImplementation(
                         new liquibase.database.jvm.JdbcConnection(dataSource.getConnection()))) {
 
-            database.setDatabaseChangeLogTableName("spt_databasechangelog");
-            database.setDatabaseChangeLogLockTableName("spt_databasechangeloglock");
-            
+            database.setDatabaseChangeLogTableName("PT_databasechangelog");
+            database.setDatabaseChangeLogLockTableName("PT_databasechangeloglock");
+
             // Specify the changeset file location
             String changeLogFile = "spring-persistent-tasks/db.changelog-master.xml";
-            
+
             new CommandScope("update").addArgumentValue("changelogFile", changeLogFile)
-                .addArgumentValue("database", database) //
-                //.addArgumentValue("contexts", null) //
-                //.addArgumentValue("databaseChangeLogTableName", "spt_databasechangelog") // 
-                //.addArgumentValue("databaseChangeLogLockTableName", "spt_databasechangeloglock") //
-                .execute();
+                    .addArgumentValue("database", database) //
+                    // .addArgumentValue("contexts", null) //
+                    // .addArgumentValue("databaseChangeLogTableName", "PT_databasechangelog") //
+                    // .addArgumentValue("databaseChangeLogLockTableName",
+                    // "PT_databasechangeloglock") //
+                    .execute();
         }
 
-        var template = new JdbcTemplate(dataSource); 
+        var template = new JdbcTemplate(dataSource);
         final List<Map<String, Object>> var = template.queryForList("SHOW TABLES");
         for (Map<String, Object> map : var) {
             System.err.println(map);
@@ -52,7 +53,7 @@ class ApplyLiquibaseTest {
         dataSource.setPassword("password");
         return dataSource;
     }
-    
+
     public static DataSource mssqlDb() {
         // Create and configure SQLServerDataSource
         SQLServerDataSource dataSource = new SQLServerDataSource();

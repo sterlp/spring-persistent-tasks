@@ -7,210 +7,191 @@
                         http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd
                         http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet author="sterlp" id="initial-2024-12-23-6">
-        <createTable tableName="SPT_LAST_TRIGGERS_STATES">
-            <column name="id" type="bigint">
+    <changeSet author="sterlp" id="2024-12-27-initial-db">
+
+        <createTable tableName="PT_TASK_TRIGGERS">
+            <column computed="false" name="id" type="bigint">
                 <constraints nullable="false" primaryKey="true"
-                    primaryKeyName="PK_SPT_LAST_TRIGGERS_STATES_ID" />
+                    primaryKeyName="PK_PT_TASK_TRIGGERS_ID" />
             </column>
-            <column name="created_time" type="datetimeoffset(2)">
+            <column computed="false" name="created_time" type="datetimeoffset(2)">
                 <constraints nullable="false" />
             </column>
-            <column name="trigger_id" type="varchar(200)">
+            <column computed="false" name="end_time" type="datetimeoffset(2)" />
+            <column computed="false" name="exception_name" type="varchar(512)" />
+            <column computed="false" name="execution_count" type="int" />
+            <column computed="false" name="trigger_id" type="varchar(200)">
                 <constraints nullable="false" />
             </column>
-            <column name="task_name" type="varchar(200)">
+            <column computed="false" name="task_name" type="varchar(200)">
                 <constraints nullable="false" />
             </column>
-            <column name="priority" type="int" defaultValueNumeric="4">
+            <column computed="false" name="last_exception" type="text" />
+            <column computed="false" name="priority" type="int" defaultValueNumeric="4">
                 <constraints nullable="false" />
             </column>
-            <column name="start_time" type="datetimeoffset(2)" />
-            <column name="end_time" type="datetimeoffset(2)" />
-            <column name="running_duration_in_ms" type="bigint" />
-            <column name="execution_count" type="int" defaultValueNumeric="0">
+            <column computed="false" name="run_at" type="datetimeoffset(2)">
                 <constraints nullable="false" />
             </column>
-            <column name="exception_name" type="varchar(512)" />
-            <column name="last_exception" type="varchar(MAX)" />
-            <column name="run_at" type="datetimeoffset(2)">
+            <column computed="false" name="running_duration_in_ms" type="bigint" />
+            <column computed="false" name="start_time" type="datetimeoffset(2)" />
+            <column computed="false" name="state" type="varbinary(MAX)" />
+            <column computed="false" name="status" type="varchar(20)">
                 <constraints nullable="false" />
             </column>
-            <column name="state" type="varbinary(MAX)" />
-            <column name="status" type="varchar(20)">
+            <column computed="false" name="last_ping" type="datetimeoffset(2)" />
+            <column computed="false" name="running_on" type="varchar(200)" />
+        </createTable>
+
+        <createTable tableName="PT_TRIGGER_HISTORY_DETAILS">
+            <column computed="false" name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true"
+                    primaryKeyName="PK_PT_TRIGGER_HISTORY_DETAILS_ID" />
+            </column>
+            <column computed="false" name="created_time" type="datetimeoffset(2)" />
+            <column computed="false" name="end_time" type="datetimeoffset(2)" />
+            <column computed="false" name="exception_name" type="varchar(512)" />
+            <column computed="false" name="execution_count" type="int" />
+            <column computed="false" name="trigger_id" type="varchar(200)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="task_name" type="varchar(200)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="last_exception" type="text" />
+            <column computed="false" name="priority" type="int" defaultValueNumeric="4">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="run_at" type="datetimeoffset(2)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="running_duration_in_ms" type="bigint" />
+            <column computed="false" name="start_time" type="datetimeoffset(2)" />
+            <column computed="false" name="state" type="varbinary(MAX)" />
+            <column computed="false" name="status" type="varchar(20)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="instance_id" type="bigint" />
+        </createTable>
+
+        <createTable tableName="PT_TRIGGER_HISTORY_LAST_STATES">
+            <column computed="false" name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true"
+                    primaryKeyName="PK_PT_TRIGGER_HISTORY_LAST_STATES_ID" />
+            </column>
+            <column computed="false" name="created_time" type="datetimeoffset(2)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="end_time" type="datetimeoffset(2)" />
+            <column computed="false" name="exception_name" type="varchar(512)" />
+            <column computed="false" name="execution_count" type="int" defaultValueNumeric="4">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="trigger_id" type="varchar(200)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="task_name" type="varchar(200)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="last_exception" type="text" />
+            <column computed="false" name="priority" type="int" />
+            <column computed="false" name="run_at" type="datetimeoffset(2)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="running_duration_in_ms" type="bigint" />
+            <column computed="false" name="start_time" type="datetimeoffset(2)" />
+            <column computed="false" name="state" type="varbinary(MAX)" />
+            <column computed="false" name="status" type="varchar(20)">
                 <constraints nullable="false" />
             </column>
         </createTable>
 
-        <createTable tableName="SPT_TASK_TRIGGERS">
-            <column name="id" type="bigint">
+        <createTable tableName="PT_SCHEDULER">
+            <column computed="false" name="id" type="varchar(255)">
                 <constraints nullable="false" primaryKey="true"
-                    primaryKeyName="PK_SPT_TASK_TRIGGERS_ID" />
+                    primaryKeyName="PK_PT_SCHEDULER_ID" />
             </column>
-            <column name="trigger_id" type="varchar(200)">
+            <column computed="false" name="last_ping" type="datetimeoffset(2)" />
+            <column computed="false" name="max_heap" type="bigint">
                 <constraints nullable="false" />
             </column>
-            <column name="task_name" type="varchar(200)">
+            <column computed="false" name="runnung_tasks" type="int">
                 <constraints nullable="false" />
             </column>
-            <column name="created_time" type="datetimeoffset(2)">
+            <column computed="false" name="system_load_average" type="float(53)">
                 <constraints nullable="false" />
             </column>
-            <column name="end_time" type="datetimeoffset(2)" />
-            <column name="exception_name" type="varchar(512)" />
-            <column name="execution_count" type="int">
+            <column computed="false" name="tasks_slot_count" type="int">
                 <constraints nullable="false" />
             </column>
-            <column name="last_exception" type="varchar(MAX)" />
-            <column name="priority" type="int">
-                <constraints nullable="false" />
-            </column>
-            <column name="run_at" type="datetimeoffset(2)">
-                <constraints nullable="false" />
-            </column>
-            <column name="running_duration_in_ms" type="bigint" />
-            <column name="start_time" type="datetimeoffset(2)" />
-            <column name="state" type="varbinary(MAX)" />
-            <column name="status" type="varchar(20)">
-                <constraints nullable="false" />
-            </column>
-            <column name="last_ping" type="datetimeoffset(2)" />
-            <column name="running_on" type="varchar(200)" />
-        </createTable>
-
-        <createTable tableName="SPT_TRIGGERS_HISTORY_ENTRIES">
-            <column name="id" type="bigint">
-                <constraints nullable="false" primaryKey="true"
-                    primaryKeyName="PK_SPT_TRIGGERS_HISTORY_ENTRIES_ID" />
-            </column>
-            <column name="created_time" type="datetimeoffset(2)">
-                <constraints nullable="false" />
-            </column>
-            <column name="end_time" type="datetimeoffset(2)" />
-            <column name="exception_name" type="varchar(512)" />
-            <column name="execution_count" type="int">
-                <constraints nullable="false" />
-            </column>
-            <column name="trigger_id" type="varchar(200)">
-                <constraints nullable="false" />
-            </column>
-            <column name="task_name" type="varchar(200)" />
-            <column name="last_exception" type="varchar(MAX)" />
-            <column name="priority" type="int">
-                <constraints nullable="false" />
-            </column>
-            <column name="run_at" type="datetimeoffset(2)">
-                <constraints nullable="false" />
-            </column>
-            <column name="running_duration_in_ms" type="bigint" />
-            <column name="start_time" type="datetimeoffset(2)" />
-            <column name="state" type="varbinary(MAX)" />
-            <column name="status" type="varchar(20)">
-                <constraints nullable="false" />
-            </column>
-            <column name="instance_id" type="bigint">
+            <column computed="false" name="used_heap" type="bigint">
                 <constraints nullable="false" />
             </column>
         </createTable>
 
-        <createTable tableName="SPT_SCHEDULER">
-            <column name="id" type="varchar(200)">
-                <constraints nullable="false" primaryKey="true"
-                    primaryKeyName="PK_SPT_SCHEDULER_ID" />
-            </column>
-            <column name="last_ping" type="datetimeoffset(2)" />
-            <column name="max_heap" type="bigint">
-                <constraints nullable="false" />
-            </column>
-            <column name="runnung_tasks" type="int">
-                <constraints nullable="false" />
-            </column>
-            <column name="system_load_average" type="float(24)">
-                <constraints nullable="false" />
-            </column>
-            <column name="tasks_slot_count" type="int">
-                <constraints nullable="false" />
-            </column>
-            <column name="used_heap" type="bigint">
-                <constraints nullable="false" />
-            </column>
-        </createTable>
-
-        <createIndex indexName="IDX_SPT_LAST_TRIGGERS_STATES_CREATED_TIME"
-            tableName="SPT_LAST_TRIGGERS_STATES">
-            <column name="created_time" />
-        </createIndex>
-
-        <createIndex indexName="IDX_SPT_LAST_TRIGGERS_STATES_STATUS"
-            tableName="SPT_LAST_TRIGGERS_STATES">
-            <column name="status" />
-        </createIndex>
-
-        <createIndex indexName="IDX_SPT_LAST_TRIGGERS_STATES_TASK_NAME"
-            tableName="SPT_LAST_TRIGGERS_STATES">
-            <column name="task_name" />
-        </createIndex>
-
-        <createIndex indexName="IDX_SPT_LAST_TRIGGERS_STATES_TRIGGER_ID"
-            tableName="SPT_LAST_TRIGGERS_STATES">
-            <column name="trigger_id" />
-        </createIndex>
-
-        <createIndex indexName="IDX_SPT_TRIGGERS_PING" tableName="spt_task_triggers">
+        <createIndex indexName="IDX_PT_TRIGGERS_PING" tableName="PT_TASK_TRIGGERS">
             <column name="last_ping" />
         </createIndex>
-
-        <createIndex indexName="IDX_SPT_TRIGGERS_PRIORITY" tableName="spt_task_triggers">
+        <createIndex indexName="IDX_PT_TRIGGERS_PRIORITY" tableName="PT_TASK_TRIGGERS">
             <column name="priority" />
         </createIndex>
-
-        <createIndex indexName="IDX_SPT_TRIGGERS_RUN_AT" tableName="spt_task_triggers">
+        <createIndex indexName="IDX_PT_TRIGGERS_RUN_AT" tableName="PT_TASK_TRIGGERS">
             <column name="run_at" />
         </createIndex>
-
-        <createIndex indexName="IDX_SPT_TRIGGERS_STATUS" tableName="spt_task_triggers">
+        <createIndex indexName="IDX_PT_TRIGGERS_STATUS" tableName="PT_TASK_TRIGGERS">
             <column name="status" />
         </createIndex>
-
-        <createIndex indexName="UNQ_SPT_TRIGGERS_KEY" tableName="spt_task_triggers" unique="true">
+        <createIndex indexName="UNQ_PT_TRIGGERS_KEY" tableName="PT_TASK_TRIGGERS" unique="true">
             <column name="trigger_id" />
             <column name="task_name" />
         </createIndex>
 
-        <createIndex indexName="IDX_SPT_TRIGGERS_HISTORY_CREATED_TIME"
-            tableName="SPT_TRIGGERS_HISTORY_ENTRIES">
+        <createIndex indexName="IDX_PT_TRIGGERS_HISTORY_CREATED_TIME"
+            tableName="PT_TRIGGER_HISTORY_DETAILS">
             <column name="created_time" />
         </createIndex>
-
-        <createIndex indexName="IDX_SPT_TRIGGERS_HISTORY_INSTANCE_ID"
-            tableName="SPT_TRIGGERS_HISTORY_ENTRIES">
+        <createIndex indexName="IDX_PT_TRIGGERS_HISTORY_INSTANCE_ID"
+            tableName="PT_TRIGGER_HISTORY_DETAILS">
             <column name="instance_id" />
         </createIndex>
-
-        <createIndex indexName="IDX_SPT_TRIGGERS_HISTORY_STATUS"
-            tableName="SPT_TRIGGERS_HISTORY_ENTRIES">
+        <createIndex indexName="IDX_PT_TRIGGERS_HISTORY_STATUS"
+            tableName="PT_TRIGGER_HISTORY_DETAILS">
             <column name="status" />
         </createIndex>
-
-        <createIndex indexName="IDX_SPT_TRIGGERS_HISTORY_TASK_NAME"
-            tableName="SPT_TRIGGERS_HISTORY_ENTRIES">
+        <createIndex indexName="IDX_PT_TRIGGERS_HISTORY_TASK_NAME"
+            tableName="PT_TRIGGER_HISTORY_DETAILS">
             <column name="task_name" />
         </createIndex>
-
-        <createIndex indexName="IDX_SPT_TRIGGERS_HISTORY_TRIGGER_ID"
-            tableName="SPT_TRIGGERS_HISTORY_ENTRIES">
+        <createIndex indexName="IDX_PT_TRIGGERS_HISTORY_TRIGGER_ID"
+            tableName="PT_TRIGGER_HISTORY_DETAILS">
             <column name="trigger_id" />
         </createIndex>
 
-        <createIndex indexName="IDX_TASK_SCHEDULER_STATUS" tableName="spt_scheduler">
+        <createIndex indexName="IDX_PT_TRIGGER_HISTORY_LAST_STATES_CREATED_TIME"
+            tableName="PT_TRIGGER_HISTORY_LAST_STATES">
+            <column name="created_time" />
+        </createIndex>
+        <createIndex indexName="IDX_PT_TRIGGER_HISTORY_LAST_STATES_STATUS"
+            tableName="PT_TRIGGER_HISTORY_LAST_STATES">
+            <column name="status" />
+        </createIndex>
+        <createIndex indexName="IDX_PT_TRIGGER_HISTORY_LAST_STATES_TASK_NAME"
+            tableName="PT_TRIGGER_HISTORY_LAST_STATES">
+            <column name="task_name" />
+        </createIndex>
+        <createIndex indexName="IDX_PT_TRIGGER_HISTORY_LAST_STATES_TRIGGER_ID"
+            tableName="PT_TRIGGER_HISTORY_LAST_STATES">
+            <column name="trigger_id" />
+        </createIndex>
+
+        <createIndex indexName="IDX_TASK_SCHEDULER_STATUS" tableName="PT_SCHEDULER">
             <column name="last_ping" />
         </createIndex>
 
         <createSequence cycle="false" incrementBy="50" maxValue="9223372036854775807"
-            minValue="-9223372036854775808" sequenceName="SEQ_SPT_TASK_TRIGGERS" startValue="1" />
-
+            minValue="-9223372036854775808" sequenceName="SEQ_PT_TASK_TRIGGERS" startValue="1" />
         <createSequence cycle="false" incrementBy="50" maxValue="9223372036854775807"
-            minValue="-9223372036854775808" sequenceName="SEQ_SPT_TRIGGERS_HISTORY_ENTRIES"
+            minValue="-9223372036854775808" sequenceName="SEQ_PT_TRIGGER_HISTORY_DETAILS"
             startValue="1" />
     </changeSet>
 </databaseChangeLog>

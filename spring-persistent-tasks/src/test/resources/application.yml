@@ -1,6 +1,6 @@
 spring:
   jpa:
-    generate-ddl: true
+    generate-ddl: false
     open-in-view: false
     show-sql: false
   datasource:
@@ -9,6 +9,9 @@ spring:
 
   persistent-tasks:
     scheduler-enabled: false
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
 
 logging:
   level:

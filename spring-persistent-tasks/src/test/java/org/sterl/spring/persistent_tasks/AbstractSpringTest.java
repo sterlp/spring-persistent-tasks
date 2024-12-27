@@ -37,7 +37,7 @@ import lombok.RequiredArgsConstructor;
 import uk.co.jemos.podam.api.PodamFactory;
 import uk.co.jemos.podam.api.PodamFactoryImpl;
 
-// @ActiveProfiles("mssql")
+//@ActiveProfiles("mssql")
 @SpringBootTest(classes = SampleApp.class)
 public class AbstractSpringTest {
 
