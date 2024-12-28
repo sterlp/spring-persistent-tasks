@@ -106,21 +106,20 @@ class SchedulerServiceTest extends AbstractSpringTest {
     void runSimpleTaskMultipleTimesTest() throws Exception {
         // GIVEN
         TaskId<String> taskId = taskService.replace("foo", c -> asserts.info(c));
-        for (int i = 1; i < 5; ++i) {
+        for (int i = 1; i < 21; ++i) {
             subject.queue(taskId, i + " state");
         }
 
         // WHEN
-        for (int i = 1; i < 5; ++i) {
-            subject.triggerNextTasks();
-        }
+        schedulerA.triggerNextTasks();
+        schedulerB.triggerNextTasks();
 
         // THEN
-        for (int i = 1; i < 5; ++i) {
+        for (int i = 1; i < 21; ++i) {
             asserts.awaitValue(i + " state");
         }
 
+        assertThat(historyService.countTriggers(TriggerStatus.SUCCESS)).isEqualTo(20);
         assertThat(triggerService.hasPendingTriggers()).isFalse();
-        assertThat(historyService.countTriggers(TriggerStatus.SUCCESS)).isEqualTo(4);
     }
 }
