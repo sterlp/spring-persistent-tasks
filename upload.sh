@@ -1,1 +1,1 @@
-mvn clean deploy -DskipTests
+mvn clean deploy -DskipTests -Prelease

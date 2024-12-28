@@ -94,7 +94,7 @@ public class SchedulerService {
     }
 
     /**
-     * Like {@link #triggerNextTask()} but allows to set the time e.g. to the future to trigger
+     * Like {@link #triggerNextTasks()} but allows to set the time e.g. to the future to trigger
      * tasks which wouldn't be triggered now.
      */
     @NonNull

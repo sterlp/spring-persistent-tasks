@@ -3,7 +3,6 @@ package org.sterl.spring.persistent_tasks.scheduler.component;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.OperatingSystemMXBean;
-import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.Set;
