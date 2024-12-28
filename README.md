@@ -145,6 +145,9 @@ public class ExampleApplication {
 
 - http://localhost:8080/task-ui
 
+## Schedulers
+![Schedulers](screenshots/schedulers-screen.png)
+
 ## Triggers
 ![Triggers](screenshots/triggers-screen.png)
 

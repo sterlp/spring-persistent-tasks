@@ -7,14 +7,16 @@ interface Props {
 const TriggerStatusView = ({ data }: Props) => {
     if (!data) return undefined;
 
-    if (data.status === "SUCCESS") return <Badge bg="success">SUCCESS</Badge>;
-    if (data.status === "RUNNING") return <Badge>RUNNING</Badge>;
-    if (data.status === "FAILED") return <Badge bg="danger">FAILED</Badge>;
+    if (data.status === "SUCCESS") return <Badge bg="success">Success</Badge>;
+    if (data.status === "FAILED") return <Badge bg="danger">Failed</Badge>;
+    if (data.status === "RUNNING") return <Badge>Running</Badge>;
 
-    if (data.end != null && data.status === "NEW") {
-        return <Badge bg="warning">RETRY</Badge>;
+    if (data.executionCount > 0 && data.status === "WAITING") {
+        return <Badge bg="warning">Retry</Badge>;
     }
-    if (data.status === "NEW") return <Badge bg="secondary">WAITING</Badge>;
+    if (data.status === "WAITING") return <Badge bg="secondary">Wating</Badge>;
+    if (data.status === "CANCELED")
+        return <Badge bg="secondary">Canceled</Badge>;
 
     return <Badge>{data.status}</Badge>;
 };

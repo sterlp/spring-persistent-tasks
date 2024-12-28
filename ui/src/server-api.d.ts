@@ -94,4 +94,4 @@ export interface Serializable {
 export interface Consumer<T> {
 }
 
-export type TriggerStatus = "NEW" | "RUNNING" | "SUCCESS" | "FAILED" | "CANCELED";
+export type TriggerStatus = "WAITING" | "RUNNING" | "SUCCESS" | "FAILED" | "CANCELED";

@@ -47,7 +47,7 @@
             <column computed="false" name="running_duration_in_ms" type="bigint" />
             <column computed="false" name="start_time" type="${offsetdatetime.type}" />
             <column computed="false" name="state" type="${binary.type}" />
-            <column computed="false" name="status" type="varchar(20)">
+            <column computed="false" name="status" type="varchar(20)" defaultValue="WAITING">
                 <constraints nullable="false" />
             </column>
             <column computed="false" name="last_ping" type="${offsetdatetime.type}" />

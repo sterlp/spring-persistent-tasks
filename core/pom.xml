@@ -115,8 +115,7 @@
                     <classPatterns>
                         <pattern>org.sterl.spring.persistent_tasks.api.**</pattern>
                     </classPatterns>
-                    <outputFile>
-                        ../spring-persistent-tasks-ui/src/server-api.d.ts</outputFile>
+                    <outputFile>../ui/src/server-api.d.ts</outputFile>
                     <outputKind>module</outputKind>
                 </configuration>
             </plugin>
