@@ -62,9 +62,9 @@
 
     <modules>
         <module>example</module>
-        <module>spring-persistent-tasks-db</module>
-        <module>spring-persistent-tasks-ui</module>
-        <module>spring-persistent-tasks</module>
+        <module>db</module>
+        <module>ui</module>
+        <module>core</module>
     </modules>
 
     <dependencyManagement>
