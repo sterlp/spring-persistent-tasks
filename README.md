@@ -10,6 +10,8 @@ Secondary goal is to support [Poor mans Workflow](https://github.com/sterlp/pmw)
 
 ## Maven
 
+- [Maven Central spring-persistent-tasks-core](https://central.sonatype.com/artifact/org.sterl.spring/spring-persistent-tasks-core/versions)
+
 ```xml
 <dependency>
     <groupId>org.sterl.spring</groupId>
@@ -107,9 +109,12 @@ SpringBeanTask<Vehicle> task1(VehicleRepository vehicleRepository) {
     }
 ```
 
-# Setup DB
+# Setup DB with Liquibase
 
-Liquibase is supported. Either import all or just the required versions:
+Liquibase is supported. Either import all or just the required versions.
+
+## Maven
+- [Maven Central spring-persistent-tasks-db](https://central.sonatype.com/artifact/org.sterl.spring/spring-persistent-tasks-db/versions)
 
 ## Option 1: Just include the master file
 ```xml
@@ -123,6 +128,8 @@ Liquibase is supported. Either import all or just the required versions:
 # Setup UI
 
 ## Maven
+
+- [Maven Central spring-persistent-tasks-ui](https://central.sonatype.com/artifact/org.sterl.spring/spring-persistent-tasks-ui/versions)
 
 ```xml
 <dependency>
