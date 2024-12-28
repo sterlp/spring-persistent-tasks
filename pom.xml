@@ -105,7 +105,10 @@
                         <target>${java.version}</target>
                         <encoding>${project.reporting.outputEncoding}</encoding>
                         <compilerArgs>
-                            <arg>-Xlint:all,-options,-path,-parameters</arg>
+                            <arg>-Xlint:all</arg>
+                            <arg>-Xlint:-options</arg>
+                            <arg>-Xlint:-path</arg>
+                            <arg>-parameters</arg>
                         </compilerArgs>
                     </configuration>
                 </plugin>
@@ -122,8 +125,7 @@
                         <failOnViolation>true</failOnViolation>
                         <printFailingErrors>true</printFailingErrors>
                         <analysisCache>true</analysisCache>
-                        <analysisCacheLocation>
-                            ${project.build.directory}/pmd/pmd.cache</analysisCacheLocation>
+                        <analysisCacheLocation>${project.build.directory}/pmd/pmd.cache</analysisCacheLocation>
                     </configuration>
                     <executions>
                         <execution>

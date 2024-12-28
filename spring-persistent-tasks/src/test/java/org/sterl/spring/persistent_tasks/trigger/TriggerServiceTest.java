@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
@@ -256,7 +257,7 @@ class TriggerServiceTest extends AbstractSpringTest {
             }
 
             // WHEN
-            ArrayList<Callable<?>> lockInvocations = new ArrayList<>();
+            ArrayList<Callable<Optional<TriggerEntity> >> lockInvocations = new ArrayList<>();
             for (int i = 1; i <= 100; ++i) {
                 lockInvocations.add(() -> runNextTrigger());
             }

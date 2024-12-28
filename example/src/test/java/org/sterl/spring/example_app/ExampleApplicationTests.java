@@ -1,4 +1,4 @@
-package org.sterl.spring.persistent_tasks.example;
+package org.sterl.spring.example_app;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

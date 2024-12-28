@@ -1,4 +1,4 @@
-import { Alert, Col, Row } from "react-bootstrap";
+import { Alert } from "react-bootstrap";
 
 const HttpErrorView = ({ error }: { error: any }) => {
     if (!error) return undefined;

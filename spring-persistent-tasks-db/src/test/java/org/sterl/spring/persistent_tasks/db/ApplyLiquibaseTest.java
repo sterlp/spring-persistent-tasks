@@ -1,6 +1,7 @@
 package org.sterl.spring.persistent_tasks.db;
 
-import java.util.List;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -19,7 +20,7 @@ class ApplyLiquibaseTest {
 
     @Test
     void test() throws Exception {
-        var dataSource = mssqlDb();
+        var dataSource = h2Db();
         try (Database database = DatabaseFactory.getInstance()
                 .findCorrectDatabaseImplementation(
                         new liquibase.database.jvm.JdbcConnection(dataSource.getConnection()))) {
@@ -40,10 +41,28 @@ class ApplyLiquibaseTest {
         }
 
         var template = new JdbcTemplate(dataSource);
-        final List<Map<String, Object>> var = template.queryForList("SHOW TABLES");
-        for (Map<String, Object> map : var) {
+        final var tables = template.queryForList("SHOW TABLES");
+        for (Map<String, Object> map : tables) {
             System.err.println(map);
         }
+        assertThat(tables).contains(
+                Map.of("TABLE_NAME", "PT_DATABASECHANGELOG", 
+                        "TABLE_SCHEMA", "PUBLIC"));
+        assertThat(tables).contains(
+                Map.of("TABLE_NAME", "PT_DATABASECHANGELOGLOCK", 
+                        "TABLE_SCHEMA", "PUBLIC"));
+        assertThat(tables).contains(
+                Map.of("TABLE_NAME", "PT_SCHEDULER", 
+                        "TABLE_SCHEMA", "PUBLIC"));
+        assertThat(tables).contains(
+                Map.of("TABLE_NAME", "PT_TASK_TRIGGERS", 
+                        "TABLE_SCHEMA", "PUBLIC"));
+        assertThat(tables).contains(
+                Map.of("TABLE_NAME", "PT_TRIGGER_HISTORY_DETAILS", 
+                        "TABLE_SCHEMA", "PUBLIC"));
+        assertThat(tables).contains(
+                Map.of("TABLE_NAME", "PT_TRIGGER_HISTORY_LAST_STATES", 
+                        "TABLE_SCHEMA", "PUBLIC"));
     }
 
     private JdbcDataSource h2Db() {
