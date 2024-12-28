@@ -320,7 +320,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         
         var t2 = new TriggerEntity(new TriggerKey("barTask"))
                 .runOn("barScheduler");
-        t2.setLastPing(now.minusSeconds(59));
+        t2.setLastPing(now.minusSeconds(58));
         triggerRepository.save(t2);
 
         // WHEN
