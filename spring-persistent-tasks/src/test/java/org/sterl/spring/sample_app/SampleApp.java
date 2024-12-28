@@ -2,10 +2,10 @@ package org.sterl.spring.sample_app;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.sterl.spring.persistent_tasks.EnablePersistentTasks;
+import org.sterl.spring.persistent_tasks.EnableSpringPersistentTasks;
 
 @SpringBootApplication
-@EnablePersistentTasks
+@EnableSpringPersistentTasks
 public class SampleApp {
 
     public static void main(String[] args) {

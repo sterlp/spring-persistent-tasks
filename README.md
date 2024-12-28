@@ -14,8 +14,17 @@ A simple task framework which has it's focus being simple and to support [Poor m
 </dependency>
 ```
 
+## Setup Spring
+
+```java
+@SpringBootApplication
+@EnableSpringPersistentTasks
+public class ExampleApplication {
+```
+
 ## Setup a spring persitent task
 
+### As a class
 ```java
 @Component(BuildVehicleTask.NAME)
 @RequiredArgsConstructor
@@ -36,7 +45,50 @@ public class BuildVehicleTask implements SpringBeanTask<Vehicle> {
 }
 ```
 
+### As a closure
+
+```java
+@Bean
+SpringBeanTask<String> task1(AnyService anyService) {
+    return state -> anyService.doStuff(state);
+}
+```
+
+
 ## Queue a task execution
+
+### Direct usage of the TriggerService.
+
+```java
+    private final TriggerService triggerService;
+
+    public void buildVehicle() {
+        // Vehicle has to be Serializable
+        final var v = new Vehicle();
+        // set any data to v ...
+
+        // queue it
+        triggerService.queue(BuildVehicleTask.ID.newUniqueTrigger(v));
+    }
+```
+
+### Build Trigger
+```java
+    private final TriggerService triggerService;
+
+    public void buildVehicle() {
+       var trigger = TaskTriggerBuilder
+                .<String>newTrigger("task2")
+                .id("my-id") // will overwrite existing triggers
+                .state("someState")
+                .runAfter(Duration.ofHours(2))
+                .build()
+
+        triggerService.queue(trigger);
+    }
+```
+
+### Use a Spring Event
 
 ```java
     private final TriggerService triggerService;
@@ -72,6 +124,15 @@ Liquibase is supported. Either import all or just the required versions:
     <artifactId>spring-persistent-tasks-ui</artifactId>
     <version>1.x.x</version>
 </dependency>
+```
+
+## Setup Spring
+
+```java
+@SpringBootApplication
+@EnableSpringPersistentTasks
+@EnableSpringPersistentTasksUI
+public class ExampleApplication {
 ```
 
 ## Open the UI

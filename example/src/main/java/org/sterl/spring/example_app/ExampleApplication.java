@@ -11,16 +11,16 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.sterl.spring.persistent_tasks.EnablePersistentTasks;
+import org.sterl.spring.persistent_tasks.EnableSpringPersistentTasks;
 import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
 import org.sterl.spring.persistent_tasks.scheduler.component.TaskExecutorComponent;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
-import org.sterl.spring.persistent_tasks_ui.EnablePersistentTasksUi;
+import org.sterl.spring.persistent_tasks_ui.EnableSpringPersistentTasksUI;
 
 @SpringBootApplication
-@EnablePersistentTasks
-@EnablePersistentTasksUi
+@EnableSpringPersistentTasks
+@EnableSpringPersistentTasksUI
 @EnableSpringDataWebSupport(pageSerializationMode = PageSerializationMode.VIA_DTO)
 public class ExampleApplication {
 

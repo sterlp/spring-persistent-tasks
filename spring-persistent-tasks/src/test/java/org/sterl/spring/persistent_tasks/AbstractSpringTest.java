@@ -106,12 +106,7 @@ public class AbstractSpringTest {
 
         @Bean
         SpringBeanTask<String> task2(AsyncAsserts asserts) {
-            return new SpringBeanTask<>() {
-                @Override
-                public void accept(String state) {
-                    asserts.info("task2::" + state);
-                }
-            };
+            return state -> asserts.info("task2::" + state);
         }
 
         @Component(Task3.NAME)

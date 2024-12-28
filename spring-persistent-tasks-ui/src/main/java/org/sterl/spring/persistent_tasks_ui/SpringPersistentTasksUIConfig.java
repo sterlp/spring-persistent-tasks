@@ -9,7 +9,7 @@ import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class PersistentTasksUiConfig implements WebMvcConfigurer {
+public class SpringPersistentTasksUIConfig implements WebMvcConfigurer {
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/task-ui").setViewName("/task-ui/index.html");
@@ -20,6 +20,6 @@ public class PersistentTasksUiConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/task-ui/assets/**") 
             .addResourceLocations("classpath:/static/task-ui/assets/") 
-            .setCacheControl(CacheControl.maxAge(365, TimeUnit.DAYS));
+            .setCacheControl(CacheControl.maxAge(90, TimeUnit.DAYS));
     }
 }

@@ -7,8 +7,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
 @EnableScheduling
-@AutoConfigurationPackage(basePackageClasses = EnablePersistentTasks.class)
-@ComponentScan(basePackageClasses = EnablePersistentTasks.class)
-public class PersistentTasksConfig {
+@AutoConfigurationPackage(basePackageClasses = EnableSpringPersistentTasks.class)
+@ComponentScan(basePackageClasses = EnableSpringPersistentTasks.class)
+public class SpringPersistentTasksConfig {
 
 }

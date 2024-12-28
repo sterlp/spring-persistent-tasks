@@ -1,4 +1,4 @@
-package org.sterl.spring.persistent_tasks;
+package org.sterl.spring.persistent_tasks_ui;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Import;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Import(PersistentTasksConfig.class)
-public @interface EnablePersistentTasks {
+@Import(SpringPersistentTasksUIConfig.class)
+public @interface EnableSpringPersistentTasksUI {
 
 }
