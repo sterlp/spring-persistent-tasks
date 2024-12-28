@@ -111,8 +111,7 @@ class SchedulerServiceTest extends AbstractSpringTest {
         }
 
         // WHEN
-        schedulerA.triggerNextTasks();
-        schedulerB.triggerNextTasks();
+        runAllTriggersAndWait();
 
         // THEN
         for (int i = 1; i < 21; ++i) {

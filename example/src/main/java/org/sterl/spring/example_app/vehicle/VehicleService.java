@@ -14,6 +14,7 @@ import org.sterl.spring.example_app.vehicle.task.FailingBuildVehicleTask;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
 import org.sterl.spring.persistent_tasks.task.TaskService;
+import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 
 import lombok.RequiredArgsConstructor;
 import uk.co.jemos.podam.api.PodamFactory;
@@ -25,39 +26,39 @@ import uk.co.jemos.podam.api.PodamFactoryImpl;
 @DependsOn("taskService")
 public class VehicleService {
 
-    private final ApplicationEventPublisher eventPublisher;
-    
-    private static final Random RANDOM = new Random();
-    private static final PodamFactory PODAM = new PodamFactoryImpl();
+        private final ApplicationEventPublisher eventPublisher;
 
+        private final TriggerService triggerService;
 
-    @Scheduled(fixedDelay = 30_000, initialDelay = 1_000)
-    void triggerBuildVehicle() {
-        final Vehicle v = PODAM.manufacturePojoWithFullData(Vehicle.class);
-        v.setId(null);
-        v.getEngine().setId(null);
-        
-        eventPublisher.publishEvent(
-                TriggerTaskCommand.of(BuildVehicleTask.ID.newUniqueTrigger(v)));
-        
-        eventPublisher.publishEvent(
-                TriggerTaskCommand.of(BuildVehicleTask.ID
-                        .newTrigger()
-                        .state(v)
-                        .runAt(OffsetDateTime.now().plusMinutes(RANDOM.nextInt(10_000)))
-                        .build()));
-        
-        eventPublisher.publishEvent(
-                TriggerTaskCommand.of(FailingBuildVehicleTask.ID.newUniqueTrigger(v)));
-    }
-    
-    public void buildVehicle(String type) {
-        final Vehicle v = PODAM.manufacturePojo(Vehicle.class);
-        v.setId(null);
-        v.getEngine().setId(null);
-        v.setType(type);
+        private static final Random RANDOM = new Random();
+        private static final PodamFactory PODAM = new PodamFactoryImpl();
 
-        eventPublisher.publishEvent(
-                TriggerTaskCommand.of(BuildVehicleTask.ID.newUniqueTrigger(v)));
-    }
+        @Scheduled(fixedDelay = 30_000, initialDelay = 1_000)
+        void triggerBuildVehicle() {
+                final Vehicle v = PODAM.manufacturePojoWithFullData(Vehicle.class);
+                v.setId(null);
+                v.getEngine().setId(null);
+
+                eventPublisher.publishEvent(
+                                TriggerTaskCommand.of(BuildVehicleTask.ID.newUniqueTrigger(v)));
+
+                eventPublisher.publishEvent(
+                                TriggerTaskCommand.of(BuildVehicleTask.ID
+                                                .newTrigger()
+                                                .state(v)
+                                                .runAt(OffsetDateTime.now().plusMinutes(RANDOM.nextInt(10_000)))
+                                                .build()));
+
+                eventPublisher.publishEvent(
+                                TriggerTaskCommand.of(FailingBuildVehicleTask.ID.newUniqueTrigger(v)));
+        }
+
+        public void buildVehicle(String type) {
+                final Vehicle v = PODAM.manufacturePojo(Vehicle.class);
+                v.setId(null);
+                v.getEngine().setId(null);
+                v.setType(type);
+                
+                triggerService.queue(BuildVehicleTask.ID.newUniqueTrigger(v));
+        }
 }

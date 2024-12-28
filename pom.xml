@@ -59,10 +59,10 @@
     </properties>
 
     <modules>
+        <module>example</module>
         <module>spring-persistent-tasks-db</module>
         <module>spring-persistent-tasks-ui</module>
         <module>spring-persistent-tasks</module>
-        <module>example</module>
     </modules>
 
     <dependencyManagement>

@@ -19,6 +19,6 @@
             minValue="-9223372036854775808" sequenceName="personbe_seq" startValue="1" />
     </changeSet>
 
-    <includeAll path="spring-persistent-tasks/db" errorIfMissingOrEmpty="true" />
+    <include file="spring-persistent-tasks/db.changelog-master.xml" />
 
 </databaseChangeLog>

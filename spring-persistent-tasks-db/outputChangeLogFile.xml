@@ -1,0 +1,375 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="sterlp (generated)" id="1735310459897-1">
+        <createTable tableName="MSreplication_options">
+            <column computed="false" name="optname" type="sysname">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="value" type="bit">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="major_version" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="minor_version" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="revision" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="install_failures" type="int">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-2">
+        <createTable tableName="PT_fallback_db">
+            <column computed="false" name="xserver_name" type="varchar(30)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="xdttm_ins" type="datetime">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="xdttm_last_ins_upd" type="datetime">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="xfallback_dbid" type="smallint" />
+            <column computed="false" name="name" type="varchar(30)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="dbid" type="smallint">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="status" type="smallint">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="version" type="smallint">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-3">
+        <createTable tableName="PT_fallback_dev">
+            <column computed="false" name="xserver_name" type="varchar(30)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="xdttm_ins" type="datetime">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="xdttm_last_ins_upd" type="datetime">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="xfallback_low" type="int" />
+            <column computed="false" name="xfallback_drive" type="char(2)" />
+            <column computed="false" name="low" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="high" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="status" type="smallint">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="name" type="varchar(30)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="phyname" type="varchar(127)">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-4">
+        <createTable tableName="PT_fallback_usg">
+            <column computed="false" name="xserver_name" type="varchar(30)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="xdttm_ins" type="datetime">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="xdttm_last_ins_upd" type="datetime">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="xfallback_vstart" type="int" />
+            <column computed="false" name="dbid" type="smallint">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="segmap" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="lstart" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="sizepg" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="vstart" type="int">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-5">
+        <createTable tableName="PT_monitor">
+            <column computed="false" name="lastrun" type="datetime">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="cpu_busy" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="io_busy" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="idle" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="pack_received" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="pack_sent" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="connections" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="pack_errors" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="total_read" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="total_write" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="total_errors" type="int">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-6">
+        <createTable tableName="PT_task_triggers">
+            <column computed="false" name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true"
+                    primaryKeyName="PK__PT_task__3213E83F520CC020" />
+            </column>
+            <column computed="false" name="created_time" type="datetimeoffset(6)" />
+            <column computed="false" name="end_time" type="datetimeoffset(6)" />
+            <column computed="false" name="exception_name" type="varchar(512)" />
+            <column computed="false" name="execution_count" type="int" />
+            <column computed="false" name="trigger_id" type="varchar(200)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="task_name" type="varchar(255)" />
+            <column computed="false" name="last_exception" type="varchar(MAX)" />
+            <column computed="false" name="priority" type="int" />
+            <column computed="false" name="run_at" type="datetimeoffset">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="running_duration_in_ms" type="bigint" />
+            <column computed="false" name="start_time" type="datetimeoffset(6)" />
+            <column computed="false" name="state" type="varbinary(MAX)" />
+            <column computed="false" name="status" type="varchar(20)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="last_ping" type="datetimeoffset" />
+            <column computed="false" name="running_on" type="varchar(200)" />
+        </createTable>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-7">
+        <createTable tableName="PT_trigger_history_details">
+            <column computed="false" name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true"
+                    primaryKeyName="PK__PT_trig__3213E83F275B6BE6" />
+            </column>
+            <column computed="false" name="created_time" type="datetimeoffset" />
+            <column computed="false" name="end_time" type="datetimeoffset(6)" />
+            <column computed="false" name="exception_name" type="varchar(512)" />
+            <column computed="false" name="execution_count" type="int" />
+            <column computed="false" name="trigger_id" type="varchar(200)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="task_name" type="varchar(255)" />
+            <column computed="false" name="last_exception" type="varchar(MAX)" />
+            <column computed="false" name="priority" type="int" />
+            <column computed="false" name="run_at" type="datetimeoffset(6)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="running_duration_in_ms" type="bigint" />
+            <column computed="false" name="start_time" type="datetimeoffset(6)" />
+            <column computed="false" name="state" type="varbinary(MAX)" />
+            <column computed="false" name="status" type="varchar(20)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="instance_id" type="bigint" />
+        </createTable>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-8">
+        <createTable tableName="PT_trigger_history_last_states">
+            <column computed="false" name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true"
+                    primaryKeyName="PK__PT_trig__3213E83F2E45940E" />
+            </column>
+            <column computed="false" name="created_time" type="datetimeoffset" />
+            <column computed="false" name="end_time" type="datetimeoffset(6)" />
+            <column computed="false" name="exception_name" type="varchar(512)" />
+            <column computed="false" name="execution_count" type="int" />
+            <column computed="false" name="trigger_id" type="varchar(200)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="task_name" type="varchar(255)" />
+            <column computed="false" name="last_exception" type="varchar(MAX)" />
+            <column computed="false" name="priority" type="int" />
+            <column computed="false" name="run_at" type="datetimeoffset(6)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="running_duration_in_ms" type="bigint" />
+            <column computed="false" name="start_time" type="datetimeoffset(6)" />
+            <column computed="false" name="state" type="varbinary(MAX)" />
+            <column computed="false" name="status" type="varchar(20)">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-9">
+        <createTable tableName="PT_scheduler">
+            <column computed="false" name="id" type="varchar(255)">
+                <constraints nullable="false" primaryKey="true"
+                    primaryKeyName="PK__PT_sche__3213E83F2664AC76" />
+            </column>
+            <column computed="false" name="last_ping" type="datetimeoffset" />
+            <column computed="false" name="max_heap" type="bigint">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="runnung_tasks" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="system_load_average" type="float(53)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="tasks_slot_count" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="used_heap" type="bigint">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-10">
+        <createTable tableName="personbe">
+            <column computed="false" name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true"
+                    primaryKeyName="PK__personbe__3213E83FDF00AC10" />
+            </column>
+            <column computed="false" name="name" type="varchar(255)" />
+        </createTable>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-11">
+        <createIndex indexName="IDX_PT_TRIGGERS_PING" tableName="PT_task_triggers">
+            <column name="last_ping" />
+        </createIndex>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-12">
+        <createIndex indexName="IDX_PT_TRIGGERS_PRIORITY" tableName="PT_task_triggers">
+            <column name="priority" />
+        </createIndex>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-13">
+        <createIndex indexName="IDX_PT_TRIGGERS_RUN_AT" tableName="PT_task_triggers">
+            <column name="run_at" />
+        </createIndex>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-14">
+        <createIndex indexName="IDX_PT_TRIGGERS_STATUS" tableName="PT_task_triggers">
+            <column name="status" />
+        </createIndex>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-15">
+        <createIndex indexName="UNQ_PT_TRIGGERS_KEY" tableName="PT_task_triggers" unique="true">
+            <column name="trigger_id" />
+            <column name="task_name" />
+        </createIndex>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-16">
+        <createIndex indexName="IDX_PT_TRIGGERS_HISTORY_CREATED_TIME"
+            tableName="PT_trigger_history_details">
+            <column name="created_time" />
+        </createIndex>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-17">
+        <createIndex indexName="IDX_PT_TRIGGERS_HISTORY_INSTANCE_ID"
+            tableName="PT_trigger_history_details">
+            <column name="instance_id" />
+        </createIndex>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-18">
+        <createIndex indexName="IDX_PT_TRIGGERS_HISTORY_STATUS"
+            tableName="PT_trigger_history_details">
+            <column name="status" />
+        </createIndex>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-19">
+        <createIndex indexName="IDX_PT_TRIGGERS_HISTORY_TASK_NAME"
+            tableName="PT_trigger_history_details">
+            <column name="task_name" />
+        </createIndex>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-20">
+        <createIndex indexName="IDX_PT_TRIGGERS_HISTORY_TRIGGER_ID"
+            tableName="PT_trigger_history_details">
+            <column name="trigger_id" />
+        </createIndex>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-21">
+        <createIndex indexName="IDX_PT_TRIGGER_HISTORY_LAST_STATES_CREATED_TIME"
+            tableName="PT_trigger_history_last_states">
+            <column name="created_time" />
+        </createIndex>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-22">
+        <createIndex indexName="IDX_PT_TRIGGER_HISTORY_LAST_STATES_STATUS"
+            tableName="PT_trigger_history_last_states">
+            <column name="status" />
+        </createIndex>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-23">
+        <createIndex indexName="IDX_PT_TRIGGER_HISTORY_LAST_STATES_TASK_NAME"
+            tableName="PT_trigger_history_last_states">
+            <column name="task_name" />
+        </createIndex>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-24">
+        <createIndex indexName="IDX_PT_TRIGGER_HISTORY_LAST_STATES_TRIGGER_ID"
+            tableName="PT_trigger_history_last_states">
+            <column name="trigger_id" />
+        </createIndex>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-25">
+        <createIndex indexName="IDX_TASK_SCHEDULER_STATUS" tableName="PT_scheduler">
+            <column name="last_ping" />
+        </createIndex>
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-26">
+        <createSequence cycle="false" incrementBy="50" maxValue="9223372036854775807"
+            minValue="-9223372036854775808" sequenceName="personbe_seq" startValue="1" />
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-27">
+        <createSequence cycle="false" incrementBy="50" maxValue="9223372036854775807"
+            minValue="-9223372036854775808" sequenceName="seq_PT_task_triggers" startValue="1" />
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-28">
+        <createSequence cycle="false" incrementBy="50" maxValue="9223372036854775807"
+            minValue="-9223372036854775808" sequenceName="seq_PT_trigger_history_details"
+            startValue="1" />
+    </changeSet>
+    <changeSet author="sterlp (generated)" id="1735310459897-29">
+        <createView fullDefinition="false" viewName="PT_values">select name collate database_default as name,
+	number,
+	type collate database_default as type,
+	low, high, status
+from sys.spt_values</createView>
+    </changeSet>
+</databaseChangeLog>

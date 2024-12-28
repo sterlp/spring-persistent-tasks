@@ -10,15 +10,13 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.sterl.spring.persistent-tasks</groupId>
-    <artifactId>example-app</artifactId>
+    <artifactId>spring-persistent-tasks-example</artifactId>
     <description>Sample project for the Spring Persistent Tasks</description>
-
 
     <dependencies>
         <dependency>
             <groupId>org.sterl.spring</groupId>
-            <artifactId>spring-persistent-tasks</artifactId>
+            <artifactId>spring-persistent-tasks-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
