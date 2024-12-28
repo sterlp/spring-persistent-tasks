@@ -1,6 +1,7 @@
 package org.sterl.spring.example_app.vehicle.task;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.example_app.vehicle.model.Vehicle;
 import org.sterl.spring.example_app.vehicle.repository.VehicleRepository;
 import org.sterl.spring.persistent_tasks.api.SpringBeanTask;
@@ -19,6 +20,7 @@ public class BuildVehicleTask implements SpringBeanTask<Vehicle> {
 
     private final VehicleRepository vehicleRepository;
 
+    @Transactional(timeout = 5)
     @Override
     public void accept(Vehicle vehicle) {
         vehicleRepository.save(vehicle);

@@ -1,6 +1,10 @@
 # Spring Persistent Tasks
 
-A simple task framework which has it's focus being simple and to support [Poor mans Workflow](https://github.com/sterlp/pmw)
+A simple task management framework designed to queue and execute asynchronous tasks with support for database persistence and a user-friendly interface. It can be used to implement scheduling patterns or outbound patterns.
+
+Focus is the usage with spring boot and JPA.
+
+Secondary goal is to support [Poor mans Workflow](https://github.com/sterlp/pmw)
 
 # Setup and Run a Task
 
@@ -36,6 +40,7 @@ public class BuildVehicleTask implements SpringBeanTask<Vehicle> {
     
     private final VehicleRepository vehicleRepository;
 
+    @Transactional(timeout = 5)
     @Override
     public void accept(Vehicle vehicle) {
         // do stuff
@@ -47,13 +52,14 @@ public class BuildVehicleTask implements SpringBeanTask<Vehicle> {
 
 ### As a closure
 
+Note: this example has no aspects as above the spring *@Transactional*
+
 ```java
 @Bean
-SpringBeanTask<String> task1(AnyService anyService) {
-    return state -> anyService.doStuff(state);
+SpringBeanTask<Vehicle> task1(VehicleRepository vehicleRepository) {
+    return v -> vehicleRepository.save(v);
 }
 ```
-
 
 ## Queue a task execution
 
@@ -78,9 +84,9 @@ SpringBeanTask<String> task1(AnyService anyService) {
 
     public void buildVehicle() {
        var trigger = TaskTriggerBuilder
-                .<String>newTrigger("task2")
+                .<Vehicle>newTrigger("task2")
                 .id("my-id") // will overwrite existing triggers
-                .state("someState")
+                .state(new Vehicle("funny"))
                 .runAfter(Duration.ofHours(2))
                 .build()
 
