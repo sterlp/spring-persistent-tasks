@@ -74,7 +74,7 @@ public class TriggerData {
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
     @Default
-    private TriggerStatus status = TriggerStatus.NEW;
+    private TriggerStatus status = TriggerStatus.WAITING;
     
     private Long runningDurationInMs;
 

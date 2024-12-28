@@ -58,7 +58,7 @@ class TaskFailoverTest extends AbstractSpringTest {
         // AND
         assertThat(triggerService.countTriggers(TriggerStatus.RUNNING))
             .isEqualTo(1);
-        assertThat(triggerService.countTriggers(TriggerStatus.NEW))
+        assertThat(triggerService.countTriggers(TriggerStatus.WAITING))
             .isEqualTo(1);
     }
 }

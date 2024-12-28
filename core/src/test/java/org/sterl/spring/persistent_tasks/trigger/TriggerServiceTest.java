@@ -288,7 +288,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         
         // THEN
         asserts.assertMissing(Task3.NAME + "::Hallo");
-        assertThat(triggerService.countTriggers(TriggerStatus.NEW)).isOne();
+        assertThat(triggerService.countTriggers(TriggerStatus.WAITING)).isOne();
     }
     
     @Test
@@ -306,7 +306,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         // THEN
         runTriggersAndWait();
         asserts.assertValue(Task3.NAME + "::Hallo");
-        assertThat(triggerService.countTriggers(TriggerStatus.NEW)).isZero();
+        assertThat(triggerService.countTriggers(TriggerStatus.WAITING)).isZero();
     }
     
     @Test

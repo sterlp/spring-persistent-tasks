@@ -25,7 +25,7 @@ public class LockNextTriggerComponent {
 
     public List<TriggerEntity> loadNext(String runningOn, int count, OffsetDateTime timeDueAt) {
         final var tasks = triggerRepository.loadNextTasks(
-                timeDueAt, TriggerStatus.NEW, PageRequest.of(0, count));
+                timeDueAt, TriggerStatus.WAITING, PageRequest.of(0, count));
 
         tasks.forEach(t -> t.runOn(runningOn));
 

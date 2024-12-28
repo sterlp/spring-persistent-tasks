@@ -55,7 +55,7 @@ class SchedulerServiceTest extends AbstractSpringTest {
         // THEN
         Thread.sleep(15);
         assertThat(triggerService.countTriggers(TriggerStatus.RUNNING)).isEqualTo(10);
-        assertThat(triggerService.countTriggers(TriggerStatus.NEW)).isEqualTo(5);
+        assertThat(triggerService.countTriggers(TriggerStatus.WAITING)).isEqualTo(5);
         // AND
         final SchedulerEntity scheduler = subject.getScheduler();
         assertThat(scheduler.getRunnungTasks()).isEqualTo(10);
@@ -99,7 +99,7 @@ class SchedulerServiceTest extends AbstractSpringTest {
         
         // THEN
         asserts.assertMissing(Task3.NAME + "::Hallo");
-        assertThat(triggerService.countTriggers(TriggerStatus.NEW)).isOne();
+        assertThat(triggerService.countTriggers(TriggerStatus.WAITING)).isOne();
     }
 
     @Test

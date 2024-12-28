@@ -157,7 +157,7 @@ public class TriggerService {
                 timeout);
         result.forEach(t -> {
             t.setRunningOn(null);
-            t.getData().setStatus(TriggerStatus.NEW);
+            t.getData().setStatus(TriggerStatus.WAITING);
             t.getData().setExceptionName("Abandoned tasks");
         });
         log.debug("rescheduled {} triggers", result.size());

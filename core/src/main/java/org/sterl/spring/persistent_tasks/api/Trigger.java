@@ -32,7 +32,7 @@ public class Trigger {
     /** priority, the higher a more priority it will get */
     private int priority = 4;
 
-    private TriggerStatus status = TriggerStatus.NEW;
+    private TriggerStatus status = TriggerStatus.WAITING;
     
     private Long runningDurationInMs;
 
