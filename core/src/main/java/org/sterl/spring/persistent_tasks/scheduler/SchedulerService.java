@@ -117,10 +117,11 @@ public class SchedulerService {
     }
 
     /**
-     * Runs the next trigger if free threads are available
+     * Runs the given trigger if a free threads are available
      * and the runAt time is not in the future.
      */
-    public Optional<Future<TriggerKey>> runOrQueue(AddTriggerRequest<? extends Serializable> triggerRequest) {
+    public <T extends Serializable> Optional<Future<TriggerKey>> runOrQueue(
+            AddTriggerRequest<T> triggerRequest) {
         return trx.execute(t -> {
             Optional<Future<TriggerKey>> result = Optional.empty();
             var trigger = triggerService.queue(triggerRequest);

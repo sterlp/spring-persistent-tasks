@@ -20,7 +20,7 @@ const TriggerHistoryListView = ({ triggers }: { triggers?: Trigger[] }) => {
                         <Col>
                             <TriggerStatusView data={t} />
                             <strong>
-                                {" " + formatDateTime(t.createdTime)}:
+                                {" at " + formatDateTime(t.createdTime)}
                             </strong>
                         </Col>
                         <Col>

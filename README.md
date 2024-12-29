@@ -10,6 +10,8 @@ Secondary goal is to support [Poor mans Workflow](https://github.com/sterlp/pmw)
 
 # Setup and Run a Task
 
+- [JavaDoc](https://sterlp.github.io/spring-persistent-tasks/javadoc-core/)
+
 ## Maven
 
 - [Maven Central spring-persistent-tasks-core](https://central.sonatype.com/artifact/org.sterl.spring/spring-persistent-tasks-core/versions)

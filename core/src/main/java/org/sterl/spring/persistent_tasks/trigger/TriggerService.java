@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
@@ -16,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
-import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
 import org.sterl.spring.persistent_tasks.task.TaskService;
@@ -45,13 +43,20 @@ public class TriggerService {
      * and handle any errors etc.
      *
      * @param trigger the {@link TriggerEntity} to run
-     * @return the reference to the updated {@link TriggerEntity}
+     * @return the reference to the found an executed {@link TriggerEntity}
      */
     @Transactional(propagation = Propagation.NEVER)
     public Optional<TriggerEntity> run(@Nullable TriggerEntity trigger) {
         return runTrigger.execute(trigger);
     }
 
+    /**
+     * The main purpose of this method is to simplify testing and run just one trigger.
+     * 
+     * @param triggerKey the key to trigger which should be executed
+     * @param runningOn just any string, could be test for testing, usually the scheduler name
+     * @return the reference to the found an executed {@link TriggerEntity}
+     */
     @Transactional(propagation = Propagation.NEVER)
     public Optional<TriggerEntity> run(TriggerKey triggerKey, String runningOn) {
         final TriggerEntity trigger = lockNextTrigger.lock(triggerKey, runningOn);
@@ -106,11 +111,14 @@ public class TriggerService {
         return readTrigger.hasPendingTriggers();
     }
 
-    @EventListener
-    public void queue(TriggerTaskCommand<? extends Serializable> event) {
-        queueAll(event.triggers());
-    }
-
+    /**
+     * Adds or updates an existing trigger based on its {@link TriggerKey}
+     * 
+     * @param <T> the state type
+     * @param tigger the {@link AddTriggerRequest} to save
+     * @return the saved {@link TriggerEntity}
+     * @throws IllegalStateException if the trigger already exists and is {@link TriggerStatus#RUNNING}
+     */
     public <T extends Serializable> TriggerEntity queue(AddTriggerRequest<T> tigger) {
         taskService.assertIsKnown(tigger.taskId());
         return editTrigger.addTrigger(tigger);

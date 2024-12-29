@@ -17,6 +17,7 @@ import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
+import org.sterl.spring.persistent_tasks.trigger.event.TriggerAddedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerCanceledEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerCompleteEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerFailedEvent;
@@ -90,7 +91,7 @@ public class EditTriggerComponent {
         final Optional<TriggerEntity> existing = triggerRepository.findByKey(result.getKey());
         if (existing.isPresent()) {
             if (existing.get().isRunning()) 
-                throw new IllegalStateException("Cannot update running trigger " + result.getKey());
+                throw new IllegalStateException("Cannot update a running trigger " + result.getKey());
             
             existing.get().setData(result.getData());
             result = existing.get();
@@ -98,6 +99,7 @@ public class EditTriggerComponent {
         } else {
             result = triggerRepository.save(result);
             log.debug("Added trigger={}", result);
+            publisher.publishEvent(new TriggerAddedEvent(result));
         }
         return result;
     }
