@@ -49,8 +49,6 @@ jobs:
           target-folder: javadoc-core # url will be https://<username>.github.io/<repo>/javadoc-core
           project: maven # or gradle
           subdirectories: core
-          javadoc-source-folder: target/site
-          custom-command: mvn site
 
   deploy:
     runs-on: ubuntu-latest
