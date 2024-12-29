@@ -1,11 +1,9 @@
 import { Trigger } from "@src/server-api";
 import { formatDateTime } from "@src/shared/date.util";
-import { useServerObject } from "@src/shared/http-request";
 import TriggerStatusView from "@src/trigger/views/trigger-staus.view";
-import { useEffect } from "react";
-import { Badge, Col, ListGroup, Row, Spinner } from "react-bootstrap";
+import { Col, ListGroup, Row, Spinner } from "react-bootstrap";
 
-const TriggerHistoryListView = ({ triggers }: { triggers: Trigger[] }) => {
+const TriggerHistoryListView = ({ triggers }: { triggers?: Trigger[] }) => {
     if (!triggers) return <Spinner />;
     if (triggers.length === 0) return undefined;
     return (
