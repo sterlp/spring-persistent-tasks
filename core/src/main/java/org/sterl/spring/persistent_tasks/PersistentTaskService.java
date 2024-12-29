@@ -15,7 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
+import org.sterl.spring.persistent_tasks.history.HistoryService;
 import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
@@ -33,6 +35,25 @@ public class PersistentTaskService {
     private final Optional<SchedulerService> schedulerService;
     private final List<SchedulerService> schedulers;
     private final TriggerService triggerService;
+    private final HistoryService historyService;
+    
+    /**
+     * Returns the last known {@link TriggerData} to a given key. First running triggers are checked.
+     * Maybe out of the history event from a retry execution of the very same id.
+     * 
+     * @param the {@link TriggerKey} to look for
+     * @return the {@link TriggerData} to the {@link TriggerKey}
+     */
+    public Optional<TriggerData> getLastTriggerData(TriggerKey key) {
+        final Optional<TriggerEntity> trigger = triggerService.get(key);
+        if (trigger.isEmpty()) {
+            var history = historyService.findLastKnownStatus(key);
+            if (history.isPresent()) return Optional.ofNullable(history.get().getData());
+            return Optional.empty();
+        } else {
+            return Optional.ofNullable(trigger.get().getData());
+        }
+    }
     
     @EventListener
     void queue(TriggerTaskCommand<? extends Serializable> event) {

@@ -171,6 +171,10 @@ public class TriggerService {
 
     public Optional<TriggerEntity> updateRunAt(TriggerKey key, OffsetDateTime time) {
         return readTrigger.get(key).map(t -> {
+            if (t.getData().getStatus() != TriggerStatus.WAITING) {
+                throw new IllegalStateException("Cannot update status of " + key
+                        + " as the current status is: " + t.getData().getStatus());
+            }
             t.getData().setRunAt(time);
             return t;
         });

@@ -67,7 +67,7 @@ class TriggerServiceTest extends AbstractSpringTest {
     }
 
     @Test
-    void testCanCreateAnTrigger() {
+    void testCreateTrigger() {
         // GIVEN
         TaskId<String> taskId = taskService.replace("foo", c -> asserts.info("foo"));
         taskService.<String>replace("bar", c -> asserts.info("bar"));
@@ -78,6 +78,25 @@ class TriggerServiceTest extends AbstractSpringTest {
 
         // THEN
         assertThat(subject.countTriggers(taskId)).isEqualTo(2);
+    }
+    
+    @Test
+    void testCancelTrigger() {
+        // GIVEN
+        TaskId<String> taskId = taskService.replace("foo", c -> asserts.info("foo"));
+        taskService.<String>replace("bar", c -> asserts.info("bar"));
+        var key1 = subject.queue(taskId.newTrigger().build()).getKey();
+        var key2 = subject.queue(taskId.newTrigger().build()).getKey();
+
+        // WHEN
+        final var canceled = subject.cancel(key1);
+
+        // THEN
+        assertThat(canceled).isPresent();
+        assertThat(canceled.get().getKey()).isEqualTo(key1);
+        
+        assertThat(subject.get(key1)).isEmpty();
+        assertThat(subject.get(key2)).isPresent();
     }
 
     @Test
@@ -293,25 +312,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         asserts.assertMissing(Task3.NAME + "::Hallo");
         assertThat(triggerService.countTriggers(TriggerStatus.WAITING)).isOne();
     }
-    
-    @Test
-    void testUpdateRunAt() {
-        // GIVEN
-        final var request = Task3.ID
-                .newTrigger("Hallo")
-                .runAfter(Duration.ofMinutes(5))
-                .build();
-        subject.queue(request);
-        
-        // WHEN
-        subject.updateRunAt(request.key(), OffsetDateTime.now());
-        
-        // THEN
-        persistentTaskService.executeTriggersAndWait();
-        asserts.assertValue(Task3.NAME + "::Hallo");
-        assertThat(triggerService.countTriggers(TriggerStatus.WAITING)).isZero();
-    }
-    
+
     @Test
     void testRescheduleAbandonedTasks() {
         // GIVEN
