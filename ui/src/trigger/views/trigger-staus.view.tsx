@@ -3,8 +3,9 @@ import { Trigger } from "@src/server-api";
 
 interface Props {
     data?: Trigger;
+    pill?: boolean;
 }
-const TriggerStatusView = ({ data }: Props) => {
+const TriggerStatusView = ({ data, pill = false }: Props) => {
     if (!data) return undefined;
 
     if (data.status === "SUCCESS") return <Badge bg="success">Success</Badge>;
@@ -18,7 +19,7 @@ const TriggerStatusView = ({ data }: Props) => {
     if (data.status === "CANCELED")
         return <Badge bg="secondary">Canceled</Badge>;
 
-    return <Badge>{data.status}</Badge>;
+    return <Badge pill={pill}>{data.status}</Badge>;
 };
 
 export default TriggerStatusView;

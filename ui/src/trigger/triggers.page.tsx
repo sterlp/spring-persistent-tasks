@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
-import { useServerObject } from "@src/shared/http-request";
 import { PagedModel, Trigger } from "@src/server-api";
-import { Col, Row, Stack } from "react-bootstrap";
-import HttpErrorView from "@src/shared/http-error.view";
+import HttpErrorView from "@src/shared/view/http-error.view";
+import { useServerObject } from "@src/shared/http-request";
+import PageView from "@src/shared/view/page.view";
+import ReloadButton from "@src/shared/view/reload-button.view";
+import useAutoRefresh from "@src/shared/use-auto-refresh";
 import TaskSelect from "@src/task/view/task-select.view";
-import PageView from "@src/shared/page.view";
-import ReloadButton from "@src/shared/reload-button";
-import TriggerItemView from "./views/trigger-list-item.view";
+import { useState } from "react";
+import { Col, Row, Stack } from "react-bootstrap";
+import TriggerItemView from "../shared/view/trigger-list-item.view";
 
 const TriggersPage = () => {
     const [page, setPage] = useState(0);
@@ -19,11 +20,7 @@ const TriggersPage = () => {
         triggers.doGet("?size=5&page=" + page + "&taskId=" + selectedTask);
     };
 
-    useEffect(doReload, [page, selectedTask]);
-    useEffect(() => {
-        const intervalId = setInterval(doReload, 10000);
-        return () => clearInterval(intervalId);
-    }, [page, selectedTask]);
+    useAutoRefresh(10000, doReload, [page, selectedTask]);
 
     return (
         <Stack gap={1}>

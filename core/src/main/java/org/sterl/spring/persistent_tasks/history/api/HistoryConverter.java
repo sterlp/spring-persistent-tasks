@@ -15,6 +15,7 @@ interface HistoryConverter {
         public Trigger convert(TriggerHistoryLastStateEntity source) {
             var result = ToTrigger.INSTANCE.convert(source);
             result.setId(source.getId());
+            result.setInstanceId(source.getId());
             return result;
         }
     }

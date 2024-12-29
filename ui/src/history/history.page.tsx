@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { useServerObject } from "@src/shared/http-request";
 import { PagedModel, Trigger } from "@src/server-api";
 import { Col, Row, Stack } from "react-bootstrap";
-import HttpErrorView from "@src/shared/http-error.view";
-import PageView from "@src/shared/page.view";
-import ReloadButton from "@src/shared/reload-button";
-import TriggerItemView from "@src/trigger/views/trigger-list-item.view";
+import HttpErrorView from "@src/shared/view/http-error.view";
+import PageView from "@src/shared/view/page.view";
+import ReloadButton from "@src/shared/view/reload-button.view";
+import TriggerItemView from "@src/shared/view/trigger-list-item.view";
 
 const HistoryPage = () => {
     const [page, setPage] = useState(0);

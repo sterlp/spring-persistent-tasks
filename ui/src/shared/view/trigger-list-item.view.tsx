@@ -1,16 +1,27 @@
 import { Accordion, Col, Container, Row } from "react-bootstrap";
-import TriggerStatusView from "./trigger-staus.view";
+import TriggerStatusView from "../../trigger/views/trigger-staus.view";
 import JsonView from "@uiw/react-json-view";
 import { Trigger } from "@src/server-api";
-import LabeledText from "@src/shared/labled-text";
+import LabeledText from "@src/shared/view/labled-text.view";
+import TriggerHistoryListView from "@src/history/view/trigger-history.view";
+import { formatDateTime } from "../date.util";
+import { useServerObject } from "../http-request";
 
 interface TriggerProps {
     trigger: Trigger;
 }
 const TriggerItemView = ({ trigger }: TriggerProps) => {
     // className="d-flex justify-content-between align-items-center"
+    const triggerHistory = useServerObject<Trigger[]>(
+        "/spring-tasks-api/history/instance/" + trigger.instanceId
+    );
+
     return (
-        <Accordion>
+        <Accordion
+            onClick={() => {
+                if (!triggerHistory.data) triggerHistory.doGet();
+            }}
+        >
             <Accordion.Item eventKey={trigger.id + ""}>
                 <Accordion.Header>
                     <Container>
@@ -49,7 +60,10 @@ const TriggerItemView = ({ trigger }: TriggerProps) => {
                             />
                         </Col>
                         <Col>
-                            <LabeledText label="ID" value={trigger.key.id} />
+                            <LabeledText
+                                label="Key Id"
+                                value={trigger.key.id}
+                            />
                         </Col>
                         <Col>
                             <LabeledText
@@ -57,8 +71,13 @@ const TriggerItemView = ({ trigger }: TriggerProps) => {
                                 value={trigger.executionCount}
                             />
                         </Col>
+                        <Col>
+                            <LabeledText
+                                label="Priority"
+                                value={trigger.priority}
+                            />
+                        </Col>
                     </Row>
-                    <hr />
                     <Row>
                         <Col md="6" xl="3">
                             <LabeledText
@@ -82,6 +101,13 @@ const TriggerItemView = ({ trigger }: TriggerProps) => {
                             <LabeledText
                                 label="Duration MS"
                                 value={trigger.runningDurationInMs}
+                            />
+                        </Col>
+                    </Row>
+                    <Row className="mt-2">
+                        <Col>
+                            <TriggerHistoryListView
+                                triggers={triggerHistory.data}
                             />
                         </Col>
                     </Row>
@@ -128,28 +154,4 @@ const ExceptionView = ({ trigger }: TriggerProps) => {
 function isObject(value: any): boolean {
     if (value === undefined || value === null) return false;
     return typeof value === "object" || Array.isArray(value);
-}
-
-function formatDateTime(inputDate?: string | Date): string {
-    if (!inputDate) return "";
-    const date = inputDate instanceof Date ? inputDate : new Date(inputDate);
-
-    const now = new Date();
-    const isToday = date.toDateString() === now.toDateString();
-    const options = {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false, // Use 24-hour format
-    } as Intl.DateTimeFormatOptions;
-
-    if (!isToday) {
-        options.year = "numeric";
-        options.month = "numeric";
-        options.day = "numeric";
-    }
-    return new Intl.DateTimeFormat(
-        navigator.language || "en-US",
-        options
-    ).format(date);
 }

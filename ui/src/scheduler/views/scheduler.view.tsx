@@ -1,8 +1,8 @@
 import { SchedulerEntity } from "@src/server-api";
 import { useServerObject } from "@src/shared/http-request";
-import ReloadButton from "@src/shared/reload-button";
+import ReloadButton from "@src/shared/view/reload-button.view";
+import useAutoRefresh from "@src/shared/use-auto-refresh";
 import { DateTime } from "luxon";
-import { useEffect } from "react";
 import { Card, Col, Form, ProgressBar, Row } from "react-bootstrap";
 
 interface Props {
@@ -13,13 +13,7 @@ const SchedulerStatusView = ({ name }: Props) => {
         `/spring-tasks-api/schedulers/${name}`
     );
 
-    useEffect(status.doGet, [name]);
-
-    // Poll every 10 seconds
-    useEffect(() => {
-        const intervalId = setInterval(status.doGet, 10000);
-        return () => clearInterval(intervalId);
-    }, [name]);
+    useAutoRefresh(10000, status.doGet, [name]);
 
     return (
         <Card>
