@@ -30,7 +30,7 @@ class HistoryServiceTest extends AbstractSpringTest {
         // THEN
         assertThat(t).isPresent();
         // AND
-        runTriggersAndWait();
+        persistentTaskService.executeTriggersAndWait();
         asserts.assertValue(Task3.NAME + "::Hallo");
         // AND
         assertThat(subject.countTriggers(trigger.getKey())).isEqualTo(2);

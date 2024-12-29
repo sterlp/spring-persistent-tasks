@@ -70,10 +70,11 @@ SpringBeanTask<Vehicle> task1(VehicleRepository vehicleRepository) {
 
 ## Queue a task execution
 
-### Direct usage of the TriggerService.
+### Direct usage of the `TriggerService` or `PersistentTaskService`.
 
 ```java
     private final TriggerService triggerService;
+    private final PersistentTaskService persistentTaskService;
 
     public void buildVehicle() {
         // Vehicle has to be Serializable
@@ -82,6 +83,9 @@ SpringBeanTask<Vehicle> task1(VehicleRepository vehicleRepository) {
 
         // queue it
         triggerService.queue(BuildVehicleTask.ID.newUniqueTrigger(v));
+        // will queue it and run it if possible.
+        // if the scheduler service is missing it is same as above
+        persistentTaskService.runOrQueue(BuildVehicleTask.ID.newUniqueTrigger(v));
     }
 ```
 
@@ -112,6 +116,102 @@ SpringBeanTask<Vehicle> task1(VehicleRepository vehicleRepository) {
         final var v = new Vehicle();
         // set any data
         triggerService.queue(BuildVehicleTask.ID.newUniqueTrigger(v));
+    }
+```
+
+### Triggers and Tasks in JUnit Tests
+
+The `SchedulerService` can be disabled for unit testing, which ensures that no trigger will be
+executed automatically.
+
+```yml
+spring:
+    persistent-tasks:
+        scheduler-enabled: false
+```
+
+Now you can run any trigger manually using the `TriggerService`
+
+```java
+    @Autowired
+    private TriggerService triggerService;
+
+    @Test
+    void testRunTriggerDirectly() {
+        // GIVEN
+        // setup your test and create any triggers needed
+
+        // WHEN run any pending triggers
+        triggerService.run(triggerService.queue(trigger));
+
+        // THEN
+        // any asserts you might need
+    }
+
+    @Test
+    void testRunUnknownTriggersCreated() {
+        // GIVEN
+        // setup your test call any method which might create triggers
+
+        // WHEN run any pending triggers
+        triggerService.run(triggerService.lockNextTrigger("test"));
+
+        // THEN
+        // any asserts you might need
+    }
+```
+
+It is also possible to define a test scheduler and use the async way to execute any triggers (without the spring scheduler which would trigger them automatically):
+
+```java
+    @Configuration
+    public static class TestConfig {
+
+        @Primary
+        @SuppressWarnings("resource")
+        SchedulerService schedulerService(TriggerService triggerService, EditSchedulerStatusComponent editSchedulerStatus,
+                TransactionTemplate trx) throws UnknownHostException {
+
+            final var taskExecutor = new TaskExecutorComponent(triggerService, 10);
+            taskExecutor.setMaxShutdownWaitTime(Duration.ofSeconds(0));
+            return new SchedulerService("testScheduler", triggerService, taskExecutor, editSchedulerStatus, trx);
+        }
+    }
+```
+
+Now the `PersistentTaskService` has a method to trigger or to trigger and to wait for the result:
+
+```java
+    @Autowired
+    private PersistentTaskService persistentTaskService;
+
+    @Test
+    void testFoo() {
+        // GIVEN
+        // setup your test and create any triggers needed
+
+        // WHEN run any pending triggers
+        persistentTaskService.executeTriggersAndWait();
+
+        // THEN
+        // any asserts you might need
+    }
+```
+
+During the setup and cleanup it is possible to cancel any pending stuff:
+
+```java
+    @BeforeEach
+    public void beforeEach() throws Exception {
+        triggerService.deleteAll();
+        historyService.deleteAll();
+        schedulerA.setMaxThreads(10);
+        schedulerService.start();
+    }
+
+    @AfterEach
+    public void afterEach() throws Exception {
+        schedulerService.stop();
     }
 ```
 

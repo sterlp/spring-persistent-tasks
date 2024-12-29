@@ -2,6 +2,7 @@ package org.sterl.spring.persistent_tasks.shared;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.springframework.core.convert.converter.Converter;
@@ -14,6 +15,11 @@ public interface ExtendetConvert<S, T>
     
     default T apply(S s) {
         return convert(s);
+    }
+    
+    default Optional<T> convert(Optional<S> s) {
+        if (s.isEmpty()) return Optional.empty();
+        return Optional.of(convert(s.get()));
     }
 
     default List<T> convert(Collection<S> source) {

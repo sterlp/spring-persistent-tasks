@@ -95,7 +95,7 @@ class SchedulerServiceTest extends AbstractSpringTest {
         subject.runOrQueue(triggerRequest);
         
         // WHEN
-        runTriggersAndWait();
+        persistentTaskService.executeTriggersAndWait();
         
         // THEN
         asserts.assertMissing(Task3.NAME + "::Hallo");
@@ -111,7 +111,7 @@ class SchedulerServiceTest extends AbstractSpringTest {
         }
 
         // WHEN
-        runAllTriggersAndWait();
+        persistentTaskService.executeTriggersAndWait();
 
         // THEN
         for (int i = 1; i < 21; ++i) {

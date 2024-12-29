@@ -41,6 +41,9 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
         public static <T extends Serializable> TaskTriggerBuilder<T> newTrigger(String name) {
             return new TaskTriggerBuilder<>(new TaskId<T>(name));
         }
+        public static <T extends Serializable> TaskTriggerBuilder<T> newTrigger(String name, T state) {
+            return new TaskTriggerBuilder<>(new TaskId<T>(name)).state(state);
+        }
         public AddTriggerRequest<T> build() {
             var key = TriggerKey.of(id, taskId);
             return new AddTriggerRequest<>(key, state, when, priority);

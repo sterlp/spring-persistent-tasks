@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -122,12 +121,6 @@ public class TriggerService {
     public <T extends Serializable> TriggerEntity queue(AddTriggerRequest<T> tigger) {
         taskService.assertIsKnown(tigger.taskId());
         return editTrigger.addTrigger(tigger);
-    }
-
-    @NonNull
-    public <T extends Serializable> List<TriggerEntity> queueAll(Collection<AddTriggerRequest<T>> triggers) {
-        triggers.forEach(t -> taskService.assertIsKnown(t.taskId()));
-        return editTrigger.addTriggers(triggers);
     }
 
     /**

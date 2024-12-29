@@ -2,26 +2,22 @@ package org.sterl.spring.persistent_tasks;
 
 import java.net.UnknownHostException;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.api.SpringBeanTask;
 import org.sterl.spring.persistent_tasks.api.TaskId;
-import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
 import org.sterl.spring.persistent_tasks.history.HistoryService;
 import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
@@ -38,8 +34,11 @@ import uk.co.jemos.podam.api.PodamFactory;
 import uk.co.jemos.podam.api.PodamFactoryImpl;
 
 //@ActiveProfiles("mssql")
-@SpringBootTest(classes = SampleApp.class)
+@SpringBootTest(classes = SampleApp.class, webEnvironment = WebEnvironment.RANDOM_PORT)
 public class AbstractSpringTest {
+
+    @Autowired
+    protected PersistentTaskService persistentTaskService;
 
     @Autowired
     @Qualifier("schedulerA")
@@ -50,6 +49,7 @@ public class AbstractSpringTest {
     @Autowired
     @Qualifier("schedulerB")
     protected SchedulerService schedulerB;
+
     @Autowired
     protected TriggerService triggerService;
     @Autowired
@@ -142,32 +142,6 @@ public class AbstractSpringTest {
 
     protected Optional<TriggerEntity> runNextTrigger() {
         return triggerService.run(triggerService.lockNextTrigger("test"));
-    }
-
-    protected List<TriggerKey> runAllTriggersAndWait() {
-        List<TriggerKey> result = new ArrayList<>();
-        while (triggerService.hasPendingTriggers()) {
-            result.addAll(runTriggersAndWait());
-        }
-        return result;
-    }
-
-    protected List<TriggerKey> runTriggersAndWait() {
-        final var triggers = runTriggers();
-
-        return triggers.stream().map(t -> {
-            try {
-                return t.get();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }).toList();
-    }
-
-    protected List<Future<TriggerKey>> runTriggers() {
-        final var triggers = schedulerA.triggerNextTasks();
-        triggers.addAll(schedulerB.triggerNextTasks());
-        return triggers;
     }
 
     @BeforeEach
