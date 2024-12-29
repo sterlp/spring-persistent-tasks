@@ -41,7 +41,7 @@ public class PersistentTaskService {
      * Returns the last known {@link TriggerData} to a given key. First running triggers are checked.
      * Maybe out of the history event from a retry execution of the very same id.
      * 
-     * @param the {@link TriggerKey} to look for
+     * @param key the {@link TriggerKey} to look for
      * @return the {@link TriggerData} to the {@link TriggerKey}
      */
     public Optional<TriggerData> getLastTriggerData(TriggerKey key) {
