@@ -75,6 +75,7 @@ class TriggerResourceTest extends AbstractSpringTest {
                 .runAfter(Duration.ofMinutes(5))
                 .build();
         var triggerKey = triggerService.queue(request).getKey();
+
         triggerService.queue(Task3.ID
                 .newTrigger("Hallo2")
                 .runAfter(Duration.ofMinutes(5))
