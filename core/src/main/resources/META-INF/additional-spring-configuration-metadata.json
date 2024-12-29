@@ -1,32 +1,35 @@
-{"properties": [{
-  "name": "spring.persistent-tasks.poll-rate",
-  "type": "java.lang.Integer",
-  "description": "The rate in which the scheduler should check for new tasks."
-},
 {
-  "name": "spring.persistent-tasks.max-threads",
-  "type": "java.lang.Integer",
-  "description": "The amount of threads to use, use 0 to disable the task processing."
-},
-{
-  "name": "spring.persistent-tasks.task-timeout",
-  "type": "java.time.Duration",
-  "description": "The amount of time a task and scheduler has time to finish a task in seconds, default 5min."
-},
-{
-  "name": "spring.persistent-tasks.poll-task-timeout",
-  "type": "java.lang.Integer",
-  "description": "How often the system should check for abandond tasks in seconds, default every 5min."
-},
-{
-  "name": "spring.persistent-tasks.clean-trigger-rate",
-  "type": "java.lang.Integer",
-  "description": "How often old triggers should be deleted in seconds, default every 2hours."
-},
-{
-  "name": "spring.persistent-tasks.scheduler-enabled",
-  "type": "java.lang.Boolean",
-  "description": "If this node should handle any triggers or not.",
-  "defaultValue": true
+  "properties": [
+    {
+      "name": "spring.persistent-tasks.poll-rate",
+      "type": "java.lang.Integer",
+      "description": "The interval at which the scheduler checks for new tasks in seconds."
+    },
+    {
+      "name": "spring.persistent-tasks.max-threads",
+      "type": "java.lang.Integer",
+      "description": "The number of threads to use; default 10; set to 0 to disable task processing."
+    },
+    {
+      "name": "spring.persistent-tasks.task-timeout",
+      "type": "java.time.Duration",
+      "description": "The maximum time allowed for a task and scheduler to complete a task. Defaults to 5 minutes."
+    },
+    {
+      "name": "spring.persistent-tasks.poll-task-timeout",
+      "type": "java.lang.Integer",
+      "description": "The interval at which the system checks for abandoned tasks, in seconds. Defaults to every 5 minutes."
+    },
+    {
+      "name": "spring.persistent-tasks.history.delete-after",
+      "type": "java.lang.Integer",
+      "description": "The interval at which old triggers are deleted, in seconds. Defaults to every 72 hours."
+    },
+    {
+      "name": "spring.persistent-tasks.scheduler-enabled",
+      "type": "java.lang.Boolean",
+      "description": "Indicates whether this node should handle triggers.",
+      "defaultValue": true
+    }
+  ]
 }
-]}

@@ -10,11 +10,11 @@ Secondary goal is to support [Poor mans Workflow](https://github.com/sterlp/pmw)
 
 # Setup and Run a Task
 
-- [JavaDoc](https://sterlp.github.io/spring-persistent-tasks/javadoc-core/)
+-   [JavaDoc](https://sterlp.github.io/spring-persistent-tasks/javadoc-core/org/sterl/spring/persistent_tasks/PersistentTaskService.html)
 
 ## Maven
 
-- [Maven Central spring-persistent-tasks-core](https://central.sonatype.com/artifact/org.sterl.spring/spring-persistent-tasks-core/versions)
+-   [Maven Central spring-persistent-tasks-core](https://central.sonatype.com/artifact/org.sterl.spring/spring-persistent-tasks-core/versions)
 
 ```xml
 <dependency>
@@ -32,9 +32,10 @@ Secondary goal is to support [Poor mans Workflow](https://github.com/sterlp/pmw)
 public class ExampleApplication {
 ```
 
-## Setup a spring persitent task
+## Setup a spring persistent task
 
 ### As a class
+
 ```java
 @Component(BuildVehicleTask.NAME)
 @RequiredArgsConstructor
@@ -43,7 +44,7 @@ public class BuildVehicleTask implements SpringBeanTask<Vehicle> {
 
     private static final String NAME = "buildVehicleTask";
     public static final TaskId<Vehicle> ID = new TaskId<>(NAME);
-    
+
     private final VehicleRepository vehicleRepository;
 
     @Transactional(timeout = 5)
@@ -58,7 +59,7 @@ public class BuildVehicleTask implements SpringBeanTask<Vehicle> {
 
 ### As a closure
 
-Note: this example has no aspects as above the spring *@Transactional*
+Note: this example has no aspects as above the spring _@Transactional_
 
 ```java
 @Bean
@@ -85,6 +86,7 @@ SpringBeanTask<Vehicle> task1(VehicleRepository vehicleRepository) {
 ```
 
 ### Build Trigger
+
 ```java
     private final TriggerService triggerService;
 
@@ -113,18 +115,33 @@ SpringBeanTask<Vehicle> task1(VehicleRepository vehicleRepository) {
     }
 ```
 
+### Spring configuration options
+
+| Property                                       | Type                 | Description                                                                                           | Default Value |
+| ---------------------------------------------- | -------------------- | ----------------------------------------------------------------------------------------------------- | ------------- |
+| `spring.persistent-tasks.poll-rate`            | `java.lang.Integer`  | The interval at which the scheduler checks for new tasks, in seconds.                                 | -             |
+| `spring.persistent-tasks.max-threads`          | `java.lang.Integer`  | The number of threads to use; default is 10; set to 0 to disable task processing.                     | `10`          |
+| `spring.persistent-tasks.task-timeout`         | `java.time.Duration` | The maximum time allowed for a task and scheduler to complete a task. Defaults to 5 minutes.          | -             |
+| `spring.persistent-tasks.poll-task-timeout`    | `java.lang.Integer`  | The interval at which the system checks for abandoned tasks, in seconds. Defaults to every 5 minutes. | -             |
+| `spring.persistent-tasks.history.delete-after` | `java.lang.Integer`  | The interval at which old triggers are deleted, in seconds. Defaults to every 72 hours.               | -             |
+| `spring.persistent-tasks.scheduler-enabled`    | `java.lang.Boolean`  | Indicates whether this node should handle triggers.                                                   | `true`        |
+
 # Setup DB with Liquibase
 
 Liquibase is supported. Either import all or just the required versions.
 
 ## Maven
-- [Maven Central spring-persistent-tasks-db](https://central.sonatype.com/artifact/org.sterl.spring/spring-persistent-tasks-db/versions)
+
+-   [Maven Central spring-persistent-tasks-db](https://central.sonatype.com/artifact/org.sterl.spring/spring-persistent-tasks-db/versions)
 
 ## Option 1: Just include the master file
+
 ```xml
 <include file="spring-persistent-tasks/db.changelog-master.xml" />
 ```
+
 ## Option 2: import changesets on by one
+
 ```xml
 <include file="spring-persistent-tasks/db/pt-changelog-v1.xml" />
 ```
@@ -133,7 +150,7 @@ Liquibase is supported. Either import all or just the required versions.
 
 ## Maven
 
-- [Maven Central spring-persistent-tasks-ui](https://central.sonatype.com/artifact/org.sterl.spring/spring-persistent-tasks-ui/versions)
+-   [Maven Central spring-persistent-tasks-ui](https://central.sonatype.com/artifact/org.sterl.spring/spring-persistent-tasks-ui/versions)
 
 ```xml
 <dependency>
@@ -154,19 +171,22 @@ public class ExampleApplication {
 
 ## Open the UI
 
-- http://localhost:8080/task-ui
+-   http://localhost:8080/task-ui
 
 ## Schedulers
+
 ![Schedulers](screenshots/schedulers-screen.png)
 
 ## Triggers
+
 ![Triggers](screenshots/triggers-screen.png)
 
 ## History
+
 ![History](screenshots/history-screen.png)
 
 # Alternatives
 
-- quartz
-- db-scheduler
-- jobrunr
+-   quartz
+-   db-scheduler
+-   jobrunr
