@@ -117,14 +117,14 @@ SpringBeanTask<Vehicle> task1(VehicleRepository vehicleRepository) {
 
 ### Spring configuration options
 
-| Property                                       | Type                 | Description                                                              | Default Value |
-| ---------------------------------------------- | -------------------- | ------------------------------------------------------------------------ | ------------- |
-| `spring.persistent-tasks.poll-rate`            | `java.lang.Integer`  | The interval at which the scheduler checks for new tasks, in seconds.    | -             |
-| `spring.persistent-tasks.max-threads`          | `java.lang.Integer`  | The number of threads to use; set to 0 to disable task processing.       | `10`          |
-| `spring.persistent-tasks.task-timeout`         | `java.time.Duration` | The maximum time allowed for a task and scheduler to complete a task.    | `5 minutes`   |
-| `spring.persistent-tasks.poll-task-timeout`    | `java.lang.Integer`  | The interval at which the system checks for abandoned tasks, in seconds. | `5 minutes`   |
-| `spring.persistent-tasks.history.delete-after` | `java.lang.Integer`  | The interval at which old triggers are deleted, in seconds.              | `72 hours`    |
-| `spring.persistent-tasks.scheduler-enabled`    | `java.lang.Boolean`  | Indicates whether this node should handle triggers.                      | `true`        |
+| Property                                       | Type                 | Description                                                              | Default Value      |
+| ---------------------------------------------- | -------------------- | ------------------------------------------------------------------------ | ------------------ |
+| `spring.persistent-tasks.poll-rate`            | `java.lang.Integer`  | The interval at which the scheduler checks for new tasks, in seconds.    | -                  |
+| `spring.persistent-tasks.max-threads`          | `java.lang.Integer`  | The number of threads to use; set to 0 to disable task processing.       | `10`               |
+| `spring.persistent-tasks.task-timeout`         | `java.time.Duration` | The maximum time allowed for a task and scheduler to complete a task.    | `PT5M` (5 minutes) |
+| `spring.persistent-tasks.poll-task-timeout`    | `java.lang.Integer`  | The interval at which the system checks for abandoned tasks, in seconds. | `300` (5 minutes)  |
+| `spring.persistent-tasks.history.delete-after` | `java.time.Duration` | The interval at which old triggers are deleted, in duration format.      | `PT72H` (72 hours) |
+| `spring.persistent-tasks.scheduler-enabled`    | `java.lang.Boolean`  | Indicates whether this node should handle triggers.                      | `true`             |
 
 # Setup DB with Liquibase
 

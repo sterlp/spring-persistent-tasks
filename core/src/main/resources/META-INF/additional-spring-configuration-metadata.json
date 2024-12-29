@@ -22,7 +22,7 @@
     },
     {
       "name": "spring.persistent-tasks.history.delete-after",
-      "type": "java.lang.Integer",
+      "type": "java.lang.Duration",
       "description": "The interval at which old triggers are deleted, in seconds. Defaults to every 72 hours."
     },
     {
