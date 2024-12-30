@@ -1,5 +1,6 @@
 package org.sterl.spring.persistent_tasks.shared.converter;
 
+import org.springframework.lang.NonNull;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.shared.ExtendetConvert;
 import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
@@ -10,8 +11,9 @@ public enum ToTrigger implements ExtendetConvert<HasTriggerData, Trigger> {
 
     private final static StateSerializer SERIALIZER = new StateSerializer();
 
+    @NonNull
     @Override
-    public Trigger convert(HasTriggerData hasData) {
+    public Trigger convert(@NonNull HasTriggerData hasData) {
         final var source = hasData.getData();
         final var result = new Trigger();
         result.setKey(source.getKey());

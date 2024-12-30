@@ -26,9 +26,9 @@ import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
 class TriggerServiceTest extends AbstractSpringTest {
 
     @Autowired
-    private TriggerRepository triggerRepository;
-    @Autowired
     private TriggerService subject;
+    @Autowired
+    private TriggerRepository triggerRepository;
     @Autowired
     private TaskRepository taskRepository;
 
@@ -67,7 +67,7 @@ class TriggerServiceTest extends AbstractSpringTest {
     }
 
     @Test
-    void testCanCreateAnTrigger() {
+    void testCreateTrigger() {
         // GIVEN
         TaskId<String> taskId = taskService.replace("foo", c -> asserts.info("foo"));
         taskService.<String>replace("bar", c -> asserts.info("bar"));
@@ -78,6 +78,25 @@ class TriggerServiceTest extends AbstractSpringTest {
 
         // THEN
         assertThat(subject.countTriggers(taskId)).isEqualTo(2);
+    }
+    
+    @Test
+    void testCancelTrigger() {
+        // GIVEN
+        TaskId<String> taskId = taskService.replace("foo", c -> asserts.info("foo"));
+        taskService.<String>replace("bar", c -> asserts.info("bar"));
+        var key1 = subject.queue(taskId.newTrigger().build()).getKey();
+        var key2 = subject.queue(taskId.newTrigger().build()).getKey();
+
+        // WHEN
+        final var canceled = subject.cancel(key1);
+
+        // THEN
+        assertThat(canceled).isPresent();
+        assertThat(canceled.get().getKey()).isEqualTo(key1);
+        
+        assertThat(subject.get(key1)).isEmpty();
+        assertThat(subject.get(key2)).isPresent();
     }
 
     @Test
@@ -138,6 +157,23 @@ class TriggerServiceTest extends AbstractSpringTest {
         assertThat(e.get().getData().getEnd()).isNotNull();
         assertThat(e.get().getData().getExecutionCount()).isOne();
     }
+    
+    @Test
+    void testFailedIsOnRetry() throws Exception {
+        // GIVEN
+        TaskId<String> task = taskService.<String>replace("foo", c -> {
+            throw new IllegalArgumentException("Nope! " + c);
+        });
+
+        // WHEN
+        var trigger = subject.queue(task.newTrigger().state("Hallo :-)").build());
+        subject.run(subject.lockNextTrigger("test"));
+
+        // THEN
+        trigger = triggerService.get(trigger.getKey()).get();
+        assertThat(trigger.getData().getRunAt()).isAfter(OffsetDateTime.now());
+        assertThat(trigger.getData().getStatus()).isEqualTo(TriggerStatus.WAITING);
+    }
 
     @Test
     void testFailedSavingException() throws Exception {
@@ -181,23 +217,26 @@ class TriggerServiceTest extends AbstractSpringTest {
     void testTriggerPriority() throws Exception {
         // GIVEN
         TaskId<String> task = taskService.<String>replace("aha", s -> asserts.info(s));
-        var triggers = triggerService.queueAll(Arrays.asList(
+        var triggers = Arrays.asList(
                 task.newTrigger().state("mid").priority(5).build(), //
                 task.newTrigger().state("low").priority(4).build(), //
-                task.newTrigger().state("high").priority(6).build())
-            )
-                .stream()
-                .map(TriggerEntity::getKey)
-                .toList();
+                task.newTrigger().state("high").priority(6).build() //
+            );
+        
+        var keys = triggers.stream() //
+            .map(t -> subject.queue(t)) //
+            .map(TriggerEntity::getKey) //
+            .toList();
+
         // WHEN
         runNextTrigger();
         runNextTrigger();
         runNextTrigger();
 
         // THEN
-        assertThat(historyService.findLastKnownStatus(triggers.get(0)).get().getData().getPriority()).isEqualTo(5);
-        assertThat(historyService.findLastKnownStatus(triggers.get(1)).get().getData().getPriority()).isEqualTo(4);
-        assertThat(historyService.findLastKnownStatus(triggers.get(2)).get().getData().getPriority()).isEqualTo(6);
+        assertThat(historyService.findLastKnownStatus(keys.get(0)).get().getData().getPriority()).isEqualTo(5);
+        assertThat(historyService.findLastKnownStatus(keys.get(1)).get().getData().getPriority()).isEqualTo(4);
+        assertThat(historyService.findLastKnownStatus(keys.get(2)).get().getData().getPriority()).isEqualTo(6);
         asserts.awaitOrdered("high", "mid", "low");
         assertThat(historyService.countTriggers(TriggerStatus.SUCCESS)).isEqualTo(3);
     }
@@ -263,7 +302,7 @@ class TriggerServiceTest extends AbstractSpringTest {
             }
             
             executor.invokeAll(lockInvocations);
-            runAllTriggersAndWait();
+            persistentTaskService.executeTriggersAndWait();
 
             // THEN
             for (int i = 1; i <= 100; ++i) {
@@ -284,31 +323,13 @@ class TriggerServiceTest extends AbstractSpringTest {
         subject.queue(triggerRequest);
         
         // WHEN
-        runTriggersAndWait();
+        persistentTaskService.executeTriggersAndWait();
         
         // THEN
         asserts.assertMissing(Task3.NAME + "::Hallo");
         assertThat(triggerService.countTriggers(TriggerStatus.WAITING)).isOne();
     }
-    
-    @Test
-    void testUpdateRunAt() {
-        // GIVEN
-        final var request = Task3.ID
-                .newTrigger("Hallo")
-                .runAfter(Duration.ofMinutes(5))
-                .build();
-        subject.queue(request);
-        
-        // WHEN
-        subject.updateRunAt(request.key(), OffsetDateTime.now());
-        
-        // THEN
-        runTriggersAndWait();
-        asserts.assertValue(Task3.NAME + "::Hallo");
-        assertThat(triggerService.countTriggers(TriggerStatus.WAITING)).isZero();
-    }
-    
+
     @Test
     void testRescheduleAbandonedTasks() {
         // GIVEN

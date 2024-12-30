@@ -4,8 +4,8 @@ import java.time.OffsetDateTime;
 
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryLastStateEntity;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryDetailEntity;
+import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryLastStateEntity;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryDetailRepository;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryLastStateRepository;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalCompontant;
@@ -26,11 +26,12 @@ public class TriggerHistoryComponent {
         state.setId(e.getId());
         state.setData(e.getData().toBuilder().build());
         triggerHistoryDetailRepository.save(state);
-        
-        
+
         var detail = new TriggerHistoryDetailEntity();
         detail.setInstanceId(e.getId());
-        detail.setData(e.getData().toBuilder().build());
+        detail.setData(e.getData().toBuilder()
+                .state(null)
+                .build());
         detail.getData().setCreatedTime(OffsetDateTime.now());
         triggerHistoryLastStateRepository.save(detail);
     }

@@ -82,6 +82,7 @@ public class EditTriggerComponent {
                 .map(t -> {
                     t.cancel();
                     publisher.publishEvent(new TriggerCanceledEvent(t));
+                    triggerRepository.delete(t);
                     return t;
                 });
     }

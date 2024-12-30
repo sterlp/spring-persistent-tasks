@@ -12,10 +12,12 @@ import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Own transaction management, as this is the whole sense of this component
  */
+@Slf4j
 @Component
 @Transactional(timeout = 5)
 @RequiredArgsConstructor
@@ -28,7 +30,8 @@ public class LockNextTriggerComponent {
                 timeDueAt, TriggerStatus.WAITING, PageRequest.of(0, count));
 
         tasks.forEach(t -> t.runOn(runningOn));
-
+        log.debug("loadNext triggers for={} found={} triggers with dueAt={}",
+                runningOn, tasks.size(), timeDueAt);
         return tasks;
     }
 

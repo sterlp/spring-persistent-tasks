@@ -1,13 +1,11 @@
 package org.sterl.spring.example_app;
 
 import java.net.UnknownHostException;
-import java.time.Duration;
 
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -44,6 +42,7 @@ public class ExampleApplication {
               .build();
     }
 
+    // just one more for demonstration
     @Bean(name = "schedulerB", initMethod = "start", destroyMethod = "stop")
     @SuppressWarnings("resource")
     SchedulerService schedulerB(

@@ -7,11 +7,17 @@ import org.springframework.lang.Nullable;
 @FunctionalInterface
 public interface RetryStrategy {
     RetryStrategy NO_RETRY = (c, e) -> false;
-    RetryStrategy THREE_RETRIES = (c, e) -> c < 3;
+    /**
+     * One initial execution and after that we will try it 3 more times. Overall 4 executions.
+     */
+    RetryStrategy THREE_RETRIES = (c, e) -> c < 4;
+    /**
+     * One initial execution and after that we will try it 3 more times. Overall 4 executions.
+     */
     RetryStrategy THREE_RETRIES_IMMEDIATELY = new RetryStrategy() {
         @Override
         public boolean shouldRetry(int executionCount, Exception error) {
-            return executionCount < 3;
+            return executionCount < 4;
         }
         @Override
         public OffsetDateTime retryAt(int executionCount, Exception error) {

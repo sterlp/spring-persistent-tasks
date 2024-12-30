@@ -1,4 +1,4 @@
-import { Accordion, Col, Container, Row } from "react-bootstrap";
+import { Accordion, Button, Col, Container, Row } from "react-bootstrap";
 import TriggerStatusView from "../../trigger/views/trigger-staus.view";
 import JsonView from "@uiw/react-json-view";
 import { Trigger } from "@src/server-api";
@@ -9,11 +9,20 @@ import { useServerObject } from "../http-request";
 
 interface TriggerProps {
     trigger: Trigger;
+    afterCancel?: () => void;
 }
-const TriggerItemView = ({ trigger }: TriggerProps) => {
+
+const TriggerItemView = ({ trigger, afterCancel }: TriggerProps) => {
     // className="d-flex justify-content-between align-items-center"
     const triggerHistory = useServerObject<Trigger[]>(
         "/spring-tasks-api/history/instance/" + trigger.instanceId
+    );
+
+    const cancelTrigger = useServerObject<Trigger[]>(
+        "/spring-tasks-api/triggers/" +
+            trigger.key.taskName +
+            "/" +
+            trigger.key.id
     );
 
     return (
@@ -52,6 +61,23 @@ const TriggerItemView = ({ trigger }: TriggerProps) => {
                     </Container>
                 </Accordion.Header>
                 <Accordion.Body>
+                    {afterCancel && trigger.status === "WAITING" ? (
+                        <Row>
+                            <Col>
+                                <Button
+                                    variant="danger"
+                                    onClick={() => {
+                                        cancelTrigger
+                                            .doCall("", "DELETE")
+                                            .then(afterCancel)
+                                            .catch((e) => console.info(e));
+                                    }}
+                                >
+                                    Cancel Trigger
+                                </Button>
+                            </Col>
+                        </Row>
+                    ) : undefined}
                     <Row>
                         <Col>
                             <LabeledText

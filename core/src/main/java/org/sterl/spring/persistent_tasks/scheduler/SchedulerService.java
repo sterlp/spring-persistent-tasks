@@ -12,11 +12,11 @@ import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
-import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
 import org.sterl.spring.persistent_tasks.scheduler.component.TaskExecutorComponent;
 import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
@@ -119,30 +119,29 @@ public class SchedulerService {
     /**
      * Runs the given trigger if a free threads are available
      * and the runAt time is not in the future.
+     * @return the reference to the {@link Future} with the key, if no threads are available it is resolved
      */
-    public <T extends Serializable> Optional<Future<TriggerKey>> runOrQueue(
+    public <T extends Serializable> Future<TriggerKey> runOrQueue(
             AddTriggerRequest<T> triggerRequest) {
-        return trx.execute(t -> {
-            Optional<Future<TriggerKey>> result = Optional.empty();
+        var runningTrigger = trx.execute(t -> {
             var trigger = triggerService.queue(triggerRequest);
             // exit now if this trigger is for the future ...
-            if (trigger.shouldRunInFuture()) return Optional.of(
-                    CompletableFuture.completedFuture(trigger.getKey()));
+            if (trigger.shouldRunInFuture()) return trigger;
             
             if (taskExecutor.getFreeThreads() > 0) {
                 trigger = triggerService.markTriggersAsRunning(trigger, name);
-                result = Optional.of(taskExecutor.submit(trigger));
-                pingRegistry();
             } else {
                 log.debug("Currently not enough free thread available {} of {} in use. Task {} queued.", 
                         taskExecutor.getFreeThreads(), taskExecutor.getMaxThreads(), trigger.getKey());
             }
-            return result;
+            return trigger;
         });
-    }
-
-    public <T extends Serializable> TriggerEntity queue(TaskId<T> taskId, T state) {
-        return triggerService.queue(taskId.newUniqueTrigger(state));
+        Future<TriggerKey> result = CompletableFuture.completedFuture(runningTrigger.getKey());
+        if (runningTrigger.isRunning()) {
+            result = taskExecutor.submit(runningTrigger);
+            pingRegistry();
+        }
+        return result;
     }
 
     public SchedulerEntity getStatus() {
@@ -162,5 +161,17 @@ public class SchedulerService {
         log.debug("({}) - {} trigger(s) are running on {} schedulers", 
                 running, runningKeys, schedulers);
         return triggerService.rescheduleAbandonedTasks(timeout);
+    }
+
+    /**
+     * Adds or updates an existing trigger based on its {@link TriggerKey}
+     * 
+     * @param <T> the state type
+     * @param trigger the {@link AddTriggerRequest} to save
+     * @return the saved {@link TriggerEntity}
+     * @throws IllegalStateException if the trigger already exists and is {@link TriggerStatus#RUNNING}
+     */
+    public <T extends Serializable> TriggerEntity queue(AddTriggerRequest<T> trigger) {
+        return triggerService.queue(trigger);
     }
 }

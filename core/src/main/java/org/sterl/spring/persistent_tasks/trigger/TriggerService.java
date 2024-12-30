@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -124,12 +123,6 @@ public class TriggerService {
         return editTrigger.addTrigger(tigger);
     }
 
-    @NonNull
-    public <T extends Serializable> List<TriggerEntity> queueAll(Collection<AddTriggerRequest<T>> triggers) {
-        triggers.forEach(t -> taskService.assertIsKnown(t.taskId()));
-        return editTrigger.addTriggers(triggers);
-    }
-
     /**
      * If you changed your mind, cancel the task
      */
@@ -178,6 +171,10 @@ public class TriggerService {
 
     public Optional<TriggerEntity> updateRunAt(TriggerKey key, OffsetDateTime time) {
         return readTrigger.get(key).map(t -> {
+            if (t.getData().getStatus() != TriggerStatus.WAITING) {
+                throw new IllegalStateException("Cannot update status of " + key
+                        + " as the current status is: " + t.getData().getStatus());
+            }
             t.getData().setRunAt(time);
             return t;
         });

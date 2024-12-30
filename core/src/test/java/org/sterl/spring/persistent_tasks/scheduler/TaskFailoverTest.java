@@ -36,14 +36,14 @@ class TaskFailoverTest extends AbstractSpringTest {
         schedulerB.setMaxThreads(1);
         var willTimeout = triggerService.queue(slowTaskId.newTrigger(20000L).build());
 
-        var running = runTriggers();
+        var running = persistentTaskService.executeTriggers();
         assertThat(running.size()).isEqualTo(1);
         // AND we wait a bit
         Thread.sleep(250);
         final var timeout = OffsetDateTime.now();
 
         triggerService.queue(slowTaskId.newTrigger(20000L).build());
-        running = runTriggers();
+        running = persistentTaskService.executeTriggers();
         assertThat(running.size()).isEqualTo(1);
         // AND
         assertThat(triggerService.countTriggers(TriggerStatus.RUNNING))

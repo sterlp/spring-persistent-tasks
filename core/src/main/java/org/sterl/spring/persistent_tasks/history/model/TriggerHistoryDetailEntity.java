@@ -21,6 +21,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+/**
+ * Just a copy of the trigger status but without any data/state.
+ */
 @Entity
 @Table(name = "PT_TRIGGER_HISTORY_DETAILS", indexes = {
         @Index(name = "IDX_PT_TRIGGERS_HISTORY_INSTANCE_ID", columnList = "instance_id"),
