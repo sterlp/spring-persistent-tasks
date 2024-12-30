@@ -15,8 +15,8 @@ import org.springframework.web.client.RestTemplate;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
 import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.api.Trigger;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 
 class TriggerResourceTest extends AbstractSpringTest {
 

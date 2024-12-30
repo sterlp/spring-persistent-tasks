@@ -2,8 +2,8 @@ package org.sterl.spring.persistent_tasks.history.api;
 
 import org.springframework.lang.NonNull;
 import org.sterl.spring.persistent_tasks.api.Trigger;
-import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryLastStateEntity;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryDetailEntity;
+import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryLastStateEntity;
 import org.sterl.spring.persistent_tasks.shared.ExtendetConvert;
 import org.sterl.spring.persistent_tasks.shared.converter.ToTrigger;
 

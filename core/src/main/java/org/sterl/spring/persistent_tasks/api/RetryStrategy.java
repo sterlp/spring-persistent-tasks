@@ -1,7 +1,6 @@
 package org.sterl.spring.persistent_tasks.api;
 
 import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
 
 import org.springframework.lang.Nullable;
 
@@ -22,7 +21,7 @@ public interface RetryStrategy {
         }
         @Override
         public OffsetDateTime retryAt(int executionCount, Exception error) {
-            return OffsetDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+            return OffsetDateTime.now();
         }
     };
 
@@ -41,6 +40,6 @@ public interface RetryStrategy {
      * @param error the exception, <code>null</code> on a timeout
      */
     default OffsetDateTime retryAt(int executionCount, @Nullable Exception error) {
-        return OffsetDateTime.now().plusMinutes(1 + executionCount).truncatedTo(ChronoUnit.SECONDS);
+        return OffsetDateTime.now().plusMinutes(1 + executionCount);
     }
 }
