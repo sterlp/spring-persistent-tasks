@@ -33,7 +33,6 @@ const HistoryPage = () => {
                         <PageView
                             onPage={(p) => setPage(p)}
                             data={triggers.data}
-                            className="mt-2 mb-2"
                         />
                     </Col>
                     <Col>

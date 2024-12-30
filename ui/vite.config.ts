@@ -15,6 +15,11 @@ export default defineConfig({
             '@src': path.resolve(__dirname, './src'),
         }
     },
+    test: {
+        environment: 'jsdom',
+        globals: true,
+        setupFiles: './test/setup.ts', // Optional: Set up custom global mocks or utilities
+    },
     server: {
         proxy: {
             '/api': {

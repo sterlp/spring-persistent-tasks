@@ -61,9 +61,10 @@ const TriggerItemView = ({ trigger, afterCancel }: TriggerProps) => {
                     </Container>
                 </Accordion.Header>
                 <Accordion.Body>
-                    {afterCancel && trigger.status === "WAITING" ? (
-                        <Row>
-                            <Col>
+                    {trigger.status === "WAITING" ? (
+                        <div className="d-flex gap-2 mb-2">
+                            <Button>Run now</Button>
+                            {afterCancel ? (
                                 <Button
                                     variant="danger"
                                     onClick={() => {
@@ -75,8 +76,8 @@ const TriggerItemView = ({ trigger, afterCancel }: TriggerProps) => {
                                 >
                                     Cancel Trigger
                                 </Button>
-                            </Col>
-                        </Row>
+                            ) : undefined}
+                        </div>
                     ) : undefined}
                     <Row>
                         <Col>
