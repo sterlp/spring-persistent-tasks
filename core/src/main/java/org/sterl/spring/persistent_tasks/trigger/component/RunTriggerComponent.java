@@ -59,10 +59,18 @@ public class RunTriggerComponent {
                 task.retryStrategy().shouldRetry(trigger.getData().getExecutionCount(), e)) {
 
             final OffsetDateTime retryAt = task.retryStrategy().retryAt(trigger.getData().getExecutionCount(), e);
-            log.warn("{} failed, retry will be done at={}!",
-                    trigger.getKey(), retryAt, e);
 
             result = editTrigger.retryTrigger(trigger.getKey(), retryAt);
+            if (result.isPresent()) {
+                log.warn("{} failed, retry will be done at={} status={}!",
+                        trigger.getKey(), 
+                        result.get().getData().getRunAt(),
+                        result.get().getData().getStatus(),
+                        e);
+            } else {
+                log.error("Trigger with key={} not found and may be at a wrong state!",
+                        trigger.getKey(), e);
+            }
         } else {
             log.error("{} failed, no more retries! {}", trigger.getKey(), 
                     e == null ? "No exception given." : e.getMessage());

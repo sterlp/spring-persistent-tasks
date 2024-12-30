@@ -36,11 +36,11 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
         persistentTaskService.executeTriggersAndWait();
 
         // THEN
-        assertThat(asserts.getCount("hallo")).isEqualTo(3);
+        assertThat(asserts.getCount("hallo")).isEqualTo(4);
         assertThat(triggerService.countTriggers()).isZero();
         // AND
         var trigger = historyService.findStatus(runTrigger.getId()).get();
-        assertThat(trigger.getData().getExecutionCount()).isEqualTo(3);
+        assertThat(trigger.getData().getExecutionCount()).isEqualTo(4);
         assertThat(trigger.getData().getExceptionName()).isEqualTo(RuntimeException.class.getName());
         assertThat(trigger.getData().getLastException()).contains("NOPE!");
     }

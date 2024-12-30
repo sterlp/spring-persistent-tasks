@@ -157,6 +157,23 @@ class TriggerServiceTest extends AbstractSpringTest {
         assertThat(e.get().getData().getEnd()).isNotNull();
         assertThat(e.get().getData().getExecutionCount()).isOne();
     }
+    
+    @Test
+    void testFailedIsOnRetry() throws Exception {
+        // GIVEN
+        TaskId<String> task = taskService.<String>replace("foo", c -> {
+            throw new IllegalArgumentException("Nope! " + c);
+        });
+
+        // WHEN
+        var trigger = subject.queue(task.newTrigger().state("Hallo :-)").build());
+        subject.run(subject.lockNextTrigger("test"));
+
+        // THEN
+        trigger = triggerService.get(trigger.getKey()).get();
+        assertThat(trigger.getData().getRunAt()).isAfter(OffsetDateTime.now());
+        assertThat(trigger.getData().getStatus()).isEqualTo(TriggerStatus.WAITING);
+    }
 
     @Test
     void testFailedSavingException() throws Exception {
