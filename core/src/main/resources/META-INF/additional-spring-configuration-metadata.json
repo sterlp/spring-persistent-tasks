@@ -21,15 +21,20 @@
       "description": "The interval at which the system checks for abandoned tasks, in seconds. Defaults to every 5 minutes."
     },
     {
-      "name": "spring.persistent-tasks.history.delete-after",
-      "type": "java.lang.Duration",
-      "description": "The interval at which old triggers are deleted, in seconds. Defaults to every 72 hours."
-    },
-    {
       "name": "spring.persistent-tasks.scheduler-enabled",
       "type": "java.lang.Boolean",
       "description": "Indicates whether this node should handle triggers.",
       "defaultValue": true
+    },
+    {
+      "name": "spring.persistent-tasks.history.delete-rate",
+      "type": "java.lang.Integer",
+      "description": "The interval at which old triggers are deleted, in hours. Default 24h."
+    },
+    {
+      "name": "spring.persistent-tasks.history.delete-after",
+      "type": "java.lang.Duration",
+      "description": "The max age for a trigger in the hstory. Default is PT72H, 30 days."
     }
   ]
 }
