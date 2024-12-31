@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.1.1
+
+- Run now button in the UI
+- Offline Schedulers are deleted from the registry
+
 ## v1.1.0 - (2024-12-30)
 
 - Showing trigger history entries
