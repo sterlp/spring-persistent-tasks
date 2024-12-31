@@ -56,13 +56,13 @@ jobs:
 
       - name: Wait for MSSQL
         run: |
-          for i in {1..30}; do
+          for i in {1..10}; do
+            sleep $((11 - i))
             if echo "SELECT 1" | /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P veryStrong123 &> /dev/null; then
               echo "MSSQL is ready!"
               break
             fi
             echo "Waiting for MSSQL to be ready..."
-            sleep 2
           done
 
       - name: Run Core Module Tests
@@ -97,7 +97,7 @@ jobs:
           target-folder: javadoc-core # url will be https://<username>.github.io/<repo>/javadoc-core
           project: maven # or gradle
 
-  deploy:
+  maven-deploy:
     runs-on: ubuntu-latest
     needs: [build]
     if: ${{ github.ref == 'refs/heads/main' }}
