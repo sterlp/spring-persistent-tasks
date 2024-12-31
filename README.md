@@ -8,6 +8,21 @@ Focus is the usage with spring boot and JPA.
 
 Secondary goal is to support [Poor mans Workflow](https://github.com/sterlp/pmw)
 
+# DBs for storage
+
+## Tested in the pipeline
+
+- H2
+- azure-sql-edge (MSSQL)
+
+## Supported in theory
+
+- MSSQL
+- mySQL
+- PostgreSQL
+- mySQL
+- MariaDB
+
 # Setup and Run a Task
 
 -   [JavaDoc](https://sterlp.github.io/spring-persistent-tasks/javadoc-core/org/sterl/spring/persistent_tasks/PersistentTaskService.html)

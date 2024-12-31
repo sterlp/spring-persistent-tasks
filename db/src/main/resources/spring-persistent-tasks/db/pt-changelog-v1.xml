@@ -8,7 +8,7 @@
                         http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <!-- Define properties for database-specific types -->
-    <property name="offsetdatetime.type" value="datetimeoffset(2)" dbms="mssql" />
+    <property name="offsetdatetime.type" value="datetimeoffset(6)" dbms="mssql" />
     <property name="offsetdatetime.type" value="TIMESTAMPTZ" dbms="postgresql" />
     <property name="offsetdatetime.type" value="TIMESTAMP WITH TIME ZONE" dbms="h2" />
     <property name="offsetdatetime.type" value="DATETIME(6)" dbms="mysql,mariadb" />
