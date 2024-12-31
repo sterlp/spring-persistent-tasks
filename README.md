@@ -18,7 +18,6 @@ Secondary goal is to support [Poor mans Workflow](https://github.com/sterlp/pmw)
 ## Supported in theory
 
 - MSSQL
-- mySQL
 - PostgreSQL
 - mySQL
 - MariaDB
