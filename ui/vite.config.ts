@@ -18,7 +18,8 @@ export default defineConfig({
     test: {
         environment: 'jsdom',
         globals: true,
-        setupFiles: './test/setup.ts', // Optional: Set up custom global mocks or utilities
+        setupFiles: './test/setup.ts',
+        css: true
     },
     server: {
         proxy: {

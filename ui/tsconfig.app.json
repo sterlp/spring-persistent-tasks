@@ -28,5 +28,8 @@
       "@src/*": ["./src/*"],
     }
   },
-  "include": ["src", "./src/test/setup.ts", "test/shared/view/page.view.test.tsx"]
+  "include": [
+    "src", 
+    "test"
+  ]
 }
