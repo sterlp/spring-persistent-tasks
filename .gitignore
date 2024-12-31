@@ -13,6 +13,7 @@ target/
 .settings
 .springBeans
 .sts4-cache
+db/.dbeaver
 
 ### IntelliJ IDEA ###
 .idea
