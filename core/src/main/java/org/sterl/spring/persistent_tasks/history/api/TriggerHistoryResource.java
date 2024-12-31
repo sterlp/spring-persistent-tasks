@@ -32,7 +32,7 @@ public class TriggerHistoryResource {
 
     @GetMapping("history")
     public PagedModel<Trigger> list(
-            @PageableDefault(size = 100, direction = Direction.ASC, sort = "data.runAt") Pageable pageable) {
+            @PageableDefault(size = 100, direction = Direction.DESC, sort = "id") Pageable pageable) {
 
         return FromLastTriggerStateEntity.INSTANCE.toPage( //
                 historyService.findTriggerState(null, pageable));

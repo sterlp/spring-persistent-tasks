@@ -32,6 +32,10 @@ public class EditSchedulerStatusComponent {
         result.setLastPing(OffsetDateTime.now());
         return schedulerRepository.save(result);
     }
+    
+    public void offline(String name) {
+        schedulerRepository.deleteById(name);
+    }
 
     public SchedulerEntity get(String name) {
         return schedulerRepository.findById(name)

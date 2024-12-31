@@ -42,9 +42,9 @@ const TriggersPage = () => {
             </Row>
             {triggers.data?.content.map((t) => (
                 <TriggerItemView
-                    key={t.id + ""}
+                    key={t.id + "-" + t.key.id}
                     trigger={t}
-                    afterCancel={doReload}
+                    afterTriggerChanged={doReload}
                 />
             ))}
         </Stack>

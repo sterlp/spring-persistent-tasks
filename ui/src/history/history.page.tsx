@@ -14,7 +14,7 @@ const HistoryPage = () => {
     );
 
     const doReload = () => {
-        triggers.doGet("?size=5&page=" + page);
+        triggers.doGet("?size=10&page=" + page);
     };
 
     useEffect(doReload, [page]);

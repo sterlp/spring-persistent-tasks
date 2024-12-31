@@ -58,14 +58,15 @@ public class SchedulerService {
     @PreDestroy
     public void stop() {
         taskExecutor.close();
-        var s = editSchedulerStatus.checkinToRegistry(name);
-        log.info("Stopped {}", s);
+        editSchedulerStatus.offline(name);
+        log.info("Stopped {}", name);
     }
 
     public void shutdownNow() {
+        var running = taskExecutor.getRunningTasks();
         taskExecutor.shutdownNow();
-        var s = editSchedulerStatus.checkinToRegistry(name);
-        log.info("Force stop {}", s);
+        log.info("Force stop {} with {} running tasks", name, running);
+        editSchedulerStatus.offline(name);
     }
 
     public SchedulerEntity pingRegistry() {

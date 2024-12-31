@@ -1,5 +1,5 @@
 import { Trigger } from "@src/server-api";
-import { formatDateTime } from "@src/shared/date.util";
+import { formatDateTime, formatMs } from "@src/shared/date.util";
 import TriggerStatusView from "@src/trigger/views/trigger-staus.view";
 import { Col, ListGroup, Row, Spinner } from "react-bootstrap";
 
@@ -27,7 +27,7 @@ const TriggerHistoryListView = ({ triggers }: { triggers?: Trigger[] }) => {
                             {formatDateTime(t.start)} - {formatDateTime(t.end)}{" "}
                         </Col>
                         <Col>{t.executionCount}</Col>
-                        <Col>{t.runningDurationInMs}ms</Col>
+                        <Col>{formatMs(t.runningDurationInMs)}</Col>
                     </Row>
                 </ListGroup.Item>
             ))}

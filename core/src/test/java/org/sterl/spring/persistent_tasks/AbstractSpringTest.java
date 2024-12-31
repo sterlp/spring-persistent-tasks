@@ -157,8 +157,8 @@ public class AbstractSpringTest {
 
     @AfterEach
     public void afterEach() throws Exception {
-        schedulerA.stop();
-        schedulerB.stop();
+        schedulerA.shutdownNow();
+        schedulerB.shutdownNow();
         triggerService.deleteAll();
         historyService.deleteAll();
     }
