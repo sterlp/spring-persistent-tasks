@@ -39,11 +39,6 @@ jobs:
           MSSQL_SA_PASSWORD: veryStrong123
         ports:
           - 1433:1433
-        options: >-
-          --health-cmd "echo 'SELECT 1' | /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P veryStrong123"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
 
     steps:
       - uses: actions/checkout@v4
