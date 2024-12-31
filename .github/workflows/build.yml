@@ -60,8 +60,8 @@ jobs:
             echo "Waiting for MSSQL to be ready..."
           done
 
-      - name: Run Core Module Tests
-        run: mvn test -pl core -am -Dspring.profiles.active=mysql
+      - name: Run Tests with MSSQL
+        run: mvn test -pl core -am -Dspring.profiles.active=mssql
 
 
   java-doc:
