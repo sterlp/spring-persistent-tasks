@@ -15,6 +15,12 @@ export default defineConfig({
             '@src': path.resolve(__dirname, './src'),
         }
     },
+    test: {
+        environment: 'jsdom',
+        globals: true,
+        setupFiles: './test/setup.ts',
+        css: true
+    },
     server: {
         proxy: {
             '/api': {

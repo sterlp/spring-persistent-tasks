@@ -21,3 +21,16 @@ export function formatDateTime(inputDate?: string | Date): string {
         options
     ).format(date);
 }
+
+export function formatMs(ms?: number) {
+    if (ms === 0) return "0ms";
+    if (!ms) return "";
+    if (ms < 9999) return ms + "ms";
+
+    const inS = Math.floor(ms / 1000);
+    if (ms < 99999) {
+        return inS + "s " + (ms - inS * 1000) + "ms";
+    }
+    const inMin = Math.floor(inS / 60);
+    return inMin + "min " + (inS - inMin * 60) + "s";
+}

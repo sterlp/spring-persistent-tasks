@@ -14,6 +14,7 @@ public record AddTriggerRequest<T extends Serializable>(
         OffsetDateTime runtAt,
         int priority) {
     
+    @SuppressWarnings("unchecked")
     public TaskId<T> taskId() {
         return (TaskId<T>)key.toTaskId();
     }

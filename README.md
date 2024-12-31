@@ -8,6 +8,21 @@ Focus is the usage with spring boot and JPA.
 
 Secondary goal is to support [Poor mans Workflow](https://github.com/sterlp/pmw)
 
+# DBs for storage
+
+## Tested in the pipeline
+
+- H2
+- azure-sql-edge (MSSQL)
+
+## Supported in theory
+
+- MSSQL
+- mySQL
+- PostgreSQL
+- mySQL
+- MariaDB
+
 # Setup and Run a Task
 
 -   [JavaDoc](https://sterlp.github.io/spring-persistent-tasks/javadoc-core/org/sterl/spring/persistent_tasks/PersistentTaskService.html)
@@ -198,20 +213,21 @@ Now the `PersistentTaskService` has a method to trigger or to trigger and to wai
     }
 ```
 
-During the setup and cleanup it is possible to cancel any pending stuff:
+During the setup and cleanup it is possible to cancel any pending triggers:
 
 ```java
     @BeforeEach
     public void beforeEach() throws Exception {
         triggerService.deleteAll();
         historyService.deleteAll();
-        schedulerA.setMaxThreads(10);
+        schedulerService.setMaxThreads(10);
         schedulerService.start();
     }
 
     @AfterEach
     public void afterEach() throws Exception {
-        schedulerService.stop();
+        // will cancel any pending tasks
+        schedulerService.shutdownNow(); // use .stop() if you want to wait
     }
 ```
 

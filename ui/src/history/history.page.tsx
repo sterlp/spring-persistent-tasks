@@ -14,7 +14,7 @@ const HistoryPage = () => {
     );
 
     const doReload = () => {
-        triggers.doGet("?size=5&page=" + page);
+        triggers.doGet("?size=10&page=" + page);
     };
 
     useEffect(doReload, [page]);
@@ -33,7 +33,6 @@ const HistoryPage = () => {
                         <PageView
                             onPage={(p) => setPage(p)}
                             data={triggers.data}
-                            className="mt-2 mb-2"
                         />
                     </Col>
                     <Col>

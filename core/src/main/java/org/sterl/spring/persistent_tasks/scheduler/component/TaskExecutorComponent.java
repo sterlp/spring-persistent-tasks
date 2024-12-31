@@ -15,11 +15,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
-import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.Getter;
@@ -34,6 +34,7 @@ public class TaskExecutorComponent implements Closeable {
     @Getter
     @Setter
     private Duration maxShutdownWaitTime = Duration.ofSeconds(10);
+    @Nullable
     private ExecutorService executor;
     private final ConcurrentHashMap<TriggerEntity, Future<TriggerKey>> runningTasks = new ConcurrentHashMap<>();
     private final AtomicBoolean stopped = new AtomicBoolean(true);
@@ -58,6 +59,8 @@ public class TaskExecutorComponent implements Closeable {
         if (trigger == null) {
             return CompletableFuture.completedFuture(null);
         }
+        if (stopped.get()) throw new IllegalStateException("Executor is already stopped");
+
         final var result = executor.submit(() -> runTrigger(trigger));
         runningTasks.put(trigger, result);
         return result;
@@ -72,6 +75,7 @@ public class TaskExecutorComponent implements Closeable {
         }
     }
 
+    @SuppressWarnings("resource")
     @PostConstruct
     public void start() {
         if (stopped.compareAndExchange(true, false)) {
@@ -87,33 +91,37 @@ public class TaskExecutorComponent implements Closeable {
     public void close() {
         if (stopped.compareAndExchange(false, true)) {
             synchronized (stopped) {
-                if (executor != null) {
-                    executor.shutdown();
-                    waitForRunningTasks();
-                    executor = null;
-                }
+                doShutdown();
             }
         }
     }
 
-    private void waitForRunningTasks() {
-        if (runningTasks.size() > 0) {
-            log.info("Shutdown executor with {} running tasks, waiting for {}.",
-                    runningTasks.size(), maxShutdownWaitTime);
+    private void doShutdown() {
+        if (executor != null) {
+            executor.shutdown();
+            if (runningTasks.size() > 0) {
+                log.info("Shutdown executor with {} running tasks, waiting for {}.",
+                        runningTasks.size(), maxShutdownWaitTime);
 
-            try {
-                executor.awaitTermination(maxShutdownWaitTime.getSeconds(), TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                log.warn("Failed to complete runnings tasks.", e.getCause());
-            } finally {
-                executor.shutdownNow();
+                try {
+                    executor.awaitTermination(maxShutdownWaitTime.getSeconds(), TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    log.warn("Failed to complete runnings tasks.", e.getCause());
+                    shutdownNow();
+                } finally {
+                    executor = null;
+                    runningTasks.clear();
+                }
+            } else {
+                executor = null;
             }
         }
     }
 
     public void shutdownNow() {
         stopped.set(true);
-        executor.shutdownNow();
+        if (executor != null) executor.shutdownNow();
+        executor = null;
     }
 
     public int getFreeThreads() {

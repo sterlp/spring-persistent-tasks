@@ -1,38 +1,48 @@
 import { PagedModel } from "@src/server-api";
-import { Form, Pagination } from "react-bootstrap";
+import React from "react";
+import { Pagination } from "react-bootstrap";
 
-const PageView = ({
-    data,
-    className,
-    onPage,
-}: {
-    className: string;
+interface PageViewProps {
     data?: PagedModel<unknown>;
-    onPage(page: number): void;
-}) => {
-    if (!data || !data.content)
-        return (
-            <Pagination className={className}>
-                <Pagination.Prev disabled />
-                <Form.Label className="mt-2 ms-2 me-1">-</Form.Label>
-                <Pagination.Next disabled />
-            </Pagination>
-        );
+    onPage: (page: number) => void;
+}
+
+const PageView: React.FC<PageViewProps> = ({ data, onPage }) => {
+    const isDataAvailable = !!data && !!data.content;
+    const currentPage = data?.page.number ?? 0;
+    const totalPages = data?.page.totalPages ?? 0;
+    const totalElements = data?.page.totalElements ?? 0;
+    const pageSize = data?.page.size ?? 0;
+    const contentLength = data?.content?.length ?? 0;
+
+    const handlePrevClick = () => {
+        if (currentPage > 0) {
+            onPage(currentPage - 1);
+        }
+    };
+
+    const handleNextClick = () => {
+        if (currentPage < totalPages - 1) {
+            onPage(currentPage + 1);
+        }
+    };
+
+    const displayCount = isDataAvailable
+        ? `${contentLength + pageSize * currentPage} / ${totalElements}`
+        : "-";
+
     return (
-        <Pagination className="mt-2 mb-2">
+        <Pagination className="mb-0 mt-0 align-items-center">
             <Pagination.Prev
-                onClick={() => onPage(data.page.number - 1)}
-                disabled={data.page.number === 0}
+                data-testid="prev"
+                onClick={handlePrevClick}
+                disabled={!isDataAvailable || currentPage === 0}
             />
-            <Form.Label className="mt-2 ms-2 me-1">
-                {data.content.length +
-                    data.page.size * data.page.number +
-                    " / " +
-                    data.page.totalElements}
-            </Form.Label>
+            <strong className="ms-2 me-2">{displayCount}</strong>
             <Pagination.Next
-                onClick={() => onPage(data.page.number + 1)}
-                disabled={data.page.number >= data.page.totalPages - 1}
+                data-testid="next"
+                onClick={handleNextClick}
+                disabled={!isDataAvailable || currentPage >= totalPages - 1}
             />
         </Pagination>
     );

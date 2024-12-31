@@ -17,7 +17,7 @@ const TriggersPage = () => {
     );
 
     const doReload = () => {
-        triggers.doGet("?size=5&page=" + page + "&taskId=" + selectedTask);
+        triggers.doGet("?size=10&page=" + page + "&taskId=" + selectedTask);
     };
 
     useAutoRefresh(10000, doReload, [page, selectedTask]);
@@ -25,16 +25,12 @@ const TriggersPage = () => {
     return (
         <Stack gap={1}>
             <HttpErrorView error={triggers.error} />
-            <Row className="align-items-center">
+            <Row className="align-items-center mb-2">
                 <Col>
                     <TaskSelect onTaskChange={setSelectedTask} />
                 </Col>
-                <Col>
-                    <PageView
-                        onPage={(p) => setPage(p)}
-                        data={triggers.data}
-                        className="mt-2 mb-2"
-                    />
+                <Col className="align-items-center">
+                    <PageView onPage={(p) => setPage(p)} data={triggers.data} />
                 </Col>
                 <Col>
                     <ReloadButton
@@ -46,9 +42,9 @@ const TriggersPage = () => {
             </Row>
             {triggers.data?.content.map((t) => (
                 <TriggerItemView
-                    key={t.id + ""}
+                    key={t.id + "-" + t.key.id}
                     trigger={t}
-                    afterCancel={doReload}
+                    afterTriggerChanged={doReload}
                 />
             ))}
         </Stack>
