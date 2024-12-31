@@ -49,15 +49,6 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
-
-      - name: Wait for MSSQL
-        run: |
-          for i in {1..10}; do
-            sleep $((11 - i))
-            nc -z localhost 1435 && echo "Azure SQL Edge is ready" && exit 0
-          done
-          echo "Azure SQL Edge failed to start" && exit 1
-
       - name: Run Tests with MSSQL
         run: mvn test -pl core -am -Dspring.profiles.active=mssql
 
