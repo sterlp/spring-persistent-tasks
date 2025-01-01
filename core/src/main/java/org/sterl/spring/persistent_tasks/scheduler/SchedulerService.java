@@ -108,7 +108,7 @@ public class SchedulerService {
             triggers = Collections.emptyList();
         }
         var result = taskExecutor.submit(triggers);
-        pingRegistry();
+        trx.executeWithoutResult(t -> this.pingRegistry());
         return result;
     }
 
