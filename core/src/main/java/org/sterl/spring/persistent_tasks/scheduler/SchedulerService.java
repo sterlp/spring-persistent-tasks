@@ -103,16 +103,19 @@ public class SchedulerService {
      */
     @NonNull
     public List<Future<TriggerKey>> triggerNextTasks(OffsetDateTime timeDue) {
-        List<TriggerEntity> triggers;
         if (taskExecutor.getFreeThreads() > 0) {
-            triggers = triggerService.lockNextTrigger(
-                    name, taskExecutor.getFreeThreads(), timeDue);
+            final var result = trx.execute(t -> {
+                    var triggers = triggerService.lockNextTrigger(name,
+                            taskExecutor.getFreeThreads(), timeDue);
+                    pingRegistry().addRunning(triggers.size());
+                    return triggers;
+                });
+
+            return taskExecutor.submit(result);
         } else {
-            triggers = Collections.emptyList();
+            pingRegistry();
+            return Collections.emptyList();
         }
-        var result = taskExecutor.submit(triggers);
-        pingRegistry();
-        return result;
     }
 
     /**
@@ -122,7 +125,7 @@ public class SchedulerService {
      */
     public <T extends Serializable> Future<TriggerKey> runOrQueue(
             AddTriggerRequest<T> triggerRequest) {
-        var runningTrigger = trx.execute(t -> {
+        final var runningTrigger = trx.execute(t -> {
             var trigger = triggerService.queue(triggerRequest);
             // exit now if this trigger is for the future ...
             if (trigger.shouldRunInFuture()) return trigger;
