@@ -1,6 +1,6 @@
 spring:
   datasource:
-    username: sa
+    username: root
     password: veryStrong123
     url: jdbc:mysql://localhost:3306/testdb
     driver-class-name: com.mysql.jdbc.Driver

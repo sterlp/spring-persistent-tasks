@@ -34,7 +34,7 @@ import lombok.RequiredArgsConstructor;
 import uk.co.jemos.podam.api.PodamFactory;
 import uk.co.jemos.podam.api.PodamFactoryImpl;
 
-//@ActiveProfiles("mariadb") // postgres mssql mariadb
+// @ActiveProfiles("mssql") // postgres mssql mariadb mysql
 @SpringBootTest(classes = SampleApp.class, webEnvironment = WebEnvironment.RANDOM_PORT)
 public class AbstractSpringTest {
 
