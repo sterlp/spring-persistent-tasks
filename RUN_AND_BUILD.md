@@ -10,3 +10,6 @@ docker run --cap-add SYS_PTRACE -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=veryStr
 
 ## MariaDB
 docker run -e MYSQL_ROOT_PASSWORD=veryStrong123 -e MYSQL_DATABASE=testdb -e MYSQL_USER=sa -e MYSQL_PASSWORD=veryStrong123 -p 3306:3306 -d mariadb:latest
+
+## MySQL
+docker run -e MYSQL_ROOT_PASSWORD=veryStrong123 -e MYSQL_DATABASE=testdb -e MYSQL_USER=sa -e MYSQL_PASSWORD=veryStrong123 -p 3306:3306 -d mysql:latest
