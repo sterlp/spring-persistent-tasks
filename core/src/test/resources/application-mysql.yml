@@ -7,5 +7,8 @@ spring:
     hikari:
       maximum-pool-size: 100
   jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
     hibernate:
-      ddl-auto: none
+      ddl-auto: create

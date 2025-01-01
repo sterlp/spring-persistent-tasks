@@ -17,6 +17,8 @@ Secondary goal is to support [Poor mans Workflow](https://github.com/sterlp/pmw)
 -   PostgreSQL
 -   MariaDB
 
+![History](screenshots/supported-dbs.png)
+
 ## Supported in theory
 
 -   MSSQL, as azure-sql-edge is tested

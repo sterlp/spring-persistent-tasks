@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.0 - (2025-01-01)
+
+-   MariaDB support
+-   PostgreSQL support
+
 ## v1.2.0 - (2024-12-31)
 
 -   Run now button in the UI
