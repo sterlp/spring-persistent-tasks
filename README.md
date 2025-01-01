@@ -306,6 +306,23 @@ public class ExampleApplication {
 
 ![History](screenshots/history-screen.png)
 
+## Spring Boot CSRF config for the UI
+
+Axios should work with the following spring config out of the box with csrf:
+
+```java
+@Bean
+SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+        .httpBasic(org.springframework.security.config.Customizer.withDefaults())
+        .csrf(c -> 
+            c.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+             .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+        );
+    return http.build();
+}
+```
+
 # Alternatives
 
 -   quartz
