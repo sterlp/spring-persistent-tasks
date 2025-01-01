@@ -20,11 +20,11 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "PT_TRIGGER_HISTORY_LAST_STATES", indexes = {
-        @Index(name = "IDX_PT_TRIGGER_HISTORY_LAST_STATES_TASK_NAME", columnList = "task_name"),
-        @Index(name = "IDX_PT_TRIGGER_HISTORY_LAST_STATES_TRIGGER_ID", columnList = "trigger_id"),
-        @Index(name = "IDX_PT_TRIGGER_HISTORY_LAST_STATES_STATUS", columnList = "status"),
-        @Index(name = "IDX_PT_TRIGGER_HISTORY_LAST_STATES_CREATED_TIME", columnList = "created_time"),
+@Table(name = "pt_trigger_history_last_states", indexes = {
+        @Index(name = "idx_pt_trigger_history_last_states_task_name", columnList = "task_name"),
+        @Index(name = "idx_pt_trigger_history_last_states_trigger_id", columnList = "trigger_id"),
+        @Index(name = "idx_pt_trigger_history_last_states_status", columnList = "status"),
+        @Index(name = "idx_pt_trigger_history_last_states_created_time", columnList = "created_time"),
 })
 @Data
 @NoArgsConstructor

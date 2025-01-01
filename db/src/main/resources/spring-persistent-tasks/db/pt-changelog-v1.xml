@@ -20,10 +20,10 @@
 
     <changeSet author="sterlp" id="2024-12-27-initial-db">
 
-        <createTable tableName="PT_TASK_TRIGGERS">
+        <createTable tableName="pt_task_triggers">
             <column computed="false" name="id" type="bigint">
                 <constraints nullable="false" primaryKey="true"
-                    primaryKeyName="PK_PT_TASK_TRIGGERS_ID" />
+                    primaryKeyName="PK_pt_task_triggers_ID" />
             </column>
             <column computed="false" name="created_time" type="${offsetdatetime.type}">
                 <constraints nullable="false" />
@@ -54,10 +54,10 @@
             <column computed="false" name="running_on" type="varchar(200)" />
         </createTable>
 
-        <createTable tableName="PT_TRIGGER_HISTORY_DETAILS">
+        <createTable tableName="pt_trigger_history_details">
             <column computed="false" name="id" type="bigint">
                 <constraints nullable="false" primaryKey="true"
-                    primaryKeyName="PK_PT_TRIGGER_HISTORY_DETAILS_ID" />
+                    primaryKeyName="pk_pt_trigger_history_details_id" />
             </column>
             <column computed="false" name="created_time" type="${offsetdatetime.type}" />
             <column computed="false" name="end_time" type="${offsetdatetime.type}" />
@@ -85,10 +85,10 @@
             <column computed="false" name="instance_id" type="bigint" />
         </createTable>
 
-        <createTable tableName="PT_TRIGGER_HISTORY_LAST_STATES">
+        <createTable tableName="pt_trigger_history_last_states">
             <column computed="false" name="id" type="bigint">
                 <constraints nullable="false" primaryKey="true"
-                    primaryKeyName="PK_PT_TRIGGER_HISTORY_LAST_STATES_ID" />
+                    primaryKeyName="pk_pt_trigger_history_last_states_id" />
             </column>
             <column computed="false" name="created_time" type="${offsetdatetime.type}">
                 <constraints nullable="false" />
@@ -117,10 +117,10 @@
             </column>
         </createTable>
 
-        <createTable tableName="PT_SCHEDULER">
+        <createTable tableName="pt_scheduler">
             <column computed="false" name="id" type="varchar(255)">
                 <constraints nullable="false" primaryKey="true"
-                    primaryKeyName="PK_PT_SCHEDULER_ID" />
+                    primaryKeyName="pk_pt_scheduler_id" />
             </column>
             <column computed="false" name="last_ping" type="${offsetdatetime.type}" />
             <column computed="false" name="max_heap" type="bigint">
@@ -140,69 +140,69 @@
             </column>
         </createTable>
 
-        <createIndex indexName="IDX_PT_TRIGGERS_PING" tableName="PT_TASK_TRIGGERS">
+        <createIndex indexName="idx_pt_triggers_ping" tableName="pt_task_triggers">
             <column name="last_ping" />
         </createIndex>
-        <createIndex indexName="IDX_PT_TRIGGERS_PRIORITY" tableName="PT_TASK_TRIGGERS">
+        <createIndex indexName="idx_pt_triggers_priority" tableName="pt_task_triggers">
             <column name="priority" />
         </createIndex>
-        <createIndex indexName="IDX_PT_TRIGGERS_RUN_AT" tableName="PT_TASK_TRIGGERS">
+        <createIndex indexName="idx_pt_triggers_run_at" tableName="pt_task_triggers">
             <column name="run_at" />
         </createIndex>
-        <createIndex indexName="IDX_PT_TRIGGERS_STATUS" tableName="PT_TASK_TRIGGERS">
+        <createIndex indexName="idx_pt_triggers_status" tableName="pt_task_triggers">
             <column name="status" />
         </createIndex>
-        <createIndex indexName="UNQ_PT_TRIGGERS_KEY" tableName="PT_TASK_TRIGGERS" unique="true">
+        <createIndex indexName="unq_pt_triggers_key" tableName="pt_task_triggers" unique="true">
             <column name="trigger_id" />
             <column name="task_name" />
         </createIndex>
 
-        <createIndex indexName="IDX_PT_TRIGGERS_HISTORY_CREATED_TIME"
-            tableName="PT_TRIGGER_HISTORY_DETAILS">
+        <createIndex indexName="idx_pt_triggers_history_created_time"
+            tableName="pt_trigger_history_details">
             <column name="created_time" />
         </createIndex>
-        <createIndex indexName="IDX_PT_TRIGGERS_HISTORY_INSTANCE_ID"
-            tableName="PT_TRIGGER_HISTORY_DETAILS">
+        <createIndex indexName="idx_pt_triggers_history_instance_id"
+            tableName="pt_trigger_history_details">
             <column name="instance_id" />
         </createIndex>
-        <createIndex indexName="IDX_PT_TRIGGERS_HISTORY_STATUS"
-            tableName="PT_TRIGGER_HISTORY_DETAILS">
+        <createIndex indexName="idx_pt_triggers_history_status"
+            tableName="pt_trigger_history_details">
             <column name="status" />
         </createIndex>
-        <createIndex indexName="IDX_PT_TRIGGERS_HISTORY_TASK_NAME"
-            tableName="PT_TRIGGER_HISTORY_DETAILS">
+        <createIndex indexName="idx_pt_triggers_history_task_name"
+            tableName="pt_trigger_history_details">
             <column name="task_name" />
         </createIndex>
-        <createIndex indexName="IDX_PT_TRIGGERS_HISTORY_TRIGGER_ID"
-            tableName="PT_TRIGGER_HISTORY_DETAILS">
+        <createIndex indexName="idx_pt_triggers_history_trigger_id"
+            tableName="pt_trigger_history_details">
             <column name="trigger_id" />
         </createIndex>
 
-        <createIndex indexName="IDX_PT_TRIGGER_HISTORY_LAST_STATES_CREATED_TIME"
-            tableName="PT_TRIGGER_HISTORY_LAST_STATES">
+        <createIndex indexName="idx_pt_trigger_history_last_states_created_time"
+            tableName="pt_trigger_history_last_states">
             <column name="created_time" />
         </createIndex>
-        <createIndex indexName="IDX_PT_TRIGGER_HISTORY_LAST_STATES_STATUS"
-            tableName="PT_TRIGGER_HISTORY_LAST_STATES">
+        <createIndex indexName="idx_pt_trigger_history_last_states_status"
+            tableName="pt_trigger_history_last_states">
             <column name="status" />
         </createIndex>
-        <createIndex indexName="IDX_PT_TRIGGER_HISTORY_LAST_STATES_TASK_NAME"
-            tableName="PT_TRIGGER_HISTORY_LAST_STATES">
+        <createIndex indexName="idx_pt_trigger_history_last_states_task_name"
+            tableName="pt_trigger_history_last_states">
             <column name="task_name" />
         </createIndex>
-        <createIndex indexName="IDX_PT_TRIGGER_HISTORY_LAST_STATES_TRIGGER_ID"
-            tableName="PT_TRIGGER_HISTORY_LAST_STATES">
+        <createIndex indexName="idx_pt_trigger_history_last_states_trigger_id"
+            tableName="pt_trigger_history_last_states">
             <column name="trigger_id" />
         </createIndex>
 
-        <createIndex indexName="IDX_TASK_SCHEDULER_STATUS" tableName="PT_SCHEDULER">
+        <createIndex indexName="idx_task_scheduler_status" tableName="pt_scheduler">
             <column name="last_ping" />
         </createIndex>
 
         <createSequence cycle="false" incrementBy="50" maxValue="9223372036854775807"
-            minValue="-9223372036854775808" sequenceName="SEQ_PT_TASK_TRIGGERS" startValue="1" />
+            minValue="-9223372036854775808" sequenceName="seq_pt_task_triggers" startValue="1" />
         <createSequence cycle="false" incrementBy="50" maxValue="9223372036854775807"
-            minValue="-9223372036854775808" sequenceName="SEQ_PT_TRIGGER_HISTORY_DETAILS"
+            minValue="-9223372036854775808" sequenceName="seq_pt_trigger_history_details"
             startValue="1" />
     </changeSet>
 </databaseChangeLog>

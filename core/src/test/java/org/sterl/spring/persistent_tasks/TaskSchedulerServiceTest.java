@@ -59,11 +59,7 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
             lockInvocations.add(() -> runNextTrigger());
         }
 
-        while (triggerService.hasPendingTriggers()) {
-            schedulerService.triggerNextTasks();
-            schedulerB.triggerNextTasks();
-            Thread.sleep(10);
-        }
+        persistentTaskService.executeTriggersAndWait();
 
         // THEN
         for (int i = 1; i <= 100; ++i) {
