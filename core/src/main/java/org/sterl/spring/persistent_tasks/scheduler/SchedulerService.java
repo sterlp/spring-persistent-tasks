@@ -129,16 +129,18 @@ public class SchedulerService {
             
             if (taskExecutor.getFreeThreads() > 0) {
                 trigger = triggerService.markTriggersAsRunning(trigger, name);
+                pingRegistry().addRunning(1);
             } else {
                 log.debug("Currently not enough free thread available {} of {} in use. Task {} queued.", 
                         taskExecutor.getFreeThreads(), taskExecutor.getMaxThreads(), trigger.getKey());
             }
             return trigger;
         });
-        Future<TriggerKey> result = CompletableFuture.completedFuture(runningTrigger.getKey());
+        Future<TriggerKey> result;
         if (runningTrigger.isRunning()) {
             result = taskExecutor.submit(runningTrigger);
-            pingRegistry();
+        } else {
+            result = CompletableFuture.completedFuture(runningTrigger.getKey());
         }
         return result;
     }
