@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Entity
-@Table(name = "PT_SCHEDULER", indexes = @Index(name = "IDX_TASK_SCHEDULER_STATUS", columnList = "last_ping"))
+@Table(name = "pt_scheduler", indexes = @Index(name = "idx_task_scheduler_status", columnList = "last_ping"))
 @Data
 @ToString(of = { "id", "lastPing", "runnungTasks", "tasksSlotCount" })
 @EqualsAndHashCode(of = "id")

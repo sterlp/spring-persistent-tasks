@@ -70,11 +70,14 @@ public class SchedulerService {
     }
 
     public SchedulerEntity pingRegistry() {
-        var result = editSchedulerStatus.checkinToRegistry(name);
-        result.setRunnungTasks(taskExecutor.getRunningTasks());
-        result.setTasksSlotCount(taskExecutor.getMaxThreads());
-        log.debug("Ping {}", result);
-        return result;
+        // using trx template to ensure the TRX is started if we use this method internally
+        return trx.execute(t -> {
+            var result = editSchedulerStatus.checkinToRegistry(name);
+            result.setRunnungTasks(taskExecutor.getRunningTasks());
+            result.setTasksSlotCount(taskExecutor.getMaxThreads());
+            log.debug("Ping {}", result);
+            return result;
+        });
     }
     
     public SchedulerEntity getScheduler() {
@@ -100,21 +103,16 @@ public class SchedulerService {
      */
     @NonNull
     public List<Future<TriggerKey>> triggerNextTasks(OffsetDateTime timeDue) {
-        var triggers = trx.execute(t -> {
-            List<TriggerEntity> result;
-            // in any case we say hello
-            final var runningOn = pingRegistry();
-            if (taskExecutor.getFreeThreads() > 0) {
-                result = triggerService.lockNextTrigger(
-                        name, taskExecutor.getFreeThreads(), timeDue);
-                runningOn.setRunnungTasks(taskExecutor.getRunningTasks() + result.size());
-            } else {
-                result = Collections.emptyList();
-                log.debug("triggerNextTasks({}) skipped as no free threads are available.", timeDue);
-            }
-            return result;
-        });
-        return taskExecutor.submit(triggers);
+        List<TriggerEntity> triggers;
+        if (taskExecutor.getFreeThreads() > 0) {
+            triggers = triggerService.lockNextTrigger(
+                    name, taskExecutor.getFreeThreads(), timeDue);
+        } else {
+            triggers = Collections.emptyList();
+        }
+        var result = taskExecutor.submit(triggers);
+        pingRegistry();
+        return result;
     }
 
     /**

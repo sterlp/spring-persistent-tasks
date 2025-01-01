@@ -25,12 +25,12 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "PT_TASK_TRIGGERS", indexes = {
-        @Index(name = "UNQ_PT_TRIGGERS_KEY", columnList = "trigger_id, task_name", unique = true),
-        @Index(name = "IDX_PT_TRIGGERS_PRIORITY", columnList = "priority"),
-        @Index(name = "IDX_PT_TRIGGERS_RUN_AT", columnList = "run_at"),
-        @Index(name = "IDX_PT_TRIGGERS_STATUS", columnList = "status"),
-        @Index(name = "IDX_PT_TRIGGERS_PING", columnList = "last_ping"),
+@Table(name = "pt_task_triggers", indexes = {
+        @Index(name = "unq_pt_triggers_key", columnList = "trigger_id, task_name", unique = true),
+        @Index(name = "idx_pt_triggers_priority", columnList = "priority"),
+        @Index(name = "idx_pt_triggers_run_at", columnList = "run_at"),
+        @Index(name = "idx_pt_triggers_status", columnList = "status"),
+        @Index(name = "idx_pt_triggers_ping", columnList = "last_ping"),
 })
 @Data
 @NoArgsConstructor
@@ -39,7 +39,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class TriggerEntity implements HasTriggerData {
 
-    @GeneratedValue(generator = "SEQ_PT_TASK_TRIGGERS", strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(generator = "seq_pt_task_triggers", strategy = GenerationType.SEQUENCE)
     @Column(updatable = false)
     @Id
     private Long id;

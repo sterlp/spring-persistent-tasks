@@ -44,7 +44,7 @@ class SchedulerServiceTest extends AbstractSpringTest {
         for (int i = 0; i < 15; i++) {
             triggerService.queue(TaskTriggerBuilder
                     .newTrigger("slowTask")
-                    .state(50L)
+                    .state(200L)
                     .build()
                 );
         }
@@ -53,9 +53,9 @@ class SchedulerServiceTest extends AbstractSpringTest {
         subject.triggerNextTasks();
 
         // THEN
-        Thread.sleep(15);
         assertThat(triggerService.countTriggers(TriggerStatus.RUNNING)).isEqualTo(10);
         assertThat(triggerService.countTriggers(TriggerStatus.WAITING)).isEqualTo(5);
+
         // AND
         final SchedulerEntity scheduler = subject.getScheduler();
         assertThat(scheduler.getRunnungTasks()).isEqualTo(10);

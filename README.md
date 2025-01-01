@@ -12,15 +12,20 @@ Secondary goal is to support [Poor mans Workflow](https://github.com/sterlp/pmw)
 
 ## Tested in the pipeline
 
-- H2
-- azure-sql-edge (MSSQL)
+-   H2
+-   azure-sql-edge (MSSQL)
+-   PostgreSQL
+-   MariaDB
+
+![History](screenshots/supported-dbs.png)
 
 ## Supported in theory
 
-- MSSQL
-- PostgreSQL
-- mySQL
-- MariaDB
+-   MSSQL, as azure-sql-edge is tested
+
+## Not supported
+
+-   mySQL: sequences are not supported
 
 # Setup and Run a Task
 

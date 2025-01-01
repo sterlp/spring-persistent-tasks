@@ -8,10 +8,10 @@
                         http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet author="sterlp" id="2024-12-27-initial-test-db">
-        <createTable tableName="PERSONBE">
+        <createTable tableName="personbe">
             <column computed="false" name="id" type="bigint">
                 <constraints nullable="false" primaryKey="true"
-                    primaryKeyName="PK_PERSONBE_ID" />
+                    primaryKeyName="pk_personbe_id" />
             </column>
             <column computed="false" name="name" type="varchar(255)" />
         </createTable>
