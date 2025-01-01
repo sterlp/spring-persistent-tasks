@@ -70,11 +70,14 @@ public class SchedulerService {
     }
 
     public SchedulerEntity pingRegistry() {
-        var result = editSchedulerStatus.checkinToRegistry(name);
-        result.setRunnungTasks(taskExecutor.getRunningTasks());
-        result.setTasksSlotCount(taskExecutor.getMaxThreads());
-        log.debug("Ping {}", result);
-        return result;
+        // using trx template to ensure the TRX is started if we use this method internally
+        return trx.execute(t -> {
+            var result = editSchedulerStatus.checkinToRegistry(name);
+            result.setRunnungTasks(taskExecutor.getRunningTasks());
+            result.setTasksSlotCount(taskExecutor.getMaxThreads());
+            log.debug("Ping {}", result);
+            return result;
+        });
     }
     
     public SchedulerEntity getScheduler() {
@@ -108,7 +111,7 @@ public class SchedulerService {
             triggers = Collections.emptyList();
         }
         var result = taskExecutor.submit(triggers);
-        trx.executeWithoutResult(t -> this.pingRegistry());
+        pingRegistry();
         return result;
     }
 
