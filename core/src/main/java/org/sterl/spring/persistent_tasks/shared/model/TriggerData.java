@@ -79,6 +79,7 @@ public class TriggerData {
     private Long runningDurationInMs;
 
     @Lob
+    @Column(name = "state")
     private byte[] state;
 
     @Column(length = 512)

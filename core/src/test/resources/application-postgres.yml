@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    username: sa
+    password: veryStrong123
+    url: jdbc:postgresql://localhost:5432/postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 100
+  jpa:
+    hibernate:
+      ddl-auto: none
