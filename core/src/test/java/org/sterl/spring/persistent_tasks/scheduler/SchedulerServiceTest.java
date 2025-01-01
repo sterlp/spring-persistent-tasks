@@ -86,6 +86,23 @@ class SchedulerServiceTest extends AbstractSpringTest {
     }
     
     @Test
+    void testRunOrQueue() throws Exception {
+        // GIVEN
+        final AddTriggerRequest<String> triggerRequest = Task3.ID
+                .newTrigger("Hallo")
+                .build();
+        
+        // WHEN
+        var ref = subject.runOrQueue(triggerRequest);
+        
+        // THEN
+        assertThat(subject.getScheduler().getRunnungTasks()).isOne();
+        assertThat(persistentTaskService.getLastTriggerData(
+                ref.get()).get().getStatus()).isEqualTo(TriggerStatus.SUCCESS);
+        asserts.assertValue(Task3.NAME + "::Hallo");
+    }
+
+    @Test
     void testQueuedInFuture() {
         // GIVEN
         final AddTriggerRequest<String> triggerRequest = Task3.ID
