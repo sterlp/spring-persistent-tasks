@@ -84,6 +84,7 @@ jobs:
           MYSQL_USER: sa
           MYSQL_ROOT_PASSWORD: veryStrong123
           MYSQL_PASSWORD: veryStrong123
+		      MYSQL_DATABASE: testdb
         ports:
           - 3306:3306
     steps:
@@ -95,7 +96,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
       - name: Run tests with mariadb
-        run: mvn test -pl core -am -Dspring.profiles.active=maria
+        run: mvn test -pl core -am -Dspring.profiles.active=mariadb
 
   java-doc:
     runs-on: ubuntu-latest
