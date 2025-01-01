@@ -100,21 +100,16 @@ public class SchedulerService {
      */
     @NonNull
     public List<Future<TriggerKey>> triggerNextTasks(OffsetDateTime timeDue) {
-        var triggers = trx.execute(t -> {
-            List<TriggerEntity> result;
-            // in any case we say hello
-            final var runningOn = pingRegistry();
-            if (taskExecutor.getFreeThreads() > 0) {
-                result = triggerService.lockNextTrigger(
-                        name, taskExecutor.getFreeThreads(), timeDue);
-                runningOn.setRunnungTasks(taskExecutor.getRunningTasks() + result.size());
-            } else {
-                result = Collections.emptyList();
-                log.debug("triggerNextTasks({}) skipped as no free threads are available.", timeDue);
-            }
-            return result;
-        });
-        return taskExecutor.submit(triggers);
+        List<TriggerEntity> triggers;
+        if (taskExecutor.getFreeThreads() > 0) {
+            triggers = triggerService.lockNextTrigger(
+                    name, taskExecutor.getFreeThreads(), timeDue);
+        } else {
+            triggers = Collections.emptyList();
+        }
+        var result = taskExecutor.submit(triggers);
+        pingRegistry();
+        return result;
     }
 
     /**
