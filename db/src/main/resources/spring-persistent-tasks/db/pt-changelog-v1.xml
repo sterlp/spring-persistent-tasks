@@ -14,7 +14,7 @@
     <property name="offsetdatetime.type" value="DATETIME(6)" dbms="mysql,mariadb" />
 
     <property name="binary.type" value="varbinary(MAX)" dbms="mssql" />
-    <property name="binary.type" value="BYTEA" dbms="postgresql" />
+    <property name="binary.type" value="oid" dbms="postgresql" />
     <property name="binary.type" value="BLOB" dbms="h2" />
     <property name="binary.type" value="LONGBLOB" dbms="mysql,mariadb" />
 
