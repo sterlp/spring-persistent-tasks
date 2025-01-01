@@ -315,13 +315,15 @@ Axios should work with the following spring config out of the box with csrf:
 SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
         .httpBasic(org.springframework.security.config.Customizer.withDefaults())
-        .csrf(c -> 
+        .csrf(c ->
             c.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
              .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
         );
     return http.build();
 }
 ```
+
+more informations: https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html
 
 # Alternatives
 
