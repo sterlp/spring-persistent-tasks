@@ -38,4 +38,8 @@ public class RegisteredTask<T extends Serializable> implements Task<T> {
     public RetryStrategy retryStrategy() {
         return this.fun.retryStrategy();
     }
+    @Override
+    public boolean isTransactional() {
+        return this.fun.isTransactional();
+    }
 }

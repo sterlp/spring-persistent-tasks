@@ -37,7 +37,14 @@ export interface HistoryOverview {
 export interface RetryStrategy {
 }
 
+export interface LinearRetryStrategy extends RetryStrategy {
+}
+
+export interface MultiplicativeRetryStrategy extends RetryStrategy {
+}
+
 export interface SpringBeanTask<T> extends Consumer<T> {
+    transactional: boolean;
 }
 
 export interface Task<T> extends SpringBeanTask<T> {

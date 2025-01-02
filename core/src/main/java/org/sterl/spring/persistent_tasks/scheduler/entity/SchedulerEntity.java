@@ -43,4 +43,9 @@ public class SchedulerEntity {
         super();
         this.id = name;
     }
+
+    public SchedulerEntity addRunning(int count) {
+        this.runnungTasks += count;
+        return this;
+    }
 }

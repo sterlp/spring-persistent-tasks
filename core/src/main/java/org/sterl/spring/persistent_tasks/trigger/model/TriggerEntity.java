@@ -85,10 +85,15 @@ public class TriggerEntity implements HasTriggerData {
         return this;
     }
 
+    /**
+     * @param e Sets either {@link TriggerStatus#SUCCESS} or {@link TriggerStatus#FAILED}
+     * based if the {@link Exception} is <code>null</code> or not.
+     */
     public TriggerEntity complete(Exception e) {
         data.setStatus(TriggerStatus.SUCCESS);
         data.setEnd(OffsetDateTime.now());
         data.updateRunningDuration();
+
         if (e != null) {
             data.setStatus(TriggerStatus.FAILED);
             data.setExceptionName(e.getClass().getName());
@@ -101,6 +106,11 @@ public class TriggerEntity implements HasTriggerData {
     public TriggerEntity runAt(OffsetDateTime runAt) {
         data.setStatus(TriggerStatus.WAITING);
         data.setRunAt(runAt);
+        return this;
+    }
+
+    public TriggerEntity withState(byte[] state) {
+        this.data.setState(state);
         return this;
     }
 }

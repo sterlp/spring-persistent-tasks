@@ -47,6 +47,8 @@ public class TaskExecutorComponent implements Closeable {
 
     @NonNull
     public List<Future<TriggerKey>> submit(List<TriggerEntity> trigger) {
+        if (trigger == null || trigger.isEmpty()) return Collections.emptyList();
+
         final List<Future<TriggerKey>> result = new ArrayList<>(trigger.size());
         for (TriggerEntity triggerEntity : trigger) {
             result.add(submit(triggerEntity));

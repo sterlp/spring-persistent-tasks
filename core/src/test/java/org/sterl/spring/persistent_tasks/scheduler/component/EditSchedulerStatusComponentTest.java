@@ -1,4 +1,4 @@
-package org.sterl.spring.sample_app.component;
+package org.sterl.spring.persistent_tasks.scheduler.component;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
