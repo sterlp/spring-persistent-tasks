@@ -1,6 +1,6 @@
 mvn versions:display-dependency-updates
-mvn versions:set -DnewVersion=1.3.0 -DgenerateBackupPoms=false
-mvn versions:set -DnewVersion=1.3.1-SNAPSHOT -DgenerateBackupPoms=false
+mvn versions:set -DnewVersion=1.3.1 -DgenerateBackupPoms=false
+mvn versions:set -DnewVersion=1.3.2-SNAPSHOT -DgenerateBackupPoms=false
 
 ## postgres
 docker run --name pg-container -e POSTGRES_USER=sa -e POSTGRES_PASSWORD=veryStrong123 -p 5432:5432 -d postgres
