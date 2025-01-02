@@ -66,12 +66,24 @@ public class BuildVehicleTask implements SpringBeanTask<Vehicle> {
 
     private final VehicleRepository vehicleRepository;
 
-    @Transactional(timeout = 5)
     @Override
     public void accept(Vehicle vehicle) {
         // do stuff
         // save
         vehicleRepository.save(vehicle);
+    }
+    // OPTIONAL
+    @Override
+    public RetryStrategy retryStrategy() {
+        // run 5 times, multiply the execution count with 4, add the result in HOURS to now.
+        return new MultiplicativeRetryStrategy(5, ChronoUnit.HOURS, 4)
+    }
+    // OPTIONAL
+    // if the task in accept requires a DB transaction, join them together with the framework
+    // if true the TransactionTemplate is used. Set here any timeouts.
+    @Override
+    public boolean isTransactional() {
+        return true;
     }
 }
 ```
