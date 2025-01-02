@@ -1,4 +1,4 @@
-package org.sterl.spring.persistent_tasks;
+package org.sterl.test;
 
 import static org.junit.jupiter.api.Assertions.fail;
 

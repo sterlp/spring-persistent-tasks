@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.api.SpringBeanTask;
 import org.sterl.spring.persistent_tasks.api.TaskId;
@@ -28,6 +29,7 @@ import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 import org.sterl.spring.sample_app.SampleApp;
 import org.sterl.test.AsyncAsserts;
+import org.sterl.test.HibernateAsserts;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -73,6 +75,13 @@ public class AbstractSpringTest {
         @Bean
         AsyncAsserts asserts() {
             return new AsyncAsserts();
+        }
+        
+        @Bean
+        TransactionTemplate transactionTemplate(PlatformTransactionManager transactionManager) {
+            TransactionTemplate template = new TransactionTemplate(transactionManager);
+            template.setTimeout(10);
+            return template;
         }
         
         @Bean

@@ -64,7 +64,7 @@ public interface RetryStrategy {
      * @author Your Name
      */
     @RequiredArgsConstructor
-    public class LinearRetryStrategy implements RetryStrategy {
+    class LinearRetryStrategy implements RetryStrategy {
         private final int maxExecutionCount;
         private final TemporalUnit unit;
         private final int offset;
@@ -97,7 +97,7 @@ public interface RetryStrategy {
      * ({@code maxExecutionCount}) is reached.</p>
      */
     @RequiredArgsConstructor
-    public class MultiplicativeRetryStrategy implements RetryStrategy {
+    class MultiplicativeRetryStrategy implements RetryStrategy {
         private final int maxExecutionCount;
         private final TemporalUnit unit;
         private final int scalingFactor;
