@@ -64,7 +64,7 @@ public interface RetryStrategy {
      * @author Your Name
      */
     @RequiredArgsConstructor
-    public static class LinearRetryStrategy implements RetryStrategy {
+    public class LinearRetryStrategy implements RetryStrategy {
         private final int maxExecutionCount;
         private final TemporalUnit unit;
         private final int offset;
@@ -78,7 +78,7 @@ public interface RetryStrategy {
             return OffsetDateTime.now().plus(offset + executionCount, unit);
         }
     }
-    
+
     /**
      * A retry strategy that determines the next retry time by multiplying
      * the execution count by a scaling factor and adding the result to the
@@ -97,7 +97,7 @@ public interface RetryStrategy {
      * ({@code maxExecutionCount}) is reached.</p>
      */
     @RequiredArgsConstructor
-    public static class MultiplicativeRetryStrategy implements RetryStrategy {
+    public class MultiplicativeRetryStrategy implements RetryStrategy {
         private final int maxExecutionCount;
         private final TemporalUnit unit;
         private final int scalingFactor;
