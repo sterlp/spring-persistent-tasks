@@ -15,7 +15,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.api.SpringBeanTask;
 import org.sterl.spring.persistent_tasks.api.TaskId;
@@ -30,6 +29,7 @@ import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 import org.sterl.spring.sample_app.SampleApp;
 import org.sterl.test.AsyncAsserts;
 
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import uk.co.jemos.podam.api.PodamFactory;
 import uk.co.jemos.podam.api.PodamFactoryImpl;
@@ -63,6 +63,8 @@ public class AbstractSpringTest {
     protected TransactionTemplate trx;
     @Autowired
     protected AsyncAsserts asserts;
+    @Autowired
+    protected HibernateAsserts hibernateAsserts;
 
     protected final PodamFactory pm = new PodamFactoryImpl();
 
@@ -71,6 +73,11 @@ public class AbstractSpringTest {
         @Bean
         AsyncAsserts asserts() {
             return new AsyncAsserts();
+        }
+        
+        @Bean
+        HibernateAsserts hibernateAsserts(EntityManager entityManager) {
+            return new HibernateAsserts(entityManager);
         }
 
         @Primary
@@ -147,6 +154,7 @@ public class AbstractSpringTest {
 
     @BeforeEach
     public void beforeEach() throws Exception {
+        hibernateAsserts.reset();
         triggerService.deleteAll();
         historyService.deleteAll();
         asserts.clear();

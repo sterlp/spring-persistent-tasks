@@ -23,17 +23,14 @@ import org.sterl.spring.sample_app.person.PersonRepository;
 class SchedulerServiceTransactionTest extends AbstractSpringTest {
 
     private SchedulerService subject;
-    @Autowired private AtomicBoolean sendError;
+    private static AtomicBoolean sendError = new AtomicBoolean(false);
+    private static AtomicBoolean inTrx = new AtomicBoolean(false);
     @Autowired private PersonRepository personRepository;
 
     @Configuration
     static class Config {
         @Bean
-        AtomicBoolean sendError() {
-            return new AtomicBoolean(false);
-        }
-        @Bean
-        SpringBeanTask<String> savePerson(PersonRepository personRepository, AtomicBoolean sendError) {
+        SpringBeanTask<String> savePerson(PersonRepository personRepository) {
             return new SpringBeanTask<>() {
                 @Transactional
                 @Override
@@ -46,6 +43,10 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
                 public RetryStrategy retryStrategy() {
                     return RetryStrategy.THREE_RETRIES_IMMEDIATELY;
                 }
+                @Override
+                public boolean isTransactional() {
+                    return inTrx.get();
+                }
             };
         }
     }
@@ -56,17 +57,55 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         subject = schedulerService;
         personRepository.deleteAllInBatch();
         sendError.set(false);
+        inTrx.set(false);
     }
-
+    
     @Test
     void testSaveEntity() throws Exception {
         // GIVEN
         final var trigger = TaskTriggerBuilder.newTrigger("savePerson").state("Paul").build();
 
         // WHEN
+        hibernateAsserts.reset();
         subject.runOrQueue(trigger).get();
 
         // THEN
+        // AND one the service, one the event and one more status update, 
+        // one more to save the trigger
+        hibernateAsserts.assertTrxCount(4);
+        assertThat(personRepository.count()).isOne();
+    }
+
+    @Test
+    void testSaveTransactions() throws Exception {
+        // GIVEN
+        final var request = TaskTriggerBuilder.newTrigger("savePerson").state("Paul").build();
+        var trigger = triggerService.queue(request);
+
+        // WHEN
+        hibernateAsserts.reset();
+        triggerService.run(trigger);
+
+        // THEN
+        // AND one the service, one the event and one more status update
+        hibernateAsserts.assertTrxCount(3);
+        assertThat(personRepository.count()).isOne();
+    }
+
+    
+    @Test
+    void testTrxCountTriggerService() throws Exception {
+        // GIVEN
+        final var request = TaskTriggerBuilder.newTrigger("savePerson").state("Paul").build();
+        var trigger = triggerService.queue(request);
+        inTrx.set(true);
+
+        // WHEN
+        hibernateAsserts.reset();
+        triggerService.run(trigger);
+
+        // THEN
+        hibernateAsserts.assertTrxCount(1);
         assertThat(personRepository.count()).isOne();
     }
 
