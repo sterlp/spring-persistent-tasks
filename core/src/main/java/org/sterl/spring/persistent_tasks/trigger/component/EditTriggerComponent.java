@@ -19,7 +19,7 @@ import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerAddedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerCanceledEvent;
-import org.sterl.spring.persistent_tasks.trigger.event.TriggerCompleteEvent;
+import org.sterl.spring.persistent_tasks.trigger.event.TriggerSuccessEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerFailedEvent;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
@@ -55,8 +55,8 @@ public class EditTriggerComponent {
         result.ifPresent(t -> {
             t.complete(e);
 
-            if (t.getData().getStatus() != TriggerStatus.FAILED) {
-                publisher.publishEvent(new TriggerCompleteEvent(t));
+            if (t.getData().getStatus() == TriggerStatus.SUCCESS) {
+                publisher.publishEvent(new TriggerSuccessEvent(t));
                 log.debug("Setting {} to status={} {}", key, t.getData().getStatus(),
                         e == null ? "" : "error=" + e.getClass().getSimpleName());
             } else {

@@ -353,4 +353,34 @@ class TriggerServiceTest extends AbstractSpringTest {
         assertThat(rescheduledTasks).hasSize(1);
         assertThat(rescheduledTasks.get(0).getKey()).isEqualTo(t1.getKey());
     }
+    
+    @Test
+    void testUnknownTriggersNoRetry() {
+        // GIVEN
+        var t = triggerRepository.save(new TriggerEntity(new TriggerKey("fooTask-unknown")));
+        
+        // WHEN
+        runNextTrigger();
+        
+        // WHEN
+        var triggerData = persistentTaskService.getLastTriggerData(t.getKey()).get();
+        assertThat(triggerData.getStatus()).isEqualTo(TriggerStatus.FAILED);
+        assertThat(triggerData.getExceptionName()).isEqualTo(IllegalStateException.class.getName());
+    }
+    
+    @Test
+    void testBadStateNoRetry() {
+        var t = triggerRepository.save(new TriggerEntity(
+                new TriggerKey("slowTask")
+            ).withState(new byte[] {12, 54})
+        );
+        
+        // WHEN
+        runNextTrigger();
+        
+        // WHEN
+        var triggerData = persistentTaskService.getLastTriggerData(t.getKey()).get();
+        assertThat(triggerData.getStatus()).isEqualTo(TriggerStatus.FAILED);
+        assertThat(triggerData.getExceptionName()).isEqualTo(RuntimeException.class.getName());
+    }
 }

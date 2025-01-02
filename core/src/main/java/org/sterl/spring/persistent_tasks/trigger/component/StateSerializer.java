@@ -33,7 +33,7 @@ public class StateSerializer {
         try (ObjectInput in = new ObjectInputStream(bis)) {
             return (Serializable)in.readObject();
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            throw new RuntimeException("Failed to deserialize state of length " + bytes.length, ex);
         }
     }
 }
