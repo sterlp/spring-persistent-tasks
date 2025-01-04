@@ -163,7 +163,6 @@ public class AbstractSpringTest {
 
     @BeforeEach
     public void beforeEach() throws Exception {
-        hibernateAsserts.reset();
         triggerService.deleteAll();
         historyService.deleteAll();
         asserts.clear();
@@ -171,6 +170,7 @@ public class AbstractSpringTest {
         schedulerB.setMaxThreads(20);
         schedulerA.start();
         schedulerB.start();
+        hibernateAsserts.reset();
     }
 
     @AfterEach

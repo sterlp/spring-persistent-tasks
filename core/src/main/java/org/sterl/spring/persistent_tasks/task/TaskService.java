@@ -27,7 +27,6 @@ public class TaskService {
         return this.taskRepository.all();
     }
 
-
     public <T extends Serializable> Optional<PersistentTask<T>> get(TaskId<T> id) {
         return taskRepository.get(id);
     }

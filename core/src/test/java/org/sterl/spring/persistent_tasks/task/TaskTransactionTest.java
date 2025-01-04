@@ -1,0 +1,129 @@
+package org.sterl.spring.persistent_tasks.task;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.sterl.spring.persistent_tasks.AbstractSpringTest;
+import org.sterl.spring.persistent_tasks.api.PersistentTask;
+import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
+import org.sterl.spring.persistent_tasks.api.TransactionalTask;
+import org.sterl.spring.persistent_tasks.task.util.ReflectionUtil;
+import org.sterl.spring.sample_app.person.PersonBE;
+import org.sterl.spring.sample_app.person.PersonRepository;
+
+import lombok.RequiredArgsConstructor;
+
+class TaskTransactionTest extends AbstractSpringTest {
+
+    @Component("transactionalClass")
+    @Transactional(timeout = 5, propagation = Propagation.MANDATORY)
+    @RequiredArgsConstructor
+    static class TransactionalClass implements PersistentTask<String> {
+        private final PersonRepository personRepository;
+        @Override
+        public void accept(String name) {
+            personRepository.save(new PersonBE(name));
+        }
+    }
+    @Component("transactionalMethod")
+    @RequiredArgsConstructor
+    static class TransactionalMethod implements PersistentTask<String> {
+        private final PersonRepository personRepository;
+        @Transactional(timeout = 6, propagation = Propagation.MANDATORY)
+        @Override
+        public void accept(String name) {
+            personRepository.save(new PersonBE(name));
+        }
+    }
+
+    /**
+     * A closure cannot be annotated, so we use a anonymous class
+     */
+    @Configuration
+    static class Config {
+        @Bean("transactionalAnonymous")
+        PersistentTask<String> transactionalAnonymous(PersonRepository personRepository) {
+            return new PersistentTask<String>() {
+                @Transactional(timeout = 7, propagation = Propagation.MANDATORY)
+                @Override
+                public void accept(String name) {
+                    personRepository.save(new PersonBE(name));
+                } 
+            };
+        }
+        @Bean("transactionalClosure")
+        TransactionalTask<String> transactionalClosure(PersonRepository personRepository) {
+            return name -> {
+                personRepository.save(new PersonBE(name));
+                personRepository.save(new PersonBE(name));
+            };
+        }
+    }
+    
+    @Autowired PersonRepository personRepository;
+
+    @Autowired @Qualifier("transactionalClass")
+    PersistentTask<String> transactionalClass;
+    @Autowired @Qualifier("transactionalMethod")
+    PersistentTask<String> transactionalMethod;
+    @Autowired @Qualifier("transactionalAnonymous")
+    PersistentTask<String> transactionalAnonymous;
+
+    @Test
+    void testFindTransactionAnnotation() {
+        var a = ReflectionUtil.getAnnotation(transactionalClass, Transactional.class);
+        assertThat(a).isNotNull();
+        assertThat(a.timeout()).isEqualTo(5);
+        
+        a = ReflectionUtil.getAnnotation(transactionalMethod, Transactional.class);
+        assertThat(a).isNotNull();
+        assertThat(a.timeout()).isEqualTo(6);
+        
+        a = ReflectionUtil.getAnnotation(transactionalAnonymous, Transactional.class);
+        assertThat(a).isNotNull();
+        assertThat(a.timeout()).isEqualTo(7);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"transactionalClass", "transactionalMethod", "transactionalClosure"})
+    void testTransactionalTask(String task) {
+        // GIVEN
+        var t = triggerService.queue(TaskTriggerBuilder
+                .newTrigger(task, "test").build());
+        
+        // WHEN
+        personRepository.deleteAllInBatch();
+        hibernateAsserts.reset();
+        triggerService.run(t).get();
+        
+        // THEN
+        hibernateAsserts.assertTrxCount(1);
+        assertThat(personRepository.count()).isEqualTo(2);
+    }
+
+    public static DefaultTransactionDefinition convertTransactionalToDefinition(Transactional transactional) {
+        DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+
+        // Map Transactional attributes to DefaultTransactionDefinition
+        def.setIsolationLevel(transactional.isolation().value());
+        def.setPropagationBehavior(transactional.propagation().value());
+        def.setTimeout(transactional.timeout());
+        def.setReadOnly(transactional.readOnly());
+        // No direct mapping for 'rollbackFor' or 'noRollbackFor'
+        // Set a name if desired (e.g., based on transactional class/method)
+        def.setName("TransactionalDefinition");
+
+        return def;
+    }
+
+}

@@ -34,6 +34,10 @@ export interface HistoryOverview {
     runningDurationInMs: number;
 }
 
+export interface PersistentTask<T> {
+    transactional: boolean;
+}
+
 export interface RetryStrategy {
 }
 
@@ -43,12 +47,10 @@ export interface LinearRetryStrategy extends RetryStrategy {
 export interface MultiplicativeRetryStrategy extends RetryStrategy {
 }
 
-export interface SpringBeanTask<T> extends Consumer<T> {
-    transactional: boolean;
-}
-
-export interface Task<T> extends SpringBeanTask<T> {
-    id: TaskId<T>;
+/**
+ * @deprecated
+ */
+export interface SpringBeanTask<T> extends PersistentTask<T> {
 }
 
 export interface TaskId<T> extends Serializable {
@@ -56,6 +58,9 @@ export interface TaskId<T> extends Serializable {
 }
 
 export interface TaskTriggerBuilder<T> {
+}
+
+export interface TransactionalTask<T> extends PersistentTask<T> {
 }
 
 export interface Trigger {
@@ -96,9 +101,6 @@ export interface PageMetadata {
 }
 
 export interface Serializable {
-}
-
-export interface Consumer<T> {
 }
 
 export type TriggerStatus = "WAITING" | "RUNNING" | "SUCCESS" | "FAILED" | "CANCELED";
