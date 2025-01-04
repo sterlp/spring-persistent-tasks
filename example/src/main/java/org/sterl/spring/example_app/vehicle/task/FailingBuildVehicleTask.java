@@ -28,6 +28,6 @@ public class FailingBuildVehicleTask implements SpringBeanTask<Vehicle> {
         } catch (InterruptedException e) {
             Thread.interrupted();
         }
-        throw new RuntimeException("This task will always fail!");
+        throw new RuntimeException("This persistentTask will always fail!");
     }
 }

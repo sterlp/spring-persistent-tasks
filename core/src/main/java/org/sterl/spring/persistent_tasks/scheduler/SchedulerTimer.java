@@ -35,7 +35,7 @@ class SchedulerTimer {
         }
     }
 
-    @Scheduled(fixedDelayString = "${spring.persistent-tasks.poll-task-timeout:300}", timeUnit = TimeUnit.SECONDS)
+    @Scheduled(fixedDelayString = "${spring.persistent-tasks.poll-persistentTask-timeout:300}", timeUnit = TimeUnit.SECONDS)
     void rescheduleAbandonedTasks() {
         var timeout = OffsetDateTime.now().minus(taskTimeout);
         for (SchedulerService s : schedulerServices) {

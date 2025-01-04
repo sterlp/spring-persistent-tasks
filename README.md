@@ -59,7 +59,7 @@ public class ExampleApplication {
 @Component(BuildVehicleTask.NAME)
 @RequiredArgsConstructor
 @Slf4j
-public class BuildVehicleTask implements SpringBeanTask<Vehicle> {
+public class BuildVehicleTask implements PersistentTask<Vehicle> {
 
     private static final String NAME = "buildVehicleTask";
     public static final TaskId<Vehicle> ID = new TaskId<>(NAME);
@@ -109,7 +109,7 @@ Simple task will use defaults:
 
 ```java
 @Bean
-SpringBeanTask<Vehicle> task1(VehicleHttpConnector vehicleHttpConnector) {
+PersistentTask<Vehicle> task1(VehicleHttpConnector vehicleHttpConnector) {
     return v -> vehicleHttpConnector.send(v);
 }
 ```

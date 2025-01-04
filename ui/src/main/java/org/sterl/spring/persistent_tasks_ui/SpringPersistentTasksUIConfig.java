@@ -12,14 +12,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class SpringPersistentTasksUIConfig implements WebMvcConfigurer {
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/task-ui").setViewName("/task-ui/index.html");
-        //registry.addRedirectViewController("/task-ui/", "/task-ui");
+        registry.addViewController("/persistentTask-ui").setViewName("/persistentTask-ui/index.html");
+        //registry.addRedirectViewController("/persistentTask-ui/", "/persistentTask-ui");
     }
     
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/task-ui/assets/**") 
-            .addResourceLocations("classpath:/static/task-ui/assets/") 
+        registry.addResourceHandler("/persistentTask-ui/assets/**") 
+            .addResourceLocations("classpath:/static/persistentTask-ui/assets/") 
             .setCacheControl(CacheControl.maxAge(90, TimeUnit.DAYS));
     }
 }

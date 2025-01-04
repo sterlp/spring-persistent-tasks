@@ -2,7 +2,6 @@ package org.sterl.spring.persistent_tasks.scheduler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.temporal.ChronoUnit;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -14,8 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.api.RetryStrategy;
-import org.sterl.spring.persistent_tasks.api.RetryStrategy.MultiplicativeRetryStrategy;
-import org.sterl.spring.persistent_tasks.api.SpringBeanTask;
+import org.sterl.spring.persistent_tasks.api.PersistentTask;
 import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
@@ -32,8 +30,8 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
     @Configuration
     static class Config {
         @Bean
-        SpringBeanTask<String> savePerson(PersonRepository personRepository) {
-            return new SpringBeanTask<>() {
+        PersistentTask<String> savePerson(PersonRepository personRepository) {
+            return new PersistentTask<>() {
                 @Transactional
                 @Override
                 public void accept(String name) {
@@ -116,6 +114,8 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         // GIVEN
         final var triggerRequest = TaskTriggerBuilder.newTrigger("savePerson").state("Paul").build();
         sendError.set(true);
+        inTrx.set(true);
+
         // WHEN
         var key = subject.runOrQueue(triggerRequest);
         // THEN

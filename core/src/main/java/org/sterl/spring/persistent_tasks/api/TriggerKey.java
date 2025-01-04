@@ -32,7 +32,7 @@ public class TriggerKey implements Serializable {
         return new TaskId<>(taskName);
     }
     /**
-     * Builds a trigger for the given task name
+     * Builds a trigger for the given persistentTask name
      */
     public TriggerKey(String taskName) {
         id = UUID.randomUUID().toString();
@@ -40,7 +40,7 @@ public class TriggerKey implements Serializable {
     }
 
     /**
-     * Just triggers the given task to be executed using <code>null</code> as state.
+     * Just triggers the given persistentTask to be executed using <code>null</code> as state.
      */
     public <T extends Serializable> AddTriggerRequest<T> newTrigger(TaskId<T> taskId) {
         return newTrigger(taskId, null);

@@ -1,14 +1,13 @@
 package org.sterl.spring.persistent_tasks.task.config;
 
+import java.io.Serializable;
 import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.GenericApplicationContext;
-import org.sterl.spring.persistent_tasks.api.SpringBeanTask;
+import org.sterl.spring.persistent_tasks.api.PersistentTask;
 import org.sterl.spring.persistent_tasks.api.TaskId;
-import org.sterl.spring.persistent_tasks.task.model.RegisteredTask;
 import org.sterl.spring.persistent_tasks.task.repository.TaskRepository;
 
 import lombok.extern.slf4j.Slf4j;
@@ -20,22 +19,20 @@ public class TaskConfig {
     @Autowired
     void configureSimpleTasks(GenericApplicationContext context,
             TaskRepository taskRepository) {
-        final var simpleTasks = context.getBeansOfType(SpringBeanTask.class);
-        for(Entry<String, SpringBeanTask> t : simpleTasks.entrySet()) {
-            final var registeredTask = new RegisteredTask<>(t.getKey(), t.getValue());
-            taskRepository.addTask(registeredTask);
+        final var simpleTasks = context.getBeansOfType(PersistentTask.class);
+        for(Entry<String, PersistentTask> t : simpleTasks.entrySet()) {
+            var id = taskRepository.addTask(
+                    (TaskId<Serializable>)TaskId.of(t.getKey()), t.getValue());
 
-            addTaskIdIfMissing(context, registeredTask);
+            addTaskIdIfMissing(context, id, t.getValue());
         }
     }
-    private void addTaskIdIfMissing(GenericApplicationContext context, final RegisteredTask<?> registeredTask) {
-        final var taskIdContextName = registeredTask.getId().name() + "Id";
+    private void addTaskIdIfMissing(GenericApplicationContext context, 
+            TaskId<Serializable> id, PersistentTask<?> task) {
+        final var taskIdContextName = id.name() + "Id";
         if (!context.containsBean(taskIdContextName)) {
-            log.info("Adding TaskId={} with name={} to spring context", registeredTask.getId(), taskIdContextName);
-            var beanDefinition = new GenericBeanDefinition();
-            beanDefinition.setBeanClass(registeredTask.getId().getClass());
-            context.registerBean(taskIdContextName,
-                    TaskId.class, () -> registeredTask.getId());
+            log.info("Adding {} with name={} to spring context", id, taskIdContextName);
+            context.registerBean(taskIdContextName, TaskId.class, () -> id);
         }
     }
 }

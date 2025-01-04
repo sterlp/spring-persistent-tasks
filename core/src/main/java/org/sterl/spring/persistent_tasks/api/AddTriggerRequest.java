@@ -5,7 +5,7 @@ import java.time.OffsetDateTime;
 
 /**
 /**
- * For any registered task a task trigger represent one unit of work, executing this task once.
+ * For any registered persistentTask a persistentTask trigger represent one unit of work, executing this persistentTask once.
  * @param <T> state type which has to be of {@link Serializable}
  */
 public record AddTriggerRequest<T extends Serializable>(

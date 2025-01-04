@@ -32,7 +32,7 @@ class TriggerServiceTest extends AbstractSpringTest {
     @Autowired
     private TaskRepository taskRepository;
 
-    // ensure task in the spring context
+    // ensure persistentTask in the spring context
     @Autowired
     private TaskId<String> task1Id;
     @Autowired

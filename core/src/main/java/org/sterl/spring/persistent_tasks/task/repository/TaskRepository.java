@@ -2,7 +2,6 @@ package org.sterl.spring.persistent_tasks.task.repository;
 
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -10,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
-import org.sterl.spring.persistent_tasks.api.Task;
+import org.sterl.spring.persistent_tasks.api.PersistentTask;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 
 import lombok.extern.slf4j.Slf4j;
@@ -18,56 +17,48 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public class TaskRepository {
-    private final Map<TaskId<? extends Serializable>, Task<?>> tasks = new ConcurrentHashMap<>();
+    private final Map<TaskId<? extends Serializable>, PersistentTask<? extends Serializable>> persistentTasks = new ConcurrentHashMap<>();
 
-    public TaskRepository(List<Task<?>> tasks) {
-        super();
-        for (Task<?> task : tasks) {
-            addTask(task);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T extends Serializable> Task<T> remove(Task<T> task) {
-        if (task == null) {
+    public <T extends Serializable> PersistentTask<? extends Serializable> remove(TaskId<T> taskId) {
+        if (taskId == null) {
             return null;
         }
-        return (Task<T>)tasks.remove(task.getId());
+        return persistentTasks.remove(taskId);
     }
 
-    public <T extends Serializable> TaskId<T> addTask(Task<T> task) {
-        if (contains(task.getId())) {
-            throw new IllegalStateException("The task id " + task.getId() + " is already used!");
+    public <T extends Serializable> TaskId<T> addTask(@NonNull TaskId<T> taskId, PersistentTask<T> task) {
+        if (contains(taskId)) {
+            throw new IllegalStateException("The " + taskId + " is already used!");
         }
-        log.info("Adding task={} to={}", task.getId(), task.getClass());
-        this.tasks.put(task.getId(), task);
-        return task.getId();
+        log.info("Adding {} to={}", taskId, task.getClass());
+        this.persistentTasks.put(taskId, task);
+        return taskId;
     }
 
     @NonNull
     @SuppressWarnings("unchecked")
-    public <T extends Serializable> Optional<Task<T>> get(@NonNull TaskId<T> taskId) {
+    public <T extends Serializable> Optional<PersistentTask<T>> get(@NonNull TaskId<T> taskId) {
         assert taskId != null;
-        return Optional.ofNullable((Task<T>)tasks.get(taskId));
+        return Optional.ofNullable((PersistentTask<T>)persistentTasks.get(taskId));
     }
 
     /**
-     * Removes all tasks, should only be used for testing!
+     * Removes all persistentTasks, should only be used for testing!
      */
     public void clear() {
-        log.warn("*** All tasks {} will be removed now! ***", tasks.size());
-        tasks.clear();
+        log.warn("*** All persistentTasks {} will be removed now! ***", persistentTasks.size());
+        persistentTasks.clear();
     }
 
     public boolean contains(String name) {
         return contains(new TaskId<>(name));
     }
 
-    public boolean contains(TaskId<?> id) {
-        return tasks.containsKey(id);
+    public boolean contains(TaskId<? extends Serializable> id) {
+        return persistentTasks.containsKey(id);
     }
 
     public Set<TaskId<? extends Serializable>> all() {
-        return new HashSet<>(tasks.keySet());
+        return new HashSet<>(persistentTasks.keySet());
     }
 }

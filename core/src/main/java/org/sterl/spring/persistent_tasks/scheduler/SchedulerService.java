@@ -90,7 +90,7 @@ public class SchedulerService {
     }
 
     /**
-     * Simply triggers the next task which is now due to be executed
+     * Simply triggers the next persistentTask which is now due to be executed
      */
     @NonNull
     public List<Future<TriggerKey>> triggerNextTasks() {
@@ -134,7 +134,7 @@ public class SchedulerService {
                 trigger = triggerService.markTriggersAsRunning(trigger, name);
                 pingRegistry().addRunning(1);
             } else {
-                log.debug("Currently not enough free thread available {} of {} in use. Task {} queued.", 
+                log.debug("Currently not enough free thread available {} of {} in use. PersistentTask {} queued.", 
                         taskExecutor.getFreeThreads(), taskExecutor.getMaxThreads(), trigger.getKey());
             }
             return trigger;

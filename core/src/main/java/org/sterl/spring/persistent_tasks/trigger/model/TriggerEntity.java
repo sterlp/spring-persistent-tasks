@@ -69,7 +69,7 @@ public class TriggerEntity implements HasTriggerData {
     public TriggerEntity cancel() {
         this.data.setEnd(OffsetDateTime.now());
         this.data.setStatus(TriggerStatus.CANCELED);
-        this.data.setExceptionName("Task canceled");
+        this.data.setExceptionName("PersistentTask canceled");
         this.data.setRunningDurationInMs(null);
         return this;
     }

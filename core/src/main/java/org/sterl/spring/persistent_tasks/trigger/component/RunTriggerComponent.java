@@ -9,7 +9,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.sterl.spring.persistent_tasks.api.Task;
+import org.sterl.spring.persistent_tasks.api.PersistentTask;
 import org.sterl.spring.persistent_tasks.task.TaskService;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerRunningEvent;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
@@ -66,17 +66,17 @@ public class RunTriggerComponent {
     }
     @RequiredArgsConstructor
     private class TaskAndState implements Callable<Optional<TriggerEntity>> {
-        final Task<Serializable> task;
+        final PersistentTask<Serializable> persistentTask;
         final Serializable state;
         final TriggerEntity trigger;
 
         boolean isTransactional() {
-            return task.isTransactional();
+            return persistentTask.isTransactional();
         }
         public Optional<TriggerEntity> call() {
             eventPublisher.publishEvent(new TriggerRunningEvent(trigger));
 
-            task.accept(state);
+            persistentTask.accept(state);
 
             var result = editTrigger.completeTaskWithSuccess(trigger.getKey());
             editTrigger.deleteTrigger(trigger);
@@ -90,7 +90,7 @@ public class RunTriggerComponent {
             @Nullable Exception e) {
 
         var trigger = taskAndState.trigger;
-        var task = taskAndState.task;
+        var task = taskAndState.persistentTask;
         var result = editTrigger.completeTaskWithStatus(trigger.getKey(), e);
 
         if (task != null &&
