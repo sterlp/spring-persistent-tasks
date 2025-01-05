@@ -124,7 +124,7 @@ public class TriggerService {
     }
 
     /**
-     * If you changed your mind, cancel the task
+     * If you changed your mind, cancel the persistentTask
      */
     public Optional<TriggerEntity> cancel(TriggerKey key) {
         return editTrigger.cancelTask(key);

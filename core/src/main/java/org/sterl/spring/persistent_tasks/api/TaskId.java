@@ -8,7 +8,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Represents the ID of a task, which is currently not running.
+ * Represents the ID of a persistentTask, which is currently not running.
  */
 public record TaskId<T extends Serializable>(String name) implements Serializable {
 

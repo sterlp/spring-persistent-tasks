@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.sterl.spring.persistent_tasks.api.SpringBeanTask;
+import org.sterl.spring.persistent_tasks.api.PersistentTask;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
 import org.sterl.spring.persistent_tasks.history.HistoryService;
@@ -111,10 +111,10 @@ public class AbstractSpringTest {
         }
 
         /**
-         * This task will trigger task2
+         * This persistentTask will trigger task2
          */
         @Bean
-        SpringBeanTask<String> task1(ApplicationEventPublisher publisher, AsyncAsserts asserts) {
+        PersistentTask<String> task1(ApplicationEventPublisher publisher, AsyncAsserts asserts) {
             return (String state) -> {
                 asserts.info("task1::" + state);
                 publisher.publishEvent(TriggerTaskCommand.of("task2", "task1::" + state));
@@ -122,13 +122,13 @@ public class AbstractSpringTest {
         }
 
         @Bean
-        SpringBeanTask<String> task2(AsyncAsserts asserts) {
+        PersistentTask<String> task2(AsyncAsserts asserts) {
             return state -> asserts.info("task2::" + state);
         }
 
         @Component(Task3.NAME)
         @RequiredArgsConstructor
-        public static class Task3 implements SpringBeanTask<String> {
+        public static class Task3 implements PersistentTask<String> {
             public static final String NAME = "task3";
             public static final TaskId<String> ID = new TaskId<>(NAME);
 
@@ -141,7 +141,7 @@ public class AbstractSpringTest {
         }
 
         @Bean
-        SpringBeanTask<Long> slowTask(AsyncAsserts asserts) {
+        PersistentTask<Long> slowTask(AsyncAsserts asserts) {
             return sleepTime -> {
                 try {
                     if (sleepTime == null) {
@@ -163,7 +163,6 @@ public class AbstractSpringTest {
 
     @BeforeEach
     public void beforeEach() throws Exception {
-        hibernateAsserts.reset();
         triggerService.deleteAll();
         historyService.deleteAll();
         asserts.clear();
@@ -171,6 +170,7 @@ public class AbstractSpringTest {
         schedulerB.setMaxThreads(20);
         schedulerA.start();
         schedulerB.start();
+        hibernateAsserts.reset();
     }
 
     @AfterEach

@@ -2,7 +2,6 @@ package org.sterl.spring.persistent_tasks.scheduler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.temporal.ChronoUnit;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -11,11 +10,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
+import org.sterl.spring.persistent_tasks.api.PersistentTask;
 import org.sterl.spring.persistent_tasks.api.RetryStrategy;
-import org.sterl.spring.persistent_tasks.api.RetryStrategy.MultiplicativeRetryStrategy;
-import org.sterl.spring.persistent_tasks.api.SpringBeanTask;
+import org.sterl.spring.persistent_tasks.api.TransactionalTask;
 import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
@@ -26,15 +24,29 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
 
     private SchedulerService subject;
     private static AtomicBoolean sendError = new AtomicBoolean(false);
-    private static AtomicBoolean inTrx = new AtomicBoolean(false);
     @Autowired private PersonRepository personRepository;
 
     @Configuration
     static class Config {
         @Bean
-        SpringBeanTask<String> savePerson(PersonRepository personRepository) {
-            return new SpringBeanTask<>() {
-                @Transactional
+        TransactionalTask<String> savePersonInTrx(PersonRepository personRepository) {
+            return new TransactionalTask<String>() {
+                @Override
+                public void accept(String name) {
+                    personRepository.save(new PersonBE(name));
+                    if (sendError.get()) {
+                        throw new RuntimeException("Error requested for " + name);
+                    }
+                }
+                public RetryStrategy retryStrategy() {
+                    return RetryStrategy.THREE_RETRIES_IMMEDIATELY;
+                }
+            };
+        }
+        
+        @Bean
+        PersistentTask<String> savePersonNoTrx(PersonRepository personRepository) {
+            return new PersistentTask<>() {
                 @Override
                 public void accept(String name) {
                     personRepository.save(new PersonBE(name));
@@ -47,7 +59,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
                 }
                 @Override
                 public boolean isTransactional() {
-                    return inTrx.get();
+                    return false;
                 }
             };
         }
@@ -59,29 +71,12 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         subject = schedulerService;
         personRepository.deleteAllInBatch();
         sendError.set(false);
-        inTrx.set(false);
-    }
-    
-    @Test
-    void testSaveEntity() throws Exception {
-        // GIVEN
-        final var trigger = TaskTriggerBuilder.newTrigger("savePerson").state("Paul").build();
-
-        // WHEN
-        hibernateAsserts.reset();
-        subject.runOrQueue(trigger).get();
-
-        // THEN
-        // AND one the service, one the event and one more status update, 
-        // one more to save the trigger
-        hibernateAsserts.assertTrxCount(4);
-        assertThat(personRepository.count()).isOne();
     }
 
     @Test
     void testSaveTransactions() throws Exception {
         // GIVEN
-        final var request = TaskTriggerBuilder.newTrigger("savePerson").state("Paul").build();
+        final var request = TaskTriggerBuilder.newTrigger("savePersonNoTrx").state("Paul").build();
         var trigger = triggerService.queue(request);
 
         // WHEN
@@ -98,9 +93,8 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
     @Test
     void testTrxCountTriggerService() throws Exception {
         // GIVEN
-        final var request = TaskTriggerBuilder.newTrigger("savePerson").state("Paul").build();
+        final var request = TaskTriggerBuilder.newTrigger("savePersonInTrx").state("Paul").build();
         var trigger = triggerService.queue(request);
-        inTrx.set(true);
 
         // WHEN
         hibernateAsserts.reset();
@@ -110,12 +104,31 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         hibernateAsserts.assertTrxCount(1);
         assertThat(personRepository.count()).isOne();
     }
+    
+    @Test
+    void testFailTrxCount() throws Exception {
+        // GIVEN
+        final var request = TaskTriggerBuilder.newTrigger("savePersonInTrx").state("Paul").build();
+        var trigger = triggerService.queue(request);
+        sendError.set(true);
+
+        // WHEN
+        hibernateAsserts.reset();
+        triggerService.run(trigger);
+
+        // THEN
+        // first the work which runs on error
+        // second the update to the trigger
+        // third to write the history
+        hibernateAsserts.assertTrxCount(3);
+    }
 
     @Test
     void testRollbackAndRetry() throws Exception {
         // GIVEN
-        final var triggerRequest = TaskTriggerBuilder.newTrigger("savePerson").state("Paul").build();
+        final var triggerRequest = TaskTriggerBuilder.newTrigger("savePersonInTrx").state("Paul").build();
         sendError.set(true);
+
         // WHEN
         var key = subject.runOrQueue(triggerRequest);
         // THEN

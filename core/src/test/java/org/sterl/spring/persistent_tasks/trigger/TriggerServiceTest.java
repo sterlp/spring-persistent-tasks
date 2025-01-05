@@ -32,7 +32,7 @@ class TriggerServiceTest extends AbstractSpringTest {
     @Autowired
     private TaskRepository taskRepository;
 
-    // ensure task in the spring context
+    // ensure persistentTask in the spring context
     @Autowired
     private TaskId<String> task1Id;
     @Autowired
@@ -57,6 +57,10 @@ class TriggerServiceTest extends AbstractSpringTest {
         final var triggerId = subject.queue(trigger).getKey();
 
         // THEN
+        hibernateAsserts.assertTrxCount(1);
+        // one for the trigger and two for the history
+        hibernateAsserts.assertInsertCount(3);
+        // AND
         final var e = subject.get(triggerId);
         assertThat(e).isPresent();
         assertThat(e.get().getData().getRunAt().toEpochSecond()).isEqualTo(triggerTime.toEpochSecond());

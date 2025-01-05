@@ -7,7 +7,7 @@ import java.util.concurrent.Callable;
 
 import org.junit.jupiter.api.Test;
 import org.sterl.spring.persistent_tasks.api.RetryStrategy;
-import org.sterl.spring.persistent_tasks.api.SpringBeanTask;
+import org.sterl.spring.persistent_tasks.api.PersistentTask;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 
@@ -17,7 +17,7 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
     void testFailedTasksAreRetried() throws Exception {
         // GIVEN
         TaskId<String> task = taskService.<String>replace("foo",
-                new SpringBeanTask<String>() {
+                new PersistentTask<String>() {
                     @Override
                     public void accept(String state) {
                         asserts.info(state);
