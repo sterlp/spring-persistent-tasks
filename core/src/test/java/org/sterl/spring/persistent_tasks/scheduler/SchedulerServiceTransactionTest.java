@@ -29,7 +29,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
     @Configuration
     static class Config {
         @Bean
-        PersistentTask<String> savePersonInTrx(PersonRepository personRepository) {
+        TransactionalTask<String> savePersonInTrx(PersonRepository personRepository) {
             return new TransactionalTask<String>() {
                 @Override
                 public void accept(String name) {
@@ -56,6 +56,10 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
                 }
                 public RetryStrategy retryStrategy() {
                     return RetryStrategy.THREE_RETRIES_IMMEDIATELY;
+                }
+                @Override
+                public boolean isTransactional() {
+                    return false;
                 }
             };
         }

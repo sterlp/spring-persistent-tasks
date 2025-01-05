@@ -23,11 +23,11 @@ public class TaskConfig {
         for(Entry<String, PersistentTask> t : simpleTasks.entrySet()) {
             var id = taskService.register(t.getKey(), t.getValue());
 
-            addTaskIdIfMissing(context, id, t.getValue());
+            addTaskIdIfMissing(context, id);
         }
     }
     private void addTaskIdIfMissing(GenericApplicationContext context, 
-            TaskId<Serializable> id, PersistentTask<?> task) {
+            TaskId<Serializable> id) {
         final var taskIdContextName = id.name() + "Id";
         if (!context.containsBean(taskIdContextName)) {
             log.info("Adding {} with name={} to spring context", id, taskIdContextName);
