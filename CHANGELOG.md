@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.4.0 - (2025-01-02)
+
+-  @Transactional Annotation support
+-  PersistentTask instead of Task or SpringBeanTask
+
+
+## v1.3.1 - (2025-01-02)
+
+-  Bugfixes
+-  Sprign Transaction Template support
+
 ## v1.3.0 - (2025-01-01)
 
 -   MariaDB support
