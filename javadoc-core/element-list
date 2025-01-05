@@ -27,9 +27,10 @@ org.sterl.spring.persistent_tasks.shared.repository
 org.sterl.spring.persistent_tasks.shared.stereotype
 org.sterl.spring.persistent_tasks.task
 org.sterl.spring.persistent_tasks.task.api
+org.sterl.spring.persistent_tasks.task.component
 org.sterl.spring.persistent_tasks.task.config
-org.sterl.spring.persistent_tasks.task.model
 org.sterl.spring.persistent_tasks.task.repository
+org.sterl.spring.persistent_tasks.task.util
 org.sterl.spring.persistent_tasks.trigger
 org.sterl.spring.persistent_tasks.trigger.api
 org.sterl.spring.persistent_tasks.trigger.component
