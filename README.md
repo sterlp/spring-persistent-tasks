@@ -114,6 +114,10 @@ PersistentTask<Vehicle> task1(VehicleHttpConnector vehicleHttpConnector) {
 }
 ```
 
+### Task Transaction Management
+
+[Transaction-Management Task](https://github.com/sterlp/spring-persistent-tasks/wiki/Transaction-Management)
+
 ## Queue a task execution
 
 ### Direct usage of the `TriggerService` or `PersistentTaskService`.
