@@ -1,5 +1,5 @@
 mvn versions:display-dependency-updates
-mvn versions:set -DnewVersion=1.3.1 -DgenerateBackupPoms=false
+mvn versions:set -DnewVersion=1.4.0-SNAPSHOT -DgenerateBackupPoms=false
 mvn versions:set -DnewVersion=1.3.2-SNAPSHOT -DgenerateBackupPoms=false
 
 ## postgres

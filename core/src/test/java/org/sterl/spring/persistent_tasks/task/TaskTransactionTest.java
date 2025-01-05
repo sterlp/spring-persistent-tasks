@@ -56,7 +56,7 @@ class TaskTransactionTest extends AbstractSpringTest {
         @Bean("transactionalAnonymous")
         PersistentTask<String> transactionalAnonymous(PersonRepository personRepository) {
             return new PersistentTask<String>() {
-                @Transactional(timeout = 7, propagation = Propagation.MANDATORY)
+                @Transactional(timeout = 7, propagation = Propagation.REQUIRES_NEW)
                 @Override
                 public void accept(String name) {
                     personRepository.save(new PersonBE(name));
@@ -111,9 +111,23 @@ class TaskTransactionTest extends AbstractSpringTest {
         assertThat(a.get().getIsolationLevel()).isEqualTo(Isolation.REPEATABLE_READ.value());
         
         a = subject.getTransactionTemplate(transactionalAnonymous);
-        assertThat(a).isPresent();
-        assertThat(a.get().getTimeout()).isEqualTo(7);
-        assertThat(a.get().getPropagationBehavior()).isEqualTo(Propagation.REQUIRED.value());
+        assertThat(a).isEmpty();
+    }
+    
+    @Test
+    void testRequiresNewHasOwnTransaction() {
+        // GIVEN
+        var t = triggerService.queue(TaskTriggerBuilder
+                .newTrigger("transactionalAnonymous", "test").build());
+        
+        // WHEN
+        personRepository.deleteAllInBatch();
+        hibernateAsserts.reset();
+        triggerService.run(t).get();
+        
+        // THEN
+        hibernateAsserts.assertTrxCount(3);
+        assertThat(personRepository.count()).isEqualTo(1);
     }
 
     @ParameterizedTest
