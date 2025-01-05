@@ -9,8 +9,10 @@ import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitializat
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.api.PersistentTask;
 import org.sterl.spring.persistent_tasks.api.TaskId;
+import org.sterl.spring.persistent_tasks.task.component.TaskTransactionComponent;
 import org.sterl.spring.persistent_tasks.task.repository.TaskRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TaskService {
 
+    private final TaskTransactionComponent taskTransactionComponent;
     private final TaskRepository taskRepository;
 
     @Transactional(readOnly = true)
@@ -29,6 +32,11 @@ public class TaskService {
 
     public <T extends Serializable> Optional<PersistentTask<T>> get(TaskId<T> id) {
         return taskRepository.get(id);
+    }
+    
+    public <T extends Serializable> Optional<TransactionTemplate> getTransactionTemplate(
+            PersistentTask<T> task) {
+        return taskTransactionComponent.getTransactionTemplate(task);
     }
 
     /**
@@ -66,6 +74,14 @@ public class TaskService {
     @SuppressWarnings("unchecked")
     public <T extends Serializable> TaskId<T> register(String name, PersistentTask<T> task) {
         var id = (TaskId<T>)TaskId.of(name);
+        return register(id, task);
+    }
+    /**
+     * A way to manually register a persistentTask, usually not needed as spring beans will be added automatically.
+     */
+    public <T extends Serializable> TaskId<T> register(TaskId<T> id, PersistentTask<T> task) {
+        // init any transaction as needed
+        taskTransactionComponent.getTransactionTemplate(task);
         return taskRepository.addTask(id, task);
     }
     /**
@@ -75,6 +91,6 @@ public class TaskService {
     public <T extends Serializable> TaskId<T> replace(String name, PersistentTask<T> task) {
         var id = (TaskId<T>)TaskId.of(name);
         taskRepository.remove(id);
-        return taskRepository.addTask(id, task);
+        return register(id, task);
     }
 }

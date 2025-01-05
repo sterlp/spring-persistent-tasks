@@ -10,9 +10,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.api.PersistentTask;
 import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
@@ -33,15 +33,17 @@ class TaskTransactionTest extends AbstractSpringTest {
         @Override
         public void accept(String name) {
             personRepository.save(new PersonBE(name));
+            personRepository.save(new PersonBE(name));
         }
     }
     @Component("transactionalMethod")
     @RequiredArgsConstructor
     static class TransactionalMethod implements PersistentTask<String> {
         private final PersonRepository personRepository;
-        @Transactional(timeout = 6, propagation = Propagation.MANDATORY)
+        @Transactional(timeout = 6, propagation = Propagation.MANDATORY, isolation = Isolation.REPEATABLE_READ)
         @Override
         public void accept(String name) {
+            personRepository.save(new PersonBE(name));
             personRepository.save(new PersonBE(name));
         }
     }
@@ -70,6 +72,7 @@ class TaskTransactionTest extends AbstractSpringTest {
         }
     }
     
+    @Autowired TaskService subject;
     @Autowired PersonRepository personRepository;
 
     @Autowired @Qualifier("transactionalClass")
@@ -93,6 +96,25 @@ class TaskTransactionTest extends AbstractSpringTest {
         assertThat(a).isNotNull();
         assertThat(a.timeout()).isEqualTo(7);
     }
+    
+    @Test
+    void testGetTransactionTemplate() {
+        var a = subject.getTransactionTemplate(transactionalClass);
+        assertThat(a).isPresent();
+        assertThat(a.get().getTimeout()).isEqualTo(5);
+        assertThat(a.get().getPropagationBehavior()).isEqualTo(Propagation.REQUIRED.value());
+        
+        a = subject.getTransactionTemplate(transactionalMethod);
+        assertThat(a).isPresent();
+        assertThat(a.get().getTimeout()).isEqualTo(6);
+        assertThat(a.get().getPropagationBehavior()).isEqualTo(Propagation.REQUIRED.value());
+        assertThat(a.get().getIsolationLevel()).isEqualTo(Isolation.REPEATABLE_READ.value());
+        
+        a = subject.getTransactionTemplate(transactionalAnonymous);
+        assertThat(a).isPresent();
+        assertThat(a.get().getTimeout()).isEqualTo(7);
+        assertThat(a.get().getPropagationBehavior()).isEqualTo(Propagation.REQUIRED.value());
+    }
 
     @ParameterizedTest
     @ValueSource(strings = {"transactionalClass", "transactionalMethod", "transactionalClosure"})
@@ -110,20 +132,4 @@ class TaskTransactionTest extends AbstractSpringTest {
         hibernateAsserts.assertTrxCount(1);
         assertThat(personRepository.count()).isEqualTo(2);
     }
-
-    public static DefaultTransactionDefinition convertTransactionalToDefinition(Transactional transactional) {
-        DefaultTransactionDefinition def = new DefaultTransactionDefinition();
-
-        // Map Transactional attributes to DefaultTransactionDefinition
-        def.setIsolationLevel(transactional.isolation().value());
-        def.setPropagationBehavior(transactional.propagation().value());
-        def.setTimeout(transactional.timeout());
-        def.setReadOnly(transactional.readOnly());
-        // No direct mapping for 'rollbackFor' or 'noRollbackFor'
-        // Set a name if desired (e.g., based on transactional class/method)
-        def.setName("TransactionalDefinition");
-
-        return def;
-    }
-
 }

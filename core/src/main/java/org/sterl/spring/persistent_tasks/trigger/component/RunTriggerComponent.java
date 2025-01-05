@@ -3,7 +3,6 @@ package org.sterl.spring.persistent_tasks.trigger.component;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.Optional;
-import java.util.concurrent.Callable;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.Nullable;
@@ -25,7 +24,6 @@ public class RunTriggerComponent {
     private final TaskService taskService;
     private final EditTriggerComponent editTrigger;
     private final ApplicationEventPublisher eventPublisher;
-    private final TransactionTemplate trx;
     private final StateSerializer serializer = new StateSerializer();
 
     /**
@@ -40,40 +38,41 @@ public class RunTriggerComponent {
         if (taskAndState == null) return Optional.of(trigger);
 
         try {
-            Optional<TriggerEntity> result;
-            if (taskAndState.isTransactional()) {
-                result = trx.execute(t -> taskAndState.call());
-            } else {
-                result = taskAndState.call();
-            }
-
-            return result;
+            return taskAndState.call();
         } catch (Exception e) {
             return handleTaskException(taskAndState, e);
         }
     }
+
     @Nullable
     private TaskAndState getTastAndState(TriggerEntity trigger) {
         try {
             var task = taskService.assertIsKnown(trigger.newTaskId());
+            var trx = taskService.getTransactionTemplate(task);
             var state = serializer.deserialize(trigger.getData().getState());
-            return new TaskAndState(task, state, trigger);
+            return new TaskAndState(task, trx, state, trigger);
         } catch (Exception e) {
             // this trigger is somehow crap, no retry and done.
-            handleTaskException(new TaskAndState(null, null, trigger), e);
+            handleTaskException(new TaskAndState(null, Optional.empty(), null, trigger), e);
             return null;
         }
     }
     @RequiredArgsConstructor
-    private class TaskAndState implements Callable<Optional<TriggerEntity>> {
+    private class TaskAndState {
         final PersistentTask<Serializable> persistentTask;
+        final Optional<TransactionTemplate> trx;
         final Serializable state;
         final TriggerEntity trigger;
 
-        boolean isTransactional() {
-            return persistentTask.isTransactional();
+        Optional<TriggerEntity> call() {
+            if (trx.isPresent()) {
+                return trx.get().execute(t -> runTask());
+            } else {
+                return runTask();
+            }
         }
-        public Optional<TriggerEntity> call() {
+
+        private Optional<TriggerEntity> runTask() {
             eventPublisher.publishEvent(new TriggerRunningEvent(trigger));
 
             persistentTask.accept(state);
@@ -82,7 +81,6 @@ public class RunTriggerComponent {
             editTrigger.deleteTrigger(trigger);
 
             return result;
-            
         }
     }
 
@@ -93,17 +91,18 @@ public class RunTriggerComponent {
         var task = taskAndState.persistentTask;
         var result = editTrigger.completeTaskWithStatus(trigger.getKey(), e);
 
-        if (task != null &&
-                task.retryStrategy().shouldRetry(trigger.getData().getExecutionCount(), e)) {
+        if (task != null 
+                && task.retryStrategy().shouldRetry(trigger.getData().getExecutionCount(), e)) {
 
             final OffsetDateTime retryAt = task.retryStrategy().retryAt(trigger.getData().getExecutionCount(), e);
 
             result = editTrigger.retryTrigger(trigger.getKey(), retryAt);
             if (result.isPresent()) {
+                var data = result.get().getData();
                 log.warn("{} failed, retry will be done at={} status={}!",
                         trigger.getKey(), 
-                        result.get().getData().getRunAt(),
-                        result.get().getData().getStatus(),
+                        data.getRunAt(),
+                        data.getStatus(),
                         e);
             } else {
                 log.error("Trigger with key={} not found and may be at a wrong state!",
@@ -117,5 +116,4 @@ public class RunTriggerComponent {
         }
         return result;
     }
-
 }
