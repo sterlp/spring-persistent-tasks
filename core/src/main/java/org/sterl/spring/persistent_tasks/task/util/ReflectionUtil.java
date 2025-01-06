@@ -12,13 +12,14 @@ public abstract class ReflectionUtil {
 
     public static <A extends Annotation> A getAnnotation(PersistentTask<? extends Serializable> inTask, Class<A> searchFor) {
         var task = AopProxyUtils.ultimateTargetClass(inTask);
-        A result = AnnotationUtils.findAnnotation(task, searchFor);
-        if (result != null) return result;
-
         var targetMethod = ReflectionUtils.findMethod(task, "accept", Serializable.class);
-        if (targetMethod == null) return null;
+        
+        A result = null;
+        // check the method first
+        if (targetMethod != null) result = AnnotationUtils.findAnnotation(targetMethod, searchFor);
+        // check the class if no method annotation was found
+        if (result == null) result = AnnotationUtils.findAnnotation(task, searchFor);
 
-        result = AnnotationUtils.findAnnotation(targetMethod, searchFor);
         return result;
     }
 }

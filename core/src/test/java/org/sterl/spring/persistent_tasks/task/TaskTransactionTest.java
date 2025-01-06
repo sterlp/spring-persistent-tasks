@@ -36,7 +36,9 @@ class TaskTransactionTest extends AbstractSpringTest {
             personRepository.save(new PersonBE(name));
         }
     }
+
     @Component("transactionalMethod")
+    @Transactional(timeout = 76, propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
     @RequiredArgsConstructor
     static class TransactionalMethod implements PersistentTask<String> {
         private final PersonRepository personRepository;
@@ -96,7 +98,7 @@ class TaskTransactionTest extends AbstractSpringTest {
         assertThat(a).isNotNull();
         assertThat(a.timeout()).isEqualTo(7);
     }
-    
+
     @Test
     void testGetTransactionTemplate() {
         var a = subject.getTransactionTemplate(transactionalClass);
