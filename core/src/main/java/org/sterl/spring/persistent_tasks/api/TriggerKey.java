@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.Nullable;
 
 import lombok.AllArgsConstructor;
