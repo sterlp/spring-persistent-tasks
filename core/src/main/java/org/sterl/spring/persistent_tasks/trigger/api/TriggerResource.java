@@ -37,11 +37,12 @@ public class TriggerResource {
     
     @GetMapping("triggers")
     public PagedModel<Trigger> list(
-            @RequestParam(name = "taskId", required = false) String taskId,
+            @RequestParam(name = "id", required = false) String taskId,
+            @RequestParam(name = "taskName", required = false) String name,
             @PageableDefault(size = 100, direction = Direction.DESC, sort = "id")
             Pageable pageable) {
         return FromTriggerEntity.INSTANCE.toPage(
-                triggerService.findAllTriggers(TaskId.of(taskId), pageable));
+                triggerService.findAllTriggers(TriggerKey.of(taskId, name), pageable));
     }
     
     @PostMapping("triggers/{taskName}/{id}/run-at")

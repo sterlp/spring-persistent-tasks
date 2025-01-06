@@ -94,8 +94,13 @@ public class TriggerService {
     }
 
     @Transactional(readOnly = true , timeout = 10)
+    public Page<TriggerEntity> findAllTriggers(TriggerKey key, Pageable page) {
+        return this.readTrigger.listTriggers(key, page);
+    }
+    
+    @Transactional(readOnly = true , timeout = 10)
     public Page<TriggerEntity> findAllTriggers(TaskId<?> task, Pageable page) {
-        return this.editTrigger.listTriggers(task, page);
+        return this.readTrigger.listTriggers(task, page);
     }
 
     public void deleteAll() {
@@ -137,7 +142,7 @@ public class TriggerService {
      * @return the amount of stored tasks
      */
     @Transactional(timeout = 5, readOnly = true)
-    public long countTriggers(@Nullable TaskId<String> taskId) {
+    public long countTriggers(@Nullable TaskId<?> taskId) {
         if (taskId == null || taskId.name() == null) {
             return 0L;
         }

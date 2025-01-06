@@ -24,10 +24,9 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
         return new TaskTriggerBuilder<>(this).state(state).build();
     }
 
-    @SuppressWarnings("rawtypes")
-    public static TaskId<?> of(String taskId) {
+    public static TaskId<Serializable> of(String taskId) {
         if (taskId == null || taskId.isBlank()) return null;
-        return new TaskId(taskId);
+        return new TaskId<>(taskId);
     }
     
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)

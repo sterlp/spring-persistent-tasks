@@ -7,20 +7,17 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
-import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerAddedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerCanceledEvent;
-import org.sterl.spring.persistent_tasks.trigger.event.TriggerSuccessEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerFailedEvent;
+import org.sterl.spring.persistent_tasks.trigger.event.TriggerSuccessEvent;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
 
@@ -36,11 +33,6 @@ public class EditTriggerComponent {
 
     private final StateSerializer stateSerializer = new StateSerializer();
     private final TriggerRepository triggerRepository;
-
-    public Page<TriggerEntity> listTriggers(TaskId<?> task, Pageable page) {
-        if (task == null) return triggerRepository.findAll(page);
-        return triggerRepository.findAll(task.name(), page);
-    }
 
     public Optional<TriggerEntity> completeTaskWithSuccess(TriggerKey key, Serializable state) {
         return this.completeTaskWithStatus(key, state, null);

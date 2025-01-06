@@ -9,8 +9,10 @@ import org.springframework.data.web.PagedModel;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.sterl.spring.persistent_tasks.api.Trigger;
+import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.history.HistoryService;
 import org.sterl.spring.persistent_tasks.history.api.HistoryConverter.FromLastTriggerStateEntity;
 import org.sterl.spring.persistent_tasks.history.api.HistoryConverter.FromTriggerStateDetailEntity;
@@ -32,9 +34,11 @@ public class TriggerHistoryResource {
 
     @GetMapping("history")
     public PagedModel<Trigger> list(
+            @RequestParam(name = "id", required = false) String taskId,
+            @RequestParam(name = "taskName", required = false) String name,
             @PageableDefault(size = 100, direction = Direction.DESC, sort = "id") Pageable pageable) {
 
         return FromLastTriggerStateEntity.INSTANCE.toPage( //
-                historyService.findTriggerState(null, pageable));
+                historyService.findTriggerState(TriggerKey.of(taskId, name), pageable));
     }
 }

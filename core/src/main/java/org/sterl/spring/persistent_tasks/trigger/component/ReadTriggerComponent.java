@@ -1,10 +1,14 @@
 package org.sterl.spring.persistent_tasks.trigger.component;
 
+import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.lang.Nullable;
+import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalCompontant;
@@ -45,5 +49,16 @@ public class ReadTriggerComponent {
     
     public List<TriggerEntity> findTriggersLastPingAfter(OffsetDateTime dateTime) {
         return triggerRepository.findTriggersLastPingAfter(dateTime);
+    }
+
+    public Page<TriggerEntity> listTriggers(TriggerKey key, Pageable page) {
+        if (key == null) return triggerRepository.findAll(page);
+        if (key.getId() == null) return listTriggers(key.toTaskId(), page);
+        return listTriggers(key.toTaskId(), page);
+    }
+
+    public Page<TriggerEntity> listTriggers(TaskId<? extends Serializable> task, Pageable page) {
+        if (task == null) return triggerRepository.findAll(page);
+        return triggerRepository.findAll(task.name(), page);
     }
 }

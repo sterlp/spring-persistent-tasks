@@ -8,7 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
-import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryDetailEntity;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryLastStateEntity;
@@ -78,7 +77,15 @@ public class HistoryService {
         return triggerHistoryDetailRepository.countByKey(key);
     }
 
-    public Page<TriggerHistoryLastStateEntity> findTriggerState(TaskId<?> taskId, Pageable page) {
-        return triggerHistoryDetailRepository.findAll(page);
+    public Page<TriggerHistoryLastStateEntity> findTriggerState(
+            TriggerKey key, Pageable page) {
+        if (key == null) return triggerHistoryDetailRepository.findAll(page);
+        if (key.getId() == null && key.getTaskName() != null) {
+            return triggerHistoryDetailRepository.findAll(key.getTaskName(), page);
+        }
+        return triggerHistoryDetailRepository.findAll(
+                key.getId(),
+                key.getTaskName(),
+                page);
     }
 }
