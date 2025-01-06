@@ -55,14 +55,12 @@ public class TriggerEntity implements HasTriggerData {
     private OffsetDateTime lastPing;
 
     public TriggerEntity(TriggerKey key) {
-        if (this.data == null)
-            this.data = new TriggerData();
+        if (this.data == null) this.data = new TriggerData();
         this.data.setKey(key);
     }
 
     public TriggerKey getKey() {
-        if (data == null)
-            return null;
+        if (data == null) return null;
         return data.getKey();
     }
 

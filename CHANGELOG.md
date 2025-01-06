@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.4.1 - (2025-01-02)
+
+-  Added state to the TriggerLifeCycleEvent
+-  @Transactional annotation is taken from the method first
+
 ## v1.4.0 - (2025-01-02)
 
 -  @Transactional Annotation support

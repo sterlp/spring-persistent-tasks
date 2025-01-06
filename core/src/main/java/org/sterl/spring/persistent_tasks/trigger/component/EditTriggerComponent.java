@@ -81,7 +81,8 @@ public class EditTriggerComponent {
                 .findByKey(id) //
                 .map(t -> {
                     t.cancel();
-                    publisher.publishEvent(new TriggerCanceledEvent(t));
+                    publisher.publishEvent(new TriggerCanceledEvent(t, 
+                            stateSerializer.deserializeOrNull(t.getData().getState())));
                     triggerRepository.delete(t);
                     return t;
                 });

@@ -7,6 +7,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class StateSerializer {
 
     public byte[] serialize(final Serializable obj) {
@@ -34,6 +37,15 @@ public class StateSerializer {
             return (Serializable)in.readObject();
         } catch (Exception ex) {
             throw new RuntimeException("Failed to deserialize state of length " + bytes.length, ex);
+        }
+    }
+    
+    public Serializable deserializeOrNull(byte[] bytes) {
+        try {
+            return deserialize(bytes);
+        } catch (Exception e) {
+            log.error("Failed to deserialize bytes", e);
+            return null;
         }
     }
 }

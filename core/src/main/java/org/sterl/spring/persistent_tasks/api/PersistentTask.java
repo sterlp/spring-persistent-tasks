@@ -2,6 +2,8 @@ package org.sterl.spring.persistent_tasks.api;
 
 import java.io.Serializable;
 
+import org.springframework.lang.Nullable;
+
 /**
  * A Spring persistent task whose state is saved in a {@link Trigger}.
  *
@@ -12,7 +14,7 @@ import java.io.Serializable;
  */
 @FunctionalInterface
 public interface PersistentTask<T extends Serializable> {
-    void accept(T state);
+    void accept(@Nullable T state);
 
     default RetryStrategy retryStrategy() {
         return RetryStrategy.THREE_RETRIES;
