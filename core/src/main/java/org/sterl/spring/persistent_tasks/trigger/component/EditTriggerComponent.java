@@ -42,25 +42,25 @@ public class EditTriggerComponent {
         return triggerRepository.findAll(task.name(), page);
     }
 
-    public Optional<TriggerEntity> completeTaskWithSuccess(TriggerKey key) {
-        return this.completeTaskWithStatus(key, null);
+    public Optional<TriggerEntity> completeTaskWithSuccess(TriggerKey key, Serializable state) {
+        return this.completeTaskWithStatus(key, state, null);
     }
 
     /**
      * Sets success or error based on the fact if an exception is given or not.
      */
-    public Optional<TriggerEntity> completeTaskWithStatus(TriggerKey key, Exception e) {
+    public Optional<TriggerEntity> completeTaskWithStatus(TriggerKey key, Serializable state, Exception e) {
         final Optional<TriggerEntity> result = triggerRepository.findByKey(key);
 
         result.ifPresent(t -> {
             t.complete(e);
 
             if (t.getData().getStatus() == TriggerStatus.SUCCESS) {
-                publisher.publishEvent(new TriggerSuccessEvent(t));
+                publisher.publishEvent(new TriggerSuccessEvent(t, state));
                 log.debug("Setting {} to status={} {}", key, t.getData().getStatus(),
                         e == null ? "" : "error=" + e.getClass().getSimpleName());
             } else {
-                publisher.publishEvent(new TriggerFailedEvent(t));
+                publisher.publishEvent(new TriggerFailedEvent(t, state, e));
                 log.info("Setting {} to status={} {}", key, t.getData().getStatus(),
                         e == null ? "" : "error=" + e.getClass().getSimpleName());
             }
@@ -100,7 +100,7 @@ public class EditTriggerComponent {
         } else {
             result = triggerRepository.save(result);
             log.debug("Added trigger={}", result);
-            publisher.publishEvent(new TriggerAddedEvent(result));
+            publisher.publishEvent(new TriggerAddedEvent(result, tigger.state()));
         }
         return result;
     }

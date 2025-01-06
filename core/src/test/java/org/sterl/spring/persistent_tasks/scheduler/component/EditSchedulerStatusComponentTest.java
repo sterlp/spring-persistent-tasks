@@ -7,7 +7,6 @@ import java.time.OffsetDateTime;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
-import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
 
 class EditSchedulerStatusComponentTest extends AbstractSpringTest {
 

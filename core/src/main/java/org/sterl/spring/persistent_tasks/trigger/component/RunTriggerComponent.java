@@ -73,11 +73,11 @@ public class RunTriggerComponent {
         }
 
         private Optional<TriggerEntity> runTask() {
-            eventPublisher.publishEvent(new TriggerRunningEvent(trigger));
+            eventPublisher.publishEvent(new TriggerRunningEvent(trigger, state));
 
             persistentTask.accept(state);
 
-            var result = editTrigger.completeTaskWithSuccess(trigger.getKey());
+            var result = editTrigger.completeTaskWithSuccess(trigger.getKey(), state);
             editTrigger.deleteTrigger(trigger);
 
             return result;
@@ -89,7 +89,7 @@ public class RunTriggerComponent {
 
         var trigger = taskAndState.trigger;
         var task = taskAndState.persistentTask;
-        var result = editTrigger.completeTaskWithStatus(trigger.getKey(), e);
+        var result = editTrigger.completeTaskWithStatus(trigger.getKey(), taskAndState.state, e);
 
         if (task != null 
                 && task.retryStrategy().shouldRetry(trigger.getData().getExecutionCount(), e)) {

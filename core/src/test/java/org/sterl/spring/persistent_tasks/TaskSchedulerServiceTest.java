@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
 import org.junit.jupiter.api.Test;
-import org.sterl.spring.persistent_tasks.api.RetryStrategy;
 import org.sterl.spring.persistent_tasks.api.PersistentTask;
+import org.sterl.spring.persistent_tasks.api.RetryStrategy;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 
