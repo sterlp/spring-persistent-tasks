@@ -50,6 +50,28 @@ class TriggerResourceTest extends AbstractSpringTest {
     }
     
     @Test
+    void testSearchById() {
+        // GIVEN
+        var key1 = triggerService.queue(TaskTriggerBuilder
+                .newTrigger("task1").build()).getKey();
+        var key2 = triggerService.queue(TaskTriggerBuilder
+                .newTrigger("task1").build()).getKey();
+        
+        // WHEN
+        var response = template.exchange(
+                baseUrl + "?id=" + key1.getId().substring(0, 30),
+                HttpMethod.GET,
+                null,
+                String.class);
+        
+        // THEN
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).contains(key1.getId());
+        assertThat(response.getBody()).doesNotContain(key2.getId());
+    }
+    
+    @Test
     void testCancel() {
         // GIVEN
         var template = new RestTemplate();

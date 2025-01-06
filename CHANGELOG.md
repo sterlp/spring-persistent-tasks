@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.4.2 - (2025-01-06)
+
+-  Fixed count by TaskId
+-  added search by ID to the UI
+-  added search by task to history
+
 ## v1.4.1 - (2025-01-06)
 
 -  Added state to the TriggerLifeCycleEvent

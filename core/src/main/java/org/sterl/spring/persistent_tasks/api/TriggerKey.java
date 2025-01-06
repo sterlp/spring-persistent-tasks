@@ -27,16 +27,6 @@ public class TriggerKey implements Serializable {
     private String id;
     private String taskName;
     
-    public static TriggerKey of(@Nullable String id, String taskName) {
-        if (StringUtils.trimToNull(id) == null
-                && StringUtils.trimToNull(taskName) == null) return null;
-
-        var taskId = StringUtils.trimToNull(taskName) == null 
-                ? null 
-                : new TaskId<Serializable>(taskName.trim());
-        return of(StringUtils.trimToNull(id), taskId);
-    }
-    
     public static TriggerKey of(@Nullable String id, TaskId<? extends Serializable> taskId) {
         return new TriggerKey(id == null ? UUID.randomUUID().toString() : id, taskId.name());
     }

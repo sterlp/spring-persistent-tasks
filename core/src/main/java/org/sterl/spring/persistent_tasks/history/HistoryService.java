@@ -80,6 +80,7 @@ public class HistoryService {
     public Page<TriggerHistoryLastStateEntity> findTriggerState(
             TriggerKey key, Pageable page) {
         if (key == null) return triggerHistoryDetailRepository.findAll(page);
+        if (key.getId() == null && key.getTaskName() == null) return triggerHistoryDetailRepository.findAll(page);
         if (key.getId() == null && key.getTaskName() != null) {
             return triggerHistoryDetailRepository.findAll(key.getTaskName(), page);
         }

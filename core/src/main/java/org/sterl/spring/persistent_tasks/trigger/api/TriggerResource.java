@@ -3,6 +3,7 @@ package org.sterl.spring.persistent_tasks.trigger.api;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
@@ -37,12 +37,14 @@ public class TriggerResource {
     
     @GetMapping("triggers")
     public PagedModel<Trigger> list(
-            @RequestParam(name = "id", required = false) String taskId,
-            @RequestParam(name = "taskName", required = false) String name,
+            @RequestParam(name = "id", required = false) String id,
+            @RequestParam(name = "taskName", required = false) String taskName,
             @PageableDefault(size = 100, direction = Direction.DESC, sort = "id")
             Pageable pageable) {
         return FromTriggerEntity.INSTANCE.toPage(
-                triggerService.findAllTriggers(TriggerKey.of(taskId, name), pageable));
+                triggerService.findAllTriggers(
+                        new TriggerKey(StringUtils.trimToNull(id), StringUtils.trimToNull(taskName)), 
+                        pageable));
     }
     
     @PostMapping("triggers/{taskName}/{id}/run-at")

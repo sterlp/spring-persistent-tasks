@@ -2,6 +2,7 @@ package org.sterl.spring.persistent_tasks.history.api;
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
@@ -34,11 +35,13 @@ public class TriggerHistoryResource {
 
     @GetMapping("history")
     public PagedModel<Trigger> list(
-            @RequestParam(name = "id", required = false) String taskId,
-            @RequestParam(name = "taskName", required = false) String name,
+            @RequestParam(name = "id", required = false) String id,
+            @RequestParam(name = "taskName", required = false) String taskName,
             @PageableDefault(size = 100, direction = Direction.DESC, sort = "id") Pageable pageable) {
 
         return FromLastTriggerStateEntity.INSTANCE.toPage( //
-                historyService.findTriggerState(TriggerKey.of(taskId, name), pageable));
+                historyService.findTriggerState(
+                        new TriggerKey(StringUtils.trimToNull(id), StringUtils.trimToNull(taskName)), 
+                        pageable));
     }
 }

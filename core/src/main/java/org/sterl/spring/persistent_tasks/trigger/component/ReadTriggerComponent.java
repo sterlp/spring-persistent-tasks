@@ -54,7 +54,7 @@ public class ReadTriggerComponent {
     public Page<TriggerEntity> listTriggers(TriggerKey key, Pageable page) {
         if (key == null) return triggerRepository.findAll(page);
         if (key.getId() == null) return listTriggers(key.toTaskId(), page);
-        return listTriggers(key.toTaskId(), page);
+        return triggerRepository.findAll(key.getId(), key.getTaskName(), page);
     }
 
     public Page<TriggerEntity> listTriggers(TaskId<? extends Serializable> task, Pageable page) {
