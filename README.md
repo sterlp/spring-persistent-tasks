@@ -123,50 +123,51 @@ PersistentTask<Vehicle> task1(VehicleHttpConnector vehicleHttpConnector) {
 ### Direct usage of the `TriggerService` or `PersistentTaskService`.
 
 ```java
-    private final TriggerService triggerService;
-    private final PersistentTaskService persistentTaskService;
+private final TriggerService triggerService;
+private final PersistentTaskService persistentTaskService;
 
-    public void buildVehicle() {
-        // Vehicle has to be Serializable
-        final var v = new Vehicle();
-        // set any data to v ...
+public void buildVehicle() {
+    // Vehicle has to be Serializable
+    final var v = new Vehicle();
+    // set any data to v ...
 
-        // queue it
-        triggerService.queue(BuildVehicleTask.ID.newUniqueTrigger(v));
-        // will queue it and run it if possible.
-        // if the scheduler service is missing it is same as above
-        persistentTaskService.runOrQueue(BuildVehicleTask.ID.newUniqueTrigger(v));
-    }
+    // EITHER: queue it, will run later
+    triggerService.queue(BuildVehicleTask.ID.newUniqueTrigger(v));
+
+    // OR: will queue it and run it if possible.
+    // if the scheduler service is missing it is same as using the TriggerService
+    persistentTaskService.runOrQueue(BuildVehicleTask.ID.newUniqueTrigger(v));
+}
 ```
 
-### Build Trigger
+### Build complex Trigger
 
 ```java
-    private final TriggerService triggerService;
+private final PersistentTaskService persistentTaskService;
 
-    public void buildVehicle() {
-       var trigger = TaskTriggerBuilder
-                .<Vehicle>newTrigger("task2")
-                .id("my-id") // will overwrite existing triggers
-                .state(new Vehicle("funny"))
-                .runAfter(Duration.ofHours(2))
-                .build();
+public void buildVehicle() {
+   var trigger = TaskTriggerBuilder
+            .<Vehicle>newTrigger("task2")
+            .id("my-id") // will overwrite existing triggers
+            .state(new Vehicle("funny"))
+            .runAfter(Duration.ofHours(2))
+            .build();
 
-        triggerService.queue(trigger);
-    }
+    persistentTaskService.runOrQueue(trigger);
+}
 ```
 
 ### Use a Spring Event
 
 ```java
-    private final TriggerService triggerService;
+private final ApplicationEventPublisher eventPublisher;
 
-    public void buildVehicle() {
-        // Vehicle has to be Serializable
-        final var v = new Vehicle();
-        // set any data
-        triggerService.queue(BuildVehicleTask.ID.newUniqueTrigger(v));
-    }
+public void buildVehicle() {
+    // Vehicle has to be Serializable
+    final var v = new Vehicle();
+    // send an event with the trigger inside - same as calling the PersistentTaskService
+    eventPublisher.publishEvent(TriggerTaskCommand.of(BuildVehicleTask.ID.newUniqueTrigger(v)));
+}
 ```
 
 ### JUnit Tests
