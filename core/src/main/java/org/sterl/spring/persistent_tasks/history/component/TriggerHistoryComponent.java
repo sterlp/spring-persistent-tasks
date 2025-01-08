@@ -13,9 +13,11 @@ import org.sterl.spring.persistent_tasks.trigger.event.TriggerLifeCycleEvent;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @TransactionalCompontant
 @RequiredArgsConstructor
+@Slf4j
 public class TriggerHistoryComponent {
 
     private final TriggerHistoryLastStateRepository triggerHistoryLastStateRepository;
@@ -36,9 +38,12 @@ public class TriggerHistoryComponent {
         triggerHistoryDetailRepository.save(detail);
     }
     
-    @Transactional
+    @Transactional(timeout = 10)
     @EventListener
     public void onPersistentTaskEvent(TriggerLifeCycleEvent triggerLifeCycleEvent) {
+        log.debug("Received event={} for {} new status={}",
+                triggerLifeCycleEvent.getClass().getSimpleName(),
+                triggerLifeCycleEvent.key(), triggerLifeCycleEvent.status());
         write(triggerLifeCycleEvent.trigger());
     }
 }

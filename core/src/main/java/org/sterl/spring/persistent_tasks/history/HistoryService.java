@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.lang.Nullable;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryDetailEntity;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryLastStateEntity;
@@ -86,8 +87,15 @@ public class HistoryService {
         return triggerHistoryLastStateRepository.countByKey(key);
     }
 
+    /**
+     * Checks for the last known state in the history.
+     * 
+     * @param key the {@link TriggerKey}, can be partly <code>null</code>
+     * @param page page informations
+     * @return the found data, looking only the last states
+     */
     public Page<TriggerHistoryLastStateEntity> findTriggerState(
-            TriggerKey key, Pageable page) {
+            @Nullable TriggerKey key, Pageable page) {
         
         page = sortByIdIfNeeded(page);
         if (key == null) return triggerHistoryLastStateRepository.findAll(page);
@@ -100,7 +108,7 @@ public class HistoryService {
                 key.getTaskName(),
                 page);
     }
-    
+
     private Pageable sortByIdIfNeeded(Pageable page) {
         if (page.getSort() == Sort.unsorted()) {
             return PageRequest.of(page.getPageNumber(), page.getPageSize(), 

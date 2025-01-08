@@ -5,6 +5,7 @@ import java.io.Serializable;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 /**
@@ -13,6 +14,9 @@ import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 public interface TriggerLifeCycleEvent {
     default TriggerKey key() {
         return trigger().getKey();
+    }
+    default TriggerStatus status() {
+        return trigger().getData().getStatus();
     }
     @NonNull
     TriggerEntity trigger();
