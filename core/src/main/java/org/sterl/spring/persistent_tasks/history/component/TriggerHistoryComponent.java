@@ -2,8 +2,8 @@ package org.sterl.spring.persistent_tasks.history.component;
 
 import java.time.OffsetDateTime;
 
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.context.event.EventListener;
+import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryDetailEntity;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryLastStateEntity;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryDetailRepository;
@@ -18,14 +18,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TriggerHistoryComponent {
 
-    private final TriggerHistoryDetailRepository triggerHistoryDetailRepository;
     private final TriggerHistoryLastStateRepository triggerHistoryLastStateRepository;
+    private final TriggerHistoryDetailRepository triggerHistoryDetailRepository;
 
     public void write(TriggerEntity e) {
         var state = new TriggerHistoryLastStateEntity();
         state.setId(e.getId());
         state.setData(e.getData().toBuilder().build());
-        triggerHistoryDetailRepository.save(state);
+        triggerHistoryLastStateRepository.save(state);
 
         var detail = new TriggerHistoryDetailEntity();
         detail.setInstanceId(e.getId());
@@ -33,10 +33,11 @@ public class TriggerHistoryComponent {
                 .state(null)
                 .build());
         detail.getData().setCreatedTime(OffsetDateTime.now());
-        triggerHistoryLastStateRepository.save(detail);
+        triggerHistoryDetailRepository.save(detail);
     }
     
-    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    @Transactional
+    @EventListener
     public void onPersistentTaskEvent(TriggerLifeCycleEvent triggerLifeCycleEvent) {
         write(triggerLifeCycleEvent.trigger());
     }

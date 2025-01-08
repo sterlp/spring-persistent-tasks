@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryDetailEntity;
@@ -23,18 +24,18 @@ import lombok.RequiredArgsConstructor;
 @TransactionalService
 @RequiredArgsConstructor
 public class HistoryService {
-    private final TriggerHistoryDetailRepository triggerHistoryDetailRepository;
     private final TriggerHistoryLastStateRepository triggerHistoryLastStateRepository;
+    private final TriggerHistoryDetailRepository triggerHistoryDetailRepository;
     private final TriggerService triggerService;
     
     public Optional<TriggerHistoryLastStateEntity> findStatus(long triggerId) {
-        return triggerHistoryDetailRepository.findById(triggerId);
+        return triggerHistoryLastStateRepository.findById(triggerId);
     }
     
     public Optional<TriggerHistoryLastStateEntity> findLastKnownStatus(TriggerKey triggerKey) {
-        PageRequest page = PageRequest.of(0, 1).withSort(Direction.DESC, "e.data.createdTime", "id");
-        var result = triggerHistoryDetailRepository.listKnownStatusFor(triggerKey, page);
-        return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
+        final var page = PageRequest.of(0, 1).withSort(Direction.DESC, "data.createdTime", "id");
+        final var result = triggerHistoryLastStateRepository.listKnownStatusFor(triggerKey, page);
+        return result.isEmpty() ? Optional.empty() : Optional.of(result.getContent().get(0));
     }
 
     public void deleteAll() {
@@ -54,14 +55,22 @@ public class HistoryService {
         return triggerHistoryDetailRepository.countByStatus(status);
     }
 
-    public List<TriggerHistoryDetailEntity> findAllForInstance(long instanceId) {
-        return triggerHistoryLastStateRepository.findAllByInstanceId(instanceId);
+    public List<TriggerHistoryDetailEntity> findAllDetailsForInstance(long instanceId) {
+        return triggerHistoryDetailRepository.findAllByInstanceId(instanceId);
+    }
+    
+    public Page<TriggerHistoryDetailEntity> findAllDetailsForKey(TriggerKey key) {
+        return findAllDetailsForKey(key, PageRequest.of(0, 100));
+    }
+    public Page<TriggerHistoryDetailEntity> findAllDetailsForKey(TriggerKey key, Pageable page) {
+        page = sortByIdIfNeeded(page);
+        return triggerHistoryDetailRepository.listKnownStatusFor(key, page);
     }
 
     public Optional<TriggerEntity> reQueue(Long id, OffsetDateTime runAt) {
-        final var lastState = triggerHistoryDetailRepository.findById(id);
+        final var lastState = triggerHistoryLastStateRepository.findById(id);
         if (lastState.isEmpty()) return Optional.empty();
-        
+
         final var data = lastState.get().getData();
         final var trigger = lastState.get().newTaskId().newTrigger()
             .state(data.getState())
@@ -74,19 +83,29 @@ public class HistoryService {
     }
 
     public long countTriggers(TriggerKey key) {
-        return triggerHistoryDetailRepository.countByKey(key);
+        return triggerHistoryLastStateRepository.countByKey(key);
     }
 
     public Page<TriggerHistoryLastStateEntity> findTriggerState(
             TriggerKey key, Pageable page) {
-        if (key == null) return triggerHistoryDetailRepository.findAll(page);
-        if (key.getId() == null && key.getTaskName() == null) return triggerHistoryDetailRepository.findAll(page);
+        
+        page = sortByIdIfNeeded(page);
+        if (key == null) return triggerHistoryLastStateRepository.findAll(page);
+        if (key.getId() == null && key.getTaskName() == null) return triggerHistoryLastStateRepository.findAll(page);
         if (key.getId() == null && key.getTaskName() != null) {
-            return triggerHistoryDetailRepository.findAll(key.getTaskName(), page);
+            return triggerHistoryLastStateRepository.findAll(key.getTaskName(), page);
         }
-        return triggerHistoryDetailRepository.findAll(
+        return triggerHistoryLastStateRepository.findAll(
                 key.getId(),
                 key.getTaskName(),
                 page);
+    }
+    
+    private Pageable sortByIdIfNeeded(Pageable page) {
+        if (page.getSort() == Sort.unsorted()) {
+            return PageRequest.of(page.getPageNumber(), page.getPageSize(), 
+                    Sort.by(Direction.DESC, "id"));
+        }
+        return page;
     }
 }

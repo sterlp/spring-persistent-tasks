@@ -33,6 +33,12 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
             return new TransactionalTask<String>() {
                 @Override
                 public void accept(String name) {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                     personRepository.save(new PersonBE(name));
                     if (sendError.get()) {
                         throw new RuntimeException("Error requested for " + name);
@@ -85,7 +91,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
 
         // THEN
         // AND one the service, one the event and one more status update
-        hibernateAsserts.assertTrxCount(3);
+        hibernateAsserts.assertTrxCount(4);
         assertThat(personRepository.count()).isOne();
     }
 
@@ -152,8 +158,10 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
 
         // THEN
         awaitRunningTasks();
-        assertThat(persistentTaskService.getLastTriggerData(key).get().getStatus())
-            .isEqualTo(TriggerStatus.WAITING);
+        // AND the last status before we are back to running should be FAILED
+        assertThat(historyService.findAllDetailsForKey(key)
+                .getContent().get(0).getData().getStatus())
+            .isEqualTo(TriggerStatus.FAILED);
 
         // WHEN
         sendError.set(false);

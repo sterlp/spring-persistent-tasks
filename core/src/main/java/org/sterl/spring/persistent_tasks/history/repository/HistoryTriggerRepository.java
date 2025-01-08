@@ -1,7 +1,6 @@
 package org.sterl.spring.persistent_tasks.history.repository;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.NoRepositoryBean;
@@ -17,5 +16,5 @@ public interface HistoryTriggerRepository<T extends HasTriggerData> extends Trig
             SELECT e FROM #{#entityName} e 
             WHERE e.data.key = :key
             """)
-    List<T> listKnownStatusFor(@Param("key") TriggerKey key, Pageable page);
+    Page<T> listKnownStatusFor(@Param("key") TriggerKey key, Pageable page);
 }

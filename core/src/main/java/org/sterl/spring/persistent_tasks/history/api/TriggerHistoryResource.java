@@ -30,7 +30,7 @@ public class TriggerHistoryResource {
     @GetMapping("history/instance/{instanceId}")
     public List<Trigger> listInstances(@PathVariable("instanceId") long instanceId) {
         return FromTriggerStateDetailEntity.INSTANCE.convert( //
-                historyService.findAllForInstance(instanceId));
+                historyService.findAllDetailsForInstance(instanceId));
     }
 
     @GetMapping("history")

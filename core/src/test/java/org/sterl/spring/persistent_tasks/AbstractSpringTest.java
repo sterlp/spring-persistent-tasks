@@ -165,7 +165,7 @@ public class AbstractSpringTest {
     
     protected void awaitRunningTasks() throws TimeoutException, InterruptedException {
         final long start = System.currentTimeMillis();
-        if (triggerService.countTriggers(TriggerStatus.RUNNING) > 0) {
+        while (triggerService.countTriggers(TriggerStatus.RUNNING) > 0) {
             if (System.currentTimeMillis() - start > 2000) {
                 throw new TimeoutException("Still running after 2s");
             }

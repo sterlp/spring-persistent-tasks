@@ -11,9 +11,9 @@ import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryDetailEntity;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 
-class TriggerHistoryLastStateRepositoryTest extends AbstractSpringTest {
+class TriggerHistoryDetailRepositoryTest extends AbstractSpringTest {
 
-    @Autowired private TriggerHistoryLastStateRepository subject;
+    @Autowired private TriggerHistoryDetailRepository subject;
 
     @Test
     void testGrouping() {

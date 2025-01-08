@@ -22,7 +22,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReadTriggerComponent {
     private final TriggerRepository triggerRepository;
-    
 
     public long countByTaskName(@NotNull String name) {
         return triggerRepository.countByTaskName(name);

@@ -8,33 +8,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.sterl.spring.persistent_tasks.api.HistoryOverview;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryDetailEntity;
+import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryLastStateEntity;
 
-public interface TriggerHistoryLastStateRepository extends HistoryTriggerRepository<TriggerHistoryDetailEntity> {
+public interface TriggerHistoryLastStateRepository extends HistoryTriggerRepository<TriggerHistoryLastStateEntity> {
 
-    @Query("""
-           SELECT new org.sterl.spring.persistent_tasks.api.HistoryOverview(
-                    e.instanceId,
-                    e.data.key.taskName,
-                    count(1) as entryCount,
-                    MIN(e.data.start) as start,
-                    MAX(e.data.end) as end,
-                    MIN(e.data.createdTime) as createdTime,
-                    MAX(e.data.executionCount) as executionCount,
-                    AVG(e.data.runningDurationInMs) as runningDurationInMs
-                  )
-            FROM #{#entityName} e
-            GROUP BY 
-                e.instanceId,
-                e.data.key.taskName
-            ORDER BY end DESC, createdTime DESC
-            """)
-    Page<HistoryOverview> listHistoryOverview(Pageable page);
-
-    @Query("""
-            SELECT e
-            FROM #{#entityName} e
-            WHERE e.instanceId = :instanceId
-            ORDER BY e.data.createdTime ASC
-            """)
-    List<TriggerHistoryDetailEntity> findAllByInstanceId(@Param("instanceId") long instanceId);
+    
 }

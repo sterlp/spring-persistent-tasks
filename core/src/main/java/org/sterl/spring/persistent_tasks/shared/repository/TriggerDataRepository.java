@@ -43,14 +43,14 @@ public interface TriggerDataRepository<T extends HasTriggerData> extends JpaRepo
     long countByKey(@Param("key") TriggerKey key);
 
     @Query("""
-           SELECT COUNT(e.data.key) 
+           SELECT COUNT(e.id) 
            FROM #{#entityName} e
            WHERE e.data.status = :status
            """)
     long countByStatus(@Param("status") TriggerStatus status);
 
     @Query("""
-            SELECT COUNT(e.data.key) 
+            SELECT COUNT(e.id) 
             FROM #{#entityName} e
             WHERE e.data.status IN ( :status )
             """)
