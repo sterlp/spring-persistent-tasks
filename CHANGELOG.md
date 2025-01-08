@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.5 - (2025-01-08)
+
+-  Adjusted path matching to support sub routes for an SPA web app
+
 ## v1.4.4 - (2025-01-08)
 
 -  Fixed UI routing
