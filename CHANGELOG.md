@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.3 - (2025-01-08)
+
+-  Scheduler service leaves current transaction before executing task
+
 ## v1.4.2 - (2025-01-06)
 
 -  Fixed count by TaskId
