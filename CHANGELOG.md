@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.4.4 - (2025-01-08)
+
+-  Fixed UI routing
+-  added support for thymeleaf - adding index.html to template folder
+
 ## v1.4.3 - (2025-01-08)
 
 -  Scheduler service leaves current transaction before executing task
