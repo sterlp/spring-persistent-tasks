@@ -18,6 +18,9 @@ public interface TriggerLifeCycleEvent {
     default TriggerStatus status() {
         return trigger().getData().getStatus();
     }
+    default boolean isRunningOn(String name) {
+        return trigger().isRunning() && name != null && name.equals(trigger().getRunningOn());
+    }
     @NonNull
     TriggerEntity trigger();
     @Nullable
