@@ -1,6 +1,6 @@
 mvn versions:display-dependency-updates
 mvn versions:set -DnewVersion=1.4.6 -DgenerateBackupPoms=false
-git tag -a v1.4.6 -m "v1.4. release"
+git tag -a v1.4.6 -m "v1.4.6 release"
 mvn versions:set -DnewVersion=1.4.7-SNAPSHOT -DgenerateBackupPoms=false
 
 ## postgres
