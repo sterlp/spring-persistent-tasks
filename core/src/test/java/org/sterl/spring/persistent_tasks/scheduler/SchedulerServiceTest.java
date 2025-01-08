@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -94,16 +95,18 @@ class SchedulerServiceTest extends AbstractSpringTest {
         
         // WHEN
         var ref = subject.runOrQueue(triggerRequest);
-        
+
         // THEN
         assertThat(subject.getScheduler().getRunnungTasks()).isOne();
-        assertThat(persistentTaskService.getLastTriggerData(
-                ref.get()).get().getStatus()).isEqualTo(TriggerStatus.SUCCESS);
+        // AND
+        awaitRunningTasks();
+        assertThat(persistentTaskService.getLastTriggerData(ref).get().getStatus())
+            .isEqualTo(TriggerStatus.SUCCESS);
         asserts.assertValue(Task3.NAME + "::Hallo");
     }
 
     @Test
-    void testQueuedInFuture() {
+    void testQueuedInFuture() throws TimeoutException, InterruptedException {
         // GIVEN
         final AddTriggerRequest<String> triggerRequest = Task3.ID
                 .newTrigger("Hallo")
@@ -113,6 +116,7 @@ class SchedulerServiceTest extends AbstractSpringTest {
         
         // WHEN
         persistentTaskService.executeTriggersAndWait();
+        awaitRunningTasks();
         
         // THEN
         asserts.assertMissing(Task3.NAME + "::Hallo");
@@ -124,7 +128,7 @@ class SchedulerServiceTest extends AbstractSpringTest {
         // GIVEN
         TaskId<String> taskId = taskService.replace("foo", c -> asserts.info(c));
         for (int i = 1; i < 21; ++i) {
-            subject.queue(taskId.newTrigger(i + " state").build());
+            triggerService.queue(taskId.newTrigger(i + " state").build());
         }
 
         // WHEN

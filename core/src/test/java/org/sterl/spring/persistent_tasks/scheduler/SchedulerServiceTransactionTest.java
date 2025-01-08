@@ -122,6 +122,24 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         // third to write the history
         hibernateAsserts.assertTrxCount(3);
     }
+    
+    @Test
+    void testRunOrQueue() throws Exception {
+        // GIVEN
+        var k1 = subject.runOrQueue(TaskTriggerBuilder.newTrigger("savePersonInTrx").state("Paul").build());
+        var k2 = subject.runOrQueue(TaskTriggerBuilder.newTrigger("savePersonInTrx").state("Paul").build());
+
+        // WHEN
+        assertThat(persistentTaskService.getLastTriggerData(k1).get().getStatus())
+            .isEqualTo(TriggerStatus.RUNNING);
+        assertThat(persistentTaskService.getLastTriggerData(k2).get().getStatus())
+            .isEqualTo(TriggerStatus.RUNNING);
+
+
+        // THEN
+        awaitRunningTasks();
+        assertThat(personRepository.count()).isEqualTo(2);
+    }
 
     @Test
     void testRollbackAndRetry() throws Exception {
@@ -131,9 +149,10 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
 
         // WHEN
         var key = subject.runOrQueue(triggerRequest);
+
         // THEN
-        key.get();
-        assertThat(persistentTaskService.getLastTriggerData(key.get()).get().getStatus())
+        awaitRunningTasks();
+        assertThat(persistentTaskService.getLastTriggerData(key).get().getStatus())
             .isEqualTo(TriggerStatus.WAITING);
 
         // WHEN
@@ -142,7 +161,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
 
         // THEN
         assertThat(executed).hasSize(1);
-        assertExecutionCount(key.get(), 2);
+        assertExecutionCount(key, 2);
         assertThat(personRepository.count()).isOne();
     }
 

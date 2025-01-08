@@ -5,19 +5,20 @@ import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
 import org.sterl.spring.persistent_tasks.scheduler.component.TaskExecutorComponent;
 import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
+import org.sterl.spring.persistent_tasks.trigger.event.TriggerAddedEvent;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 import jakarta.annotation.PostConstruct;
@@ -100,6 +101,9 @@ public class SchedulerService {
     /**
      * Like {@link #triggerNextTasks()} but allows to set the time e.g. to the future to trigger
      * tasks which wouldn't be triggered now.
+     * <p>
+     * This method should not be called in a transaction!
+     * </p>
      */
     @NonNull
     public List<Future<TriggerKey>> triggerNextTasks(OffsetDateTime timeDue) {
@@ -123,13 +127,12 @@ public class SchedulerService {
      * and the runAt time is not in the future.
      * @return the reference to the {@link Future} with the key, if no threads are available it is resolved
      */
-    public <T extends Serializable> Future<TriggerKey> runOrQueue(
-            AddTriggerRequest<T> triggerRequest) {
-        final var runningTrigger = trx.execute(t -> {
-            var trigger = triggerService.queue(triggerRequest);
-            // exit now if this trigger is for the future ...
-            if (trigger.shouldRunInFuture()) return trigger;
-            
+    @Transactional(timeout = 10)
+    public <T extends Serializable> TriggerKey runOrQueue(
+        AddTriggerRequest<T> triggerRequest) {
+        var trigger = triggerService.queue(triggerRequest);
+
+        if (!trigger.shouldRunInFuture()) {
             if (taskExecutor.getFreeThreads() > 0) {
                 trigger = triggerService.markTriggersAsRunning(trigger, name);
                 pingRegistry().addRunning(1);
@@ -137,15 +140,17 @@ public class SchedulerService {
                 log.debug("Currently not enough free thread available {} of {} in use. PersistentTask {} queued.", 
                         taskExecutor.getFreeThreads(), taskExecutor.getMaxThreads(), trigger.getKey());
             }
-            return trigger;
-        });
-        Future<TriggerKey> result;
-        if (runningTrigger.isRunning()) {
-            result = taskExecutor.submit(runningTrigger);
-        } else {
-            result = CompletableFuture.completedFuture(runningTrigger.getKey());
         }
-        return result;
+        // we will listen for the commit event to execute this trigger ...
+        return trigger.getKey();
+    }
+    
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    void checkIfTrigerIsRunning(TriggerAddedEvent addedTrigger) {
+        if (addedTrigger.isRunningOn(name) && !taskExecutor.isRunning(addedTrigger.trigger())) {
+            log.debug("New triger added for imidiate execution {}", addedTrigger.key());
+            taskExecutor.submit(addedTrigger.trigger());
+        }
     }
 
     public SchedulerEntity getStatus() {
@@ -165,17 +170,5 @@ public class SchedulerService {
         log.debug("({}) - {} trigger(s) are running on {} schedulers", 
                 running, runningKeys, schedulers);
         return triggerService.rescheduleAbandonedTasks(timeout);
-    }
-
-    /**
-     * Adds or updates an existing trigger based on its {@link TriggerKey}
-     * 
-     * @param <T> the state type
-     * @param trigger the {@link AddTriggerRequest} to save
-     * @return the saved {@link TriggerEntity}
-     * @throws IllegalStateException if the trigger already exists and is {@link TriggerStatus#RUNNING}
-     */
-    public <T extends Serializable> TriggerEntity queue(AddTriggerRequest<T> trigger) {
-        return triggerService.queue(trigger);
     }
 }

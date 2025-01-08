@@ -151,4 +151,8 @@ public class TaskExecutorComponent implements Closeable {
     public int getMaxThreads() {
         return this.maxThreads.get();
     }
+
+    public boolean isRunning(TriggerEntity trigger) {
+        return runningTasks.contains(trigger);
+    }
 }

@@ -93,8 +93,8 @@ public class EditTriggerComponent {
         } else {
             result = triggerRepository.save(result);
             log.debug("Added trigger={}", result);
-            publisher.publishEvent(new TriggerAddedEvent(result, tigger.state()));
         }
+        publisher.publishEvent(new TriggerAddedEvent(result, tigger.state()));
         return result;
     }
 

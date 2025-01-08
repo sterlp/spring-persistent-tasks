@@ -3,6 +3,7 @@ package org.sterl.spring.persistent_tasks;
 import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +25,7 @@ import org.sterl.spring.persistent_tasks.history.HistoryService;
 import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
 import org.sterl.spring.persistent_tasks.scheduler.component.TaskExecutorComponent;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.task.TaskService;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
@@ -159,6 +161,16 @@ public class AbstractSpringTest {
 
     protected Optional<TriggerEntity> runNextTrigger() {
         return triggerService.run(triggerService.lockNextTrigger("test"));
+    }
+    
+    protected void awaitRunningTasks() throws TimeoutException, InterruptedException {
+        final long start = System.currentTimeMillis();
+        if (triggerService.countTriggers(TriggerStatus.RUNNING) > 0) {
+            if (System.currentTimeMillis() - start > 2000) {
+                throw new TimeoutException("Still running after 2s");
+            }
+            Thread.sleep(50);
+        }
     }
 
     @BeforeEach
