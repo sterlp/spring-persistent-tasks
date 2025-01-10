@@ -3,7 +3,9 @@ package org.sterl.spring.persistent_tasks.scheduler;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
+import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
 import org.sterl.spring.persistent_tasks.api.PersistentTask;
 import org.sterl.spring.persistent_tasks.api.RetryStrategy;
 import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
@@ -23,7 +26,8 @@ import org.sterl.spring.sample_app.person.PersonRepository;
 class SchedulerServiceTransactionTest extends AbstractSpringTest {
 
     private SchedulerService subject;
-    private static AtomicBoolean sendError = new AtomicBoolean(false);
+    private static final AtomicBoolean sendError = new AtomicBoolean(false);
+    private static final AtomicInteger sleepTime = new AtomicInteger(50);
     @Autowired private PersonRepository personRepository;
 
     @Configuration
@@ -34,10 +38,9 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
                 @Override
                 public void accept(String name) {
                     try {
-                        Thread.sleep(50);
+                        if (sleepTime.intValue() > 0) Thread.sleep(sleepTime.intValue());
                     } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        Thread.interrupted();
                     }
                     personRepository.save(new PersonBE(name));
                     if (sendError.get()) {
@@ -49,7 +52,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
                 }
             };
         }
-        
+
         @Bean
         PersistentTask<String> savePersonNoTrx(PersonRepository personRepository) {
             return new PersistentTask<>() {
@@ -172,6 +175,26 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         assertExecutionCount(key, 2);
         assertThat(personRepository.count()).isOne();
     }
+    
+    @Test
+    void testTriggerHistoryTrx() throws TimeoutException, InterruptedException {
+        // GIVEN
+        sleepTime.set(0);
+        final var trigger = Task3.ID.newUniqueTrigger("savePersonNoTrx");
+        persistentTaskService.queue(trigger);
+        // WHEN
+        hibernateAsserts.reset();
+        schedulerService.triggerNextTasks().forEach(t -> {
+            try {t.get();} catch (Exception ex) {throw new RuntimeException(ex);}
+        });
+        
+        // THEN
+        // 2 to get the work
+        // 1 for the running history
+        // 1 for the success history
+        hibernateAsserts.assertTrxCount(4);
+    }
+    
 
     private void assertExecutionCount(TriggerKey triggerKey, int count) throws InterruptedException, ExecutionException {
         var data = persistentTaskService.getLastTriggerData(triggerKey);

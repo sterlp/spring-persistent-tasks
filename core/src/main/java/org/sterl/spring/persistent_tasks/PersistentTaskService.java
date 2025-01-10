@@ -60,12 +60,12 @@ public class PersistentTaskService {
         if (event.triggers().size() == 1) {
             runOrQueue(event.triggers().iterator().next());
         } else {
-            queueAll(event.triggers());
+            queue(event.triggers());
         }
     }
 
     /**
-     * Queues the given triggers.
+     * Queues/updates the given triggers, if the {@link TriggerKey} is already present
      * 
      * @param <T> the state type
      * @param triggers the triggers to add
@@ -73,11 +73,23 @@ public class PersistentTaskService {
      */
     @Transactional(timeout = 10)
     @NonNull
-    public <T extends Serializable> List<TriggerKey> queueAll(Collection<AddTriggerRequest<T>> triggers) {
+    public <T extends Serializable> List<TriggerKey> queue(Collection<AddTriggerRequest<T>> triggers) {
         return triggers.stream() //
             .map(t -> triggerService.queue(t)) //
             .map(TriggerEntity::getKey) //
             .toList();
+    }
+    /**
+     * Queues/updates the given trigger, if the {@link TriggerKey} is already present.
+     * 
+     * @param <T> the state type
+     * @param trigger the trigger to add
+     * @return the {@link TriggerKey}
+     */
+    @Transactional(timeout = 5)
+    @NonNull
+    public <T extends Serializable> TriggerKey queue(AddTriggerRequest<T> trigger) {
+        return triggerService.queue(trigger).getKey();
     }
 
     /**
