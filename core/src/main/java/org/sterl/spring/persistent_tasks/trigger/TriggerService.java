@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
+import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
 import org.sterl.spring.persistent_tasks.task.TaskService;
 import org.sterl.spring.persistent_tasks.trigger.component.EditTriggerComponent;

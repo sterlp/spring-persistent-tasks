@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
+import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 
 class TaskFailoverTest extends AbstractSpringTest {
 

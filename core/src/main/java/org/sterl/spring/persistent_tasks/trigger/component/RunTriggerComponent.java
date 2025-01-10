@@ -73,7 +73,8 @@ public class RunTriggerComponent {
         }
 
         private Optional<TriggerEntity> runTask() {
-            eventPublisher.publishEvent(new TriggerRunningEvent(trigger, state));
+            eventPublisher.publishEvent(new TriggerRunningEvent(
+                    trigger.getId(), trigger.copyData(), state, trigger.getRunningOn()));
 
             persistentTask.accept(state);
 

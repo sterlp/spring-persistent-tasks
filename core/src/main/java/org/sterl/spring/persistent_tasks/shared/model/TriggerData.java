@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
@@ -86,4 +87,8 @@ public class TriggerData {
     private String exceptionName;
     @Lob
     private String lastException;
+    
+    public TriggerData copy() {
+        return this.toBuilder().build();
+    }
 }

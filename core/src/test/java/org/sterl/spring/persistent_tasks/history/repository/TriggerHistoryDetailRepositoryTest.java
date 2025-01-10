@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
+import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryDetailEntity;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 
 class TriggerHistoryDetailRepositoryTest extends AbstractSpringTest {
 

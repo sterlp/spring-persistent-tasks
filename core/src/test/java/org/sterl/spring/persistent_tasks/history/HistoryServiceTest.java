@@ -12,7 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
+import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 class HistoryServiceTest extends AbstractSpringTest {

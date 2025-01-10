@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerAddedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerCanceledEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerFailedEvent;
@@ -48,11 +48,12 @@ public class EditTriggerComponent {
             t.complete(e);
 
             if (t.getData().getStatus() == TriggerStatus.SUCCESS) {
-                publisher.publishEvent(new TriggerSuccessEvent(t, state));
+                publisher.publishEvent(new TriggerSuccessEvent(
+                        t.getId(), t.copyData(), state));
                 log.debug("Setting {} to status={} {}", key, t.getData().getStatus(),
                         e == null ? "" : "error=" + e.getClass().getSimpleName());
             } else {
-                publisher.publishEvent(new TriggerFailedEvent(t, state, e));
+                publisher.publishEvent(new TriggerFailedEvent(t.getId(), t.copyData(), state, e));
                 log.info("Setting {} to status={} {}", key, t.getData().getStatus(),
                         e == null ? "" : "error=" + e.getClass().getSimpleName());
             }
@@ -73,7 +74,8 @@ public class EditTriggerComponent {
                 .findByKey(id) //
                 .map(t -> {
                     t.cancel();
-                    publisher.publishEvent(new TriggerCanceledEvent(t, 
+                    publisher.publishEvent(new TriggerCanceledEvent(
+                            t.getId(), t.copyData(),
                             stateSerializer.deserializeOrNull(t.getData().getState())));
                     triggerRepository.delete(t);
                     return t;
@@ -94,7 +96,8 @@ public class EditTriggerComponent {
             result = triggerRepository.save(result);
             log.debug("Added trigger={}", result);
         }
-        publisher.publishEvent(new TriggerAddedEvent(result, tigger.state()));
+        publisher.publishEvent(new TriggerAddedEvent(
+                result.getId(), result.copyData(), tigger.state()));
         return result;
     }
 

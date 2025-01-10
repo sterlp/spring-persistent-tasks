@@ -4,7 +4,9 @@ import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
 import org.springframework.lang.NonNull;
@@ -44,6 +46,7 @@ public class SchedulerService {
     private final TaskExecutorComponent taskExecutor;
     private final EditSchedulerStatusComponent editSchedulerStatus;
     private final TransactionTemplate trx;
+    private final Map<Long, TriggerEntity> shouldRun = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void start() {
@@ -136,6 +139,7 @@ public class SchedulerService {
             if (taskExecutor.getFreeThreads() > 0) {
                 trigger = triggerService.markTriggersAsRunning(trigger, name);
                 pingRegistry().addRunning(1);
+                shouldRun.put(trigger.getId(), trigger);
             } else {
                 log.debug("Currently not enough free thread available {} of {} in use. PersistentTask {} queued.", 
                         taskExecutor.getFreeThreads(), taskExecutor.getMaxThreads(), trigger.getKey());
@@ -147,9 +151,10 @@ public class SchedulerService {
     
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void checkIfTrigerIsRunning(TriggerAddedEvent addedTrigger) {
-        if (addedTrigger.isRunningOn(name) && !taskExecutor.isRunning(addedTrigger.trigger())) {
+        final var toRun = shouldRun.remove(addedTrigger.id());
+        if (toRun != null) {
             log.debug("New triger added for imidiate execution {}", addedTrigger.key());
-            taskExecutor.submit(addedTrigger.trigger());
+            taskExecutor.submit(toRun);
         }
     }
 

@@ -16,7 +16,7 @@ import org.sterl.spring.persistent_tasks.api.RetryStrategy;
 import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TransactionalTask;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
+import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.sample_app.person.PersonBE;
 import org.sterl.spring.sample_app.person.PersonRepository;
 
