@@ -4,5 +4,4 @@ import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryLastStateEn
 
 public interface TriggerHistoryLastStateRepository extends HistoryTriggerRepository<TriggerHistoryLastStateEntity> {
 
-    
 }

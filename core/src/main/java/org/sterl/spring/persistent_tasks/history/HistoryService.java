@@ -64,7 +64,7 @@ public class HistoryService {
         return findAllDetailsForKey(key, PageRequest.of(0, 100));
     }
     public Page<TriggerHistoryDetailEntity> findAllDetailsForKey(TriggerKey key, Pageable page) {
-        page = sortByIdIfNeeded(page);
+        page = applyDefaultSortIfNeeded(page);
         return triggerHistoryDetailRepository.listKnownStatusFor(key, page);
     }
 
@@ -97,7 +97,7 @@ public class HistoryService {
     public Page<TriggerHistoryLastStateEntity> findTriggerState(
             @Nullable TriggerKey key, Pageable page) {
         
-        page = sortByIdIfNeeded(page);
+        page = applyDefaultSortIfNeeded(page);
         if (key == null) return triggerHistoryLastStateRepository.findAll(page);
         if (key.getId() == null && key.getTaskName() == null) return triggerHistoryLastStateRepository.findAll(page);
         if (key.getId() == null && key.getTaskName() != null) {
@@ -109,10 +109,10 @@ public class HistoryService {
                 page);
     }
 
-    private Pageable sortByIdIfNeeded(Pageable page) {
+    private Pageable applyDefaultSortIfNeeded(Pageable page) {
         if (page.getSort() == Sort.unsorted()) {
             return PageRequest.of(page.getPageNumber(), page.getPageSize(), 
-                    Sort.by(Direction.DESC, "id"));
+                    Sort.by(Direction.DESC, "data.createdTime", "id"));
         }
         return page;
     }

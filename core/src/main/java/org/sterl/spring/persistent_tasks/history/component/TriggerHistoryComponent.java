@@ -3,6 +3,7 @@ package org.sterl.spring.persistent_tasks.history.component;
 import java.time.OffsetDateTime;
 
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -26,9 +27,14 @@ public class TriggerHistoryComponent {
     private final TriggerHistoryLastStateRepository triggerHistoryLastStateRepository;
     private final TriggerHistoryDetailRepository triggerHistoryDetailRepository;
 
-    //@Transactional(timeout = 10)
-    //@EventListener
-    void onRunning(TriggerRunningEvent e) {
+    // we have to ensure to run in an own transaction
+    // as if the trigger fails, a rollback would also remove this entry
+    // furthermore async to ensure that we would not block
+    // as REQURES_NEW would block two DB connections ...
+    @Async
+    @Transactional(timeout = 10)
+    @EventListener
+    public void onRunning(TriggerRunningEvent e) {
         log.debug("Received event={} for {} new status={}",
                 e.getClass().getSimpleName(),
                 e.key(), e.status());
@@ -36,11 +42,11 @@ public class TriggerHistoryComponent {
         execute(e.id(), e.data());
     }
     
-    @Transactional(timeout = 10)
-    @EventListener
-    //@TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    // @Transactional(timeout = 10)
+    // @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     void onPersistentTaskEvent(TriggerLifeCycleEvent e) {
-        //if (e instanceof TriggerRunningEvent) return; // we have an own listener for that
+        if (e instanceof TriggerRunningEvent) return; // we have an own listener for that
         log.debug("Received event={} for {} new status={}",
                 e.getClass().getSimpleName(),
                 e.key(), e.status());

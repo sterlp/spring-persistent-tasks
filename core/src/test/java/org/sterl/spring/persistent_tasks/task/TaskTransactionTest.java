@@ -145,7 +145,7 @@ class TaskTransactionTest extends AbstractSpringTest {
         triggerService.run(t).get();
         
         // THEN
-        hibernateAsserts.assertTrxCount(1);
+        hibernateAsserts.assertTrxCount(2);
         assertThat(personRepository.count()).isEqualTo(2);
     }
 }

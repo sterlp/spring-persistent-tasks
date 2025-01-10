@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.springframework.context.event.EventListener;
+import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,6 +54,12 @@ public class PersistentTaskService {
         } else {
             return Optional.ofNullable(trigger.get().getData());
         }
+    }
+    
+    public Optional<TriggerData> getLastDetailData(TriggerKey key) {
+        var data = historyService.findAllDetailsForKey(key, Pageable.ofSize(1));
+        if (data.isEmpty()) return Optional.empty();
+        return Optional.of(data.getContent().get(0).getData());
     }
     
     @EventListener

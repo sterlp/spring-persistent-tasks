@@ -5,10 +5,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.api.PersistentTask;
 import org.sterl.spring.persistent_tasks.api.TaskId;
@@ -18,14 +16,12 @@ import org.sterl.spring.persistent_tasks.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@DependsOnDatabaseInitialization
 @RequiredArgsConstructor
 public class TaskService {
 
     private final TaskTransactionComponent taskTransactionComponent;
     private final TaskRepository taskRepository;
 
-    @Transactional(readOnly = true)
     public Set<TaskId<? extends Serializable>> findAllTaskIds() {
         return this.taskRepository.all();
     }
