@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.5.0
+## v1.5.0 - (2025-01-11)
 
 -   Adjusted transaction handling for trigger life cycle events
 -   Base event entry is only written for done/finished trigger
