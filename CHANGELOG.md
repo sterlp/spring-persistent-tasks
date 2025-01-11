@@ -2,47 +2,47 @@
 
 ## v1.5.0
 
--  Adjusted transaction handling for trigger life cycle events
--  Base event entry is only written for done/finished trigger
+-   Adjusted transaction handling for trigger life cycle events
+-   Base event entry is only written for done/finished trigger
+-   Base statistics added for a task
 
 ## v1.4.6 - (2025-01-08)
 
--  Trigger history with more details - not waiting for the transaction
+-   Trigger history with more details - not waiting for the transaction
 
 ## v1.4.5 - (2025-01-08)
 
--  Adjusted path matching to support sub routes for an SPA web app
+-   Adjusted path matching to support sub routes for an SPA web app
 
 ## v1.4.4 - (2025-01-08)
 
--  Fixed UI routing
--  added support for thymeleaf - adding index.html to template folder
+-   Fixed UI routing
+-   added support for thymeleaf - adding index.html to template folder
 
 ## v1.4.3 - (2025-01-08)
 
--  Scheduler service leaves current transaction before executing task
+-   Scheduler service leaves current transaction before executing task
 
 ## v1.4.2 - (2025-01-06)
 
--  Fixed count by TaskId
--  added search by ID to the UI
--  added search by task to history
+-   Fixed count by TaskId
+-   added search by ID to the UI
+-   added search by task to history
 
 ## v1.4.1 - (2025-01-06)
 
--  Added state to the TriggerLifeCycleEvent
--  @Transactional annotation is taken from the method first
+-   Added state to the TriggerLifeCycleEvent
+-   @Transactional annotation is taken from the method first
 
 ## v1.4.0 - (2025-01-05)
 
--  @Transactional Annotation support
--  PersistentTask instead of Task or SpringBeanTask
-
+-   @Transactional Annotation support
+-   PersistentTask instead of Task or SpringBeanTask
 
 ## v1.3.1 - (2025-01-02)
 
--  Bugfixes
--  Sprign Transaction Template support
+-   Bugfixes
+-   Sprign Transaction Template support
 
 ## v1.3.0 - (2025-01-01)
 
