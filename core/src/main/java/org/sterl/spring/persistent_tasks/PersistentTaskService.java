@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.springframework.context.event.EventListener;
+import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,17 +56,23 @@ public class PersistentTaskService {
         }
     }
     
+    public Optional<TriggerData> getLastDetailData(TriggerKey key) {
+        var data = historyService.findAllDetailsForKey(key, Pageable.ofSize(1));
+        if (data.isEmpty()) return Optional.empty();
+        return Optional.of(data.getContent().get(0).getData());
+    }
+    
     @EventListener
     void queue(TriggerTaskCommand<? extends Serializable> event) {
         if (event.triggers().size() == 1) {
             runOrQueue(event.triggers().iterator().next());
         } else {
-            queueAll(event.triggers());
+            queue(event.triggers());
         }
     }
 
     /**
-     * Queues the given triggers.
+     * Queues/updates the given triggers, if the {@link TriggerKey} is already present
      * 
      * @param <T> the state type
      * @param triggers the triggers to add
@@ -73,11 +80,23 @@ public class PersistentTaskService {
      */
     @Transactional(timeout = 10)
     @NonNull
-    public <T extends Serializable> List<TriggerKey> queueAll(Collection<AddTriggerRequest<T>> triggers) {
+    public <T extends Serializable> List<TriggerKey> queue(Collection<AddTriggerRequest<T>> triggers) {
         return triggers.stream() //
             .map(t -> triggerService.queue(t)) //
             .map(TriggerEntity::getKey) //
             .toList();
+    }
+    /**
+     * Queues/updates the given trigger, if the {@link TriggerKey} is already present.
+     * 
+     * @param <T> the state type
+     * @param trigger the trigger to add
+     * @return the {@link TriggerKey}
+     */
+    @Transactional(timeout = 5)
+    @NonNull
+    public <T extends Serializable> TriggerKey queue(AddTriggerRequest<T> trigger) {
+        return triggerService.queue(trigger).getKey();
     }
 
     /**

@@ -15,8 +15,8 @@ import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 
 class SchedulerServiceTest extends AbstractSpringTest {
 

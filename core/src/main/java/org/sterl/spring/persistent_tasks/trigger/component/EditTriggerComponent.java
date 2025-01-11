@@ -6,14 +6,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.event.Level;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerAddedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerCanceledEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerFailedEvent;
@@ -35,37 +36,49 @@ public class EditTriggerComponent {
     private final TriggerRepository triggerRepository;
 
     public Optional<TriggerEntity> completeTaskWithSuccess(TriggerKey key, Serializable state) {
-        return this.completeTaskWithStatus(key, state, null);
+        final Optional<TriggerEntity> result = triggerRepository.findByKey(key);
+
+        result.ifPresent(t -> {
+            t.complete(null);
+            publisher.publishEvent(new TriggerSuccessEvent(
+                    t.getId(), t.copyData(), state));
+            log.debug("Setting {} to status={}", key, t.getData().getStatus());
+            triggerRepository.delete(t);
+        });
+        return result;
     }
 
     /**
      * Sets success or error based on the fact if an exception is given or not.
      */
-    public Optional<TriggerEntity> completeTaskWithStatus(TriggerKey key, Serializable state, Exception e) {
+    public Optional<TriggerEntity> failTrigger(
+            TriggerKey key, 
+            Serializable state, 
+            Exception e,
+            OffsetDateTime retryAt) {
         final Optional<TriggerEntity> result = triggerRepository.findByKey(key);
 
+
         result.ifPresent(t -> {
+            log.atLevel(retryAt == null ? Level.ERROR : Level.WARN)
+            .setCause(e)
+            .log("{} failed, retryAt={}",
+                    key, retryAt == null ? "no" : retryAt);
             t.complete(e);
+            publisher.publishEvent(new TriggerFailedEvent(t.getId(), t.copyData(), state, e, retryAt));
 
-            if (t.getData().getStatus() == TriggerStatus.SUCCESS) {
-                publisher.publishEvent(new TriggerSuccessEvent(t, state));
-                log.debug("Setting {} to status={} {}", key, t.getData().getStatus(),
-                        e == null ? "" : "error=" + e.getClass().getSimpleName());
+            if (retryAt == null) {
+                triggerRepository.delete(t);
             } else {
-                publisher.publishEvent(new TriggerFailedEvent(t, state, e));
-                log.info("Setting {} to status={} {}", key, t.getData().getStatus(),
-                        e == null ? "" : "error=" + e.getClass().getSimpleName());
+                t.runAt(retryAt);
             }
-
         });
+        if (result.isEmpty()) {
+            log.error("Trigger with key={} not found and may be at a wrong state!",
+                    key, e);
+        }
 
         return result;
-    }
-
-    public Optional<TriggerEntity> retryTrigger(TriggerKey id, OffsetDateTime retryAt) {
-        return triggerRepository //
-                .findByKey(id) //
-                .map(t -> t.runAt(retryAt));
     }
 
     public Optional<TriggerEntity> cancelTask(TriggerKey id) {
@@ -73,7 +86,8 @@ public class EditTriggerComponent {
                 .findByKey(id) //
                 .map(t -> {
                     t.cancel();
-                    publisher.publishEvent(new TriggerCanceledEvent(t, 
+                    publisher.publishEvent(new TriggerCanceledEvent(
+                            t.getId(), t.copyData(),
                             stateSerializer.deserializeOrNull(t.getData().getState())));
                     triggerRepository.delete(t);
                     return t;
@@ -94,7 +108,8 @@ public class EditTriggerComponent {
             result = triggerRepository.save(result);
             log.debug("Added trigger={}", result);
         }
-        publisher.publishEvent(new TriggerAddedEvent(result, tigger.state()));
+        publisher.publishEvent(new TriggerAddedEvent(
+                result.getId(), result.copyData(), tigger.state()));
         return result;
     }
 

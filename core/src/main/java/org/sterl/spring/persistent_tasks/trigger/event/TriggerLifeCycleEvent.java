@@ -4,25 +4,24 @@ import java.io.Serializable;
 
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
-import org.sterl.spring.persistent_tasks.api.TriggerKey;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
+import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 
 /**
- * Tag any events which are fired in case something changes on a trigger
+ * Tag any events which are fired in case something changes on a trigger.
+ * The attached data is already a copy, any modification to this data will have no effect.
  */
-public interface TriggerLifeCycleEvent {
-    default TriggerKey key() {
-        return trigger().getKey();
+public interface TriggerLifeCycleEvent extends HasTriggerData {
+    default TriggerData getData() {
+        return data();
     }
-    default TriggerStatus status() {
-        return trigger().getData().getStatus();
-    }
-    default boolean isRunningOn(String name) {
-        return trigger().isRunning() && name != null && name.equals(trigger().getRunningOn());
-    }
+    long id();
     @NonNull
-    TriggerEntity trigger();
+    TriggerData data();
     @Nullable
     Serializable state();
+    /**
+     * @return <code>true</code> if the trigger was completed, either with success, error or canceled.
+     */
+    boolean isDone();
 }

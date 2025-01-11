@@ -10,12 +10,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.lang.Nullable;
+import org.sterl.spring.persistent_tasks.api.TaskStatusHistoryOverview;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryDetailEntity;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryLastStateEntity;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryDetailRepository;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryLastStateRepository;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
@@ -64,7 +65,7 @@ public class HistoryService {
         return findAllDetailsForKey(key, PageRequest.of(0, 100));
     }
     public Page<TriggerHistoryDetailEntity> findAllDetailsForKey(TriggerKey key, Pageable page) {
-        page = sortByIdIfNeeded(page);
+        page = applyDefaultSortIfNeeded(page);
         return triggerHistoryDetailRepository.listKnownStatusFor(key, page);
     }
 
@@ -97,7 +98,7 @@ public class HistoryService {
     public Page<TriggerHistoryLastStateEntity> findTriggerState(
             @Nullable TriggerKey key, Pageable page) {
         
-        page = sortByIdIfNeeded(page);
+        page = applyDefaultSortIfNeeded(page);
         if (key == null) return triggerHistoryLastStateRepository.findAll(page);
         if (key.getId() == null && key.getTaskName() == null) return triggerHistoryLastStateRepository.findAll(page);
         if (key.getId() == null && key.getTaskName() != null) {
@@ -109,11 +110,15 @@ public class HistoryService {
                 page);
     }
 
-    private Pageable sortByIdIfNeeded(Pageable page) {
+    private Pageable applyDefaultSortIfNeeded(Pageable page) {
         if (page.getSort() == Sort.unsorted()) {
             return PageRequest.of(page.getPageNumber(), page.getPageSize(), 
-                    Sort.by(Direction.DESC, "id"));
+                    Sort.by(Direction.DESC, "data.createdTime", "id"));
         }
         return page;
+    }
+
+    public List<TaskStatusHistoryOverview> taskStatusHistory() {
+        return triggerHistoryLastStateRepository.listTriggerStatus();
     }
 }

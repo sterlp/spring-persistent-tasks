@@ -4,9 +4,9 @@ import java.time.OffsetDateTime;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
@@ -110,5 +110,10 @@ public class TriggerEntity implements HasTriggerData {
     public TriggerEntity withState(byte[] state) {
         this.data.setState(state);
         return this;
+    }
+    
+    public TriggerData copyData() {
+        if (data == null) return null;
+        return this.data.copy();
     }
 }

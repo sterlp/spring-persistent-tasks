@@ -12,7 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerStatus;
+import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 class HistoryServiceTest extends AbstractSpringTest {
@@ -53,5 +53,23 @@ class HistoryServiceTest extends AbstractSpringTest {
         assertThat(triggers.get(0).getData().getStatus()).isEqualTo(TriggerStatus.SUCCESS);
         assertThat(triggers.get(1).getData().getStatus()).isEqualTo(TriggerStatus.RUNNING);
         assertThat(triggers.get(2).getData().getStatus()).isEqualTo(TriggerStatus.WAITING);
+    }
+    
+    @Test
+    void testTriggerHistoryTrx() throws TimeoutException, InterruptedException {
+        // GIVEN
+        final var trigger = Task3.ID.newUniqueTrigger("Hallo");
+        persistentTaskService.queue(trigger);
+        // WHEN
+        hibernateAsserts.reset();
+        schedulerService.triggerNextTasks().forEach(t -> {
+            try {t.get();} catch (Exception ex) {throw new RuntimeException(ex);}
+        });
+        
+        // THEN
+        // 2 to get the work
+        // 1 for the running history
+        // 1 for the success history
+        hibernateAsserts.assertTrxCount(4);
     }
 }

@@ -23,17 +23,6 @@ export interface AddTriggerRequest<T> {
     priority: number;
 }
 
-export interface HistoryOverview {
-    instanceId: number;
-    taskName: string;
-    entryCount: number;
-    start: string;
-    end: string;
-    createdTime: string;
-    executionCount: number;
-    runningDurationInMs: number;
-}
-
 export interface PersistentTask<T> {
     transactional: boolean;
 }
@@ -58,6 +47,18 @@ export interface TaskId<T> extends Serializable {
 }
 
 export interface TaskTriggerBuilder<T> {
+}
+
+export interface TaskStatusHistoryOverview {
+    taskName: string;
+    status: TriggerStatus;
+    executionCount: number;
+    firstRun: string;
+    lastRun: string;
+    maxDurationMs: number;
+    minDurationMs: number;
+    avgDurationMs: number;
+    avgExecutionCount: number;
 }
 
 export interface TransactionalTask<T> extends PersistentTask<T> {

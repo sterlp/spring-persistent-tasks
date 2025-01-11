@@ -1,4 +1,4 @@
-package org.sterl.spring.persistent_tasks.shared.model;
+package org.sterl.spring.persistent_tasks.api;
 
 import java.util.EnumSet;
 import java.util.Set;

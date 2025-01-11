@@ -4,7 +4,7 @@ import LabeledText from "@src/shared/view/labled-text.view";
 import JsonView from "@uiw/react-json-view";
 import { Accordion, Button, Col, Container, Row } from "react-bootstrap";
 import TriggerStatusView from "../../trigger/views/trigger-staus.view";
-import { formatDateTime, formatMs } from "../date.util";
+import { formatMs, formatShortDateTime } from "../date.util";
 import { useServerObject } from "../http-request";
 import HttpErrorView from "./http-error.view";
 import StackTraceView from "./stacktrace-view";
@@ -28,57 +28,54 @@ const TriggerItemView = ({ trigger, afterTriggerChanged }: TriggerProps) => {
     );
 
     return (
-        <Accordion
-            onClick={() => {
-                if (!triggerHistory.data) triggerHistory.doGet();
-            }}
+        <Accordion.Item
+            eventKey={trigger.id + ""}
+            onClick={() => triggerHistory.doGet()}
         >
-            <Accordion.Item eventKey={trigger.id + ""}>
-                <Accordion.Header>
-                    <Container>
-                        <TriggerCompactView
-                            key={trigger.id + "TriggerCompactView"}
-                            trigger={trigger}
-                        />
-                    </Container>
-                </Accordion.Header>
-                <Accordion.Body>
-                    <HttpErrorView
-                        error={triggerHistory.error || editTrigger.error}
-                    />
-                    {trigger.status === "WAITING" && afterTriggerChanged ? (
-                        <div className="d-flex gap-2 mb-2">
-                            <Button
-                                onClick={() => {
-                                    editTrigger
-                                        .doCall("/run-at", "POST", new Date())
-                                        .then(afterTriggerChanged)
-                                        .catch((e) => console.info(e));
-                                }}
-                            >
-                                Run now
-                            </Button>
-                            <Button
-                                variant="danger"
-                                onClick={() => {
-                                    editTrigger
-                                        .doCall("", "DELETE")
-                                        .then(afterTriggerChanged)
-                                        .catch((e) => console.info(e));
-                                }}
-                            >
-                                Cancel Trigger
-                            </Button>
-                        </div>
-                    ) : undefined}
-                    <TriggerDetailsView
-                        key={trigger.id + "TriggerDetailsView"}
+            <Accordion.Header>
+                <Container>
+                    <TriggerCompactView
+                        key={trigger.id + "TriggerCompactView"}
                         trigger={trigger}
-                        history={triggerHistory.data}
                     />
-                </Accordion.Body>
-            </Accordion.Item>
-        </Accordion>
+                </Container>
+            </Accordion.Header>
+            <Accordion.Body>
+                <HttpErrorView
+                    error={triggerHistory.error || editTrigger.error}
+                />
+                {trigger.status === "WAITING" && afterTriggerChanged ? (
+                    <div className="d-flex gap-2 mb-2">
+                        <Button
+                            onClick={() => {
+                                editTrigger
+                                    .doCall("/run-at", "POST", new Date())
+                                    .then(afterTriggerChanged)
+                                    .catch((e) => console.info(e));
+                            }}
+                        >
+                            Run now
+                        </Button>
+                        <Button
+                            variant="danger"
+                            onClick={() => {
+                                editTrigger
+                                    .doCall("", "DELETE")
+                                    .then(afterTriggerChanged)
+                                    .catch((e) => console.info(e));
+                            }}
+                        >
+                            Cancel Trigger
+                        </Button>
+                    </div>
+                ) : undefined}
+                <TriggerDetailsView
+                    key={trigger.id + "TriggerDetailsView"}
+                    trigger={trigger}
+                    history={triggerHistory.data}
+                />
+            </Accordion.Body>
+        </Accordion.Item>
     );
 };
 
@@ -95,10 +92,23 @@ const TriggerCompactView = ({ trigger }: { trigger: Trigger }) => (
             {" " + trigger.key.taskName}
         </Col>
         <Col>
-            <LabeledText label="Run at" value={formatDateTime(trigger.runAt)} />
+            <LabeledText
+                label="Run at"
+                value={formatShortDateTime(trigger.runAt)}
+            />
         </Col>
-        <Col className="d-none d-lg-block">
-            <LabeledText label="Retrys" value={trigger.executionCount} />
+        <Col>
+            {trigger.runningOn ? (
+                <LabeledText
+                    label={`Running on (${trigger.executionCount})`}
+                    value={trigger.runningOn}
+                />
+            ) : (
+                <LabeledText
+                    label="Executions"
+                    value={trigger.executionCount}
+                />
+            )}
         </Col>
     </Row>
 );
@@ -113,19 +123,13 @@ const TriggerDetailsView = ({
     return (
         <>
             <Row>
-                <Col>
-                    <LabeledText label="Task" value={trigger.key.taskName} />
-                </Col>
-                <Col>
+                <Col xs="6">
                     <LabeledText label="Key Id" value={trigger.key.id} />
                 </Col>
-                <Col>
-                    <LabeledText
-                        label="Retrys"
-                        value={trigger.executionCount}
-                    />
+                <Col xs="3">
+                    <LabeledText label="Task" value={trigger.key.taskName} />
                 </Col>
-                <Col>
+                <Col xs="3">
                     <LabeledText label="Priority" value={trigger.priority} />
                 </Col>
             </Row>
@@ -133,19 +137,19 @@ const TriggerDetailsView = ({
                 <Col md="6" xl="3">
                     <LabeledText
                         label="Run at"
-                        value={formatDateTime(trigger.runAt)}
+                        value={formatShortDateTime(trigger.runAt)}
                     />
                 </Col>
                 <Col md="6" xl="3">
                     <LabeledText
                         label="Started at"
-                        value={formatDateTime(trigger.start)}
+                        value={formatShortDateTime(trigger.start)}
                     />
                 </Col>
                 <Col md="6" xl="3">
                     <LabeledText
                         label="Finished at"
-                        value={formatDateTime(trigger.end)}
+                        value={formatShortDateTime(trigger.end)}
                     />
                 </Col>
                 <Col md="6" xl="3">

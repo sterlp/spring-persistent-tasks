@@ -7,6 +7,8 @@ import java.util.Optional;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.api.PersistentTask;
 import org.sterl.spring.persistent_tasks.task.TaskService;
@@ -29,6 +31,7 @@ public class RunTriggerComponent {
     /**
      * Will execute the given {@link TriggerEntity} and handle any errors etc.
      */
+    @Transactional(propagation = Propagation.NEVER)
     public Optional<TriggerEntity> execute(TriggerEntity trigger) {
         if (trigger == null) {
             return Optional.empty();
@@ -40,7 +43,7 @@ public class RunTriggerComponent {
         try {
             return taskAndState.call();
         } catch (Exception e) {
-            return handleTaskException(taskAndState, e);
+            return failTaskAndState(taskAndState, e);
         }
     }
 
@@ -53,12 +56,35 @@ public class RunTriggerComponent {
             return new TaskAndState(task, trx, state, trigger);
         } catch (Exception e) {
             // this trigger is somehow crap, no retry and done.
-            handleTaskException(new TaskAndState(null, Optional.empty(), null, trigger), e);
+            failTaskAndState(new TaskAndState(null, Optional.empty(), null, trigger), e);
             return null;
         }
     }
+    
+    private Optional<TriggerEntity> failTaskAndState(TaskAndState taskAndState, Exception e) {
+
+        var trigger = taskAndState.trigger;
+        var task = taskAndState.persistentTask;
+        Optional<TriggerEntity> result;
+
+        if (task != null 
+                && task.retryStrategy().shouldRetry(trigger.getData().getExecutionCount(), e)) {
+
+            final OffsetDateTime retryAt = task.retryStrategy().retryAt(trigger.getData().getExecutionCount(), e);
+
+            result = editTrigger.failTrigger(trigger.getKey(), taskAndState.state, e, retryAt);
+
+        } else {
+            log.error("{} failed, no more retries! {}", trigger.getKey(), 
+                    e == null ? "No exception given." : e.getMessage(), e);
+            
+            result = editTrigger.failTrigger(trigger.getKey(), taskAndState.state, e, null);
+        }
+        return result;
+    }
+    
     @RequiredArgsConstructor
-    private class TaskAndState {
+    class TaskAndState {
         final PersistentTask<Serializable> persistentTask;
         final Optional<TransactionTemplate> trx;
         final Serializable state;
@@ -73,7 +99,9 @@ public class RunTriggerComponent {
         }
 
         private Optional<TriggerEntity> runTask() {
-            eventPublisher.publishEvent(new TriggerRunningEvent(trigger, state));
+            if (!trigger.isRunning()) trigger.runOn(trigger.getRunningOn());
+            eventPublisher.publishEvent(new TriggerRunningEvent(
+                    trigger.getId(), trigger.copyData(), state, trigger.getRunningOn()));
 
             persistentTask.accept(state);
 
@@ -82,38 +110,5 @@ public class RunTriggerComponent {
 
             return result;
         }
-    }
-
-    private Optional<TriggerEntity> handleTaskException(TaskAndState taskAndState,
-            @Nullable Exception e) {
-
-        var trigger = taskAndState.trigger;
-        var task = taskAndState.persistentTask;
-        var result = editTrigger.completeTaskWithStatus(trigger.getKey(), taskAndState.state, e);
-
-        if (task != null 
-                && task.retryStrategy().shouldRetry(trigger.getData().getExecutionCount(), e)) {
-
-            final OffsetDateTime retryAt = task.retryStrategy().retryAt(trigger.getData().getExecutionCount(), e);
-
-            result = editTrigger.retryTrigger(trigger.getKey(), retryAt);
-            if (result.isPresent()) {
-                var data = result.get().getData();
-                log.warn("{} failed, retry will be done at={} status={}!",
-                        trigger.getKey(), 
-                        data.getRunAt(),
-                        data.getStatus(),
-                        e);
-            } else {
-                log.error("Trigger with key={} not found and may be at a wrong state!",
-                        trigger.getKey(), e);
-            }
-        } else {
-            log.error("{} failed, no more retries! {}", trigger.getKey(), 
-                    e == null ? "No exception given." : e.getMessage(), e);
-            
-            editTrigger.deleteTrigger(trigger);
-        }
-        return result;
     }
 }

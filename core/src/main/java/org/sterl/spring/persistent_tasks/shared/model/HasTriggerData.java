@@ -4,10 +4,18 @@ import java.io.Serializable;
 import java.time.OffsetDateTime;
 
 import org.sterl.spring.persistent_tasks.api.TaskId;
+import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 
 public interface HasTriggerData {
     TriggerData getData();
     
+    default TriggerKey key() {
+        return getData().getKey();
+    }
+    default TriggerStatus status() {
+        return getData().getStatus();
+    }
     default boolean isRunning() {
         return getData().getStatus() == TriggerStatus.RUNNING;
     }
