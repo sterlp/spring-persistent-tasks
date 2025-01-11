@@ -23,17 +23,6 @@ export interface AddTriggerRequest<T> {
     priority: number;
 }
 
-export interface HistoryOverview {
-    instanceId: number;
-    taskName: string;
-    entryCount: number;
-    start: string;
-    end: string;
-    createdTime: string;
-    executionCount: number;
-    runningDurationInMs: number;
-}
-
 export interface PersistentTask<T> {
     transactional: boolean;
 }
@@ -51,6 +40,16 @@ export interface MultiplicativeRetryStrategy extends RetryStrategy {
  * @deprecated
  */
 export interface SpringBeanTask<T> extends PersistentTask<T> {
+}
+
+export interface TaskHistoryOverview {
+    taskName: string;
+    executionCount: number;
+    firstRun: string;
+    lastRun: string;
+    maxDurationMs: number;
+    minDurationMs: number;
+    avgDurationMs: number;
 }
 
 export interface TaskId<T> extends Serializable {

@@ -6,7 +6,7 @@ import PageView from "@src/shared/view/page.view";
 import ReloadButton from "@src/shared/view/reload-button.view";
 import TaskSelect from "@src/task/view/task-select.view";
 import { useState } from "react";
-import { Col, Form, Row, Stack } from "react-bootstrap";
+import { Accordion, Col, Form, Row, Stack } from "react-bootstrap";
 import TriggerItemView from "../shared/view/trigger-list-item.view";
 
 const TriggersPage = () => {
@@ -56,13 +56,15 @@ const TriggersPage = () => {
                     />
                 </Col>
             </Row>
-            {triggers.data?.content.map((t) => (
-                <TriggerItemView
-                    key={t.id + "-" + t.key.id}
-                    trigger={t}
-                    afterTriggerChanged={doReload}
-                />
-            ))}
+            <Accordion>
+                {triggers.data?.content.map((t) => (
+                    <TriggerItemView
+                        key={t.id + "-" + t.key.id}
+                        trigger={t}
+                        afterTriggerChanged={doReload}
+                    />
+                ))}
+            </Accordion>
         </Stack>
     );
 };

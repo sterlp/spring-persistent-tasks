@@ -19,14 +19,11 @@ const TriggerHistoryListView = ({ triggers }: { triggers?: Trigger[] }) => {
                     <Row>
                         <Col>
                             <TriggerStatusView data={t} />
-                            <strong>
-                                {" at " + formatDateTime(t.createdTime)}
-                            </strong>
                         </Col>
                         <Col>
-                            {formatDateTime(t.start)} - {formatDateTime(t.end)}{" "}
+                            <strong>{formatDateTime(t.createdTime)}</strong>
                         </Col>
-                        <Col>{t.executionCount}</Col>
+                        <Col>execution: {t.executionCount}</Col>
                         <Col>{formatMs(t.runningDurationInMs)}</Col>
                     </Row>
                 </ListGroup.Item>

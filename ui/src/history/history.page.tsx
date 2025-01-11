@@ -7,7 +7,7 @@ import ReloadButton from "@src/shared/view/reload-button.view";
 import TriggerItemView from "@src/shared/view/trigger-list-item.view";
 import TaskSelect from "@src/task/view/task-select.view";
 import { useState } from "react";
-import { Col, Form, Row, Stack } from "react-bootstrap";
+import { Accordion, Col, Form, Row, Stack } from "react-bootstrap";
 
 const HistoryPage = () => {
     const [page, setPage] = useState(0);
@@ -63,9 +63,11 @@ const HistoryPage = () => {
                         />
                     </Col>
                 </Row>
-                {triggers.data?.content.map((t) => (
-                    <TriggerItemView key={"history-" + t.id} trigger={t} />
-                ))}
+                <Accordion>
+                    {triggers.data?.content.map((t) => (
+                        <TriggerItemView key={"history-" + t.id} trigger={t} />
+                    ))}
+                </Accordion>
             </Stack>
         </>
     );
