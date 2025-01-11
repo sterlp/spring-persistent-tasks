@@ -12,4 +12,8 @@ import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
  */
 public record TriggerAddedEvent(long id, TriggerData data, Serializable state) implements TriggerLifeCycleEvent {
 
+    @Override
+    public boolean isDone() {
+        return false;
+    }
 }

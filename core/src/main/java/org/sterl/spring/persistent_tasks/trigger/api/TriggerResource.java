@@ -39,7 +39,7 @@ public class TriggerResource {
     public PagedModel<Trigger> list(
             @RequestParam(name = "id", required = false) String id,
             @RequestParam(name = "taskName", required = false) String taskName,
-            @PageableDefault(size = 100, direction = Direction.DESC, sort = "id")
+            @PageableDefault(size = 100, direction = Direction.ASC, sort = "data.runAt")
             Pageable pageable) {
         return FromTriggerEntity.INSTANCE.toPage(
                 triggerService.findAllTriggers(

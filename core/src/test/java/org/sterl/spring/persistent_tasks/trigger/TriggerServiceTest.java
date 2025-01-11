@@ -19,6 +19,7 @@ import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
+import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryLastStateRepository;
 import org.sterl.spring.persistent_tasks.task.repository.TaskRepository;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
@@ -31,6 +32,8 @@ class TriggerServiceTest extends AbstractSpringTest {
     private TriggerRepository triggerRepository;
     @Autowired
     private TaskRepository taskRepository;
+    @Autowired
+    private TriggerHistoryLastStateRepository triggerHistoryLastStateRepository;
 
     // ensure persistentTask in the spring context
     @Autowired
@@ -58,8 +61,10 @@ class TriggerServiceTest extends AbstractSpringTest {
 
         // THEN
         hibernateAsserts.assertTrxCount(1);
-        // one for the trigger and two for the history
-        hibernateAsserts.assertInsertCount(3);
+        // one for the trigger and just one for the history
+        hibernateAsserts.assertInsertCount(2);
+        // AND
+        assertThat(triggerHistoryLastStateRepository.count()).isZero();
         // AND
         final var e = subject.get(triggerId);
         assertThat(e).isPresent();

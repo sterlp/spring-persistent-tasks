@@ -20,4 +20,8 @@ public interface TriggerLifeCycleEvent extends HasTriggerData {
     TriggerData data();
     @Nullable
     Serializable state();
+    /**
+     * @return <code>true</code> if the trigger was completed, either with success, error or canceled.
+     */
+    boolean isDone();
 }

@@ -15,4 +15,9 @@ public record TriggerRunningEvent(long id, TriggerData data, Serializable state,
     public boolean isRunningOn(String name) {
         return isRunning() && name != null && name.equals(runningOn);
     }
+
+    @Override
+    public boolean isDone() {
+        return false;
+    }
 }

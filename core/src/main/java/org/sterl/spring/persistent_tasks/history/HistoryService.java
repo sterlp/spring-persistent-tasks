@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.lang.Nullable;
+import org.sterl.spring.persistent_tasks.api.TaskHistoryOverview;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryDetailEntity;
@@ -115,5 +116,9 @@ public class HistoryService {
                     Sort.by(Direction.DESC, "data.createdTime", "id"));
         }
         return page;
+    }
+
+    public List<TaskHistoryOverview> taskHistory() {
+        return triggerHistoryDetailRepository.listTaskHistoryOverview();
     }
 }

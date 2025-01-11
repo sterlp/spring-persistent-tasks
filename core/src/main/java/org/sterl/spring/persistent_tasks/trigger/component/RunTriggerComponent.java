@@ -1,6 +1,7 @@
 package org.sterl.spring.persistent_tasks.trigger.component;
 
 import java.io.Serializable;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -24,7 +25,6 @@ public class RunTriggerComponent {
 
     private final TaskService taskService;
     private final EditTriggerComponent editTrigger;
-    private final HandleTriggerExceptionComponent handleTriggerException;
     private final ApplicationEventPublisher eventPublisher;
     private final StateSerializer serializer = new StateSerializer();
 
@@ -43,7 +43,7 @@ public class RunTriggerComponent {
         try {
             return taskAndState.call();
         } catch (Exception e) {
-            return handleTriggerException.execute(taskAndState, e);
+            return failTaskAndState(taskAndState, e);
         }
     }
 
@@ -56,10 +56,33 @@ public class RunTriggerComponent {
             return new TaskAndState(task, trx, state, trigger);
         } catch (Exception e) {
             // this trigger is somehow crap, no retry and done.
-            handleTriggerException.execute(new TaskAndState(null, Optional.empty(), null, trigger), e);
+            failTaskAndState(new TaskAndState(null, Optional.empty(), null, trigger), e);
             return null;
         }
     }
+    
+    private Optional<TriggerEntity> failTaskAndState(TaskAndState taskAndState, Exception e) {
+
+        var trigger = taskAndState.trigger;
+        var task = taskAndState.persistentTask;
+        Optional<TriggerEntity> result;
+
+        if (task != null 
+                && task.retryStrategy().shouldRetry(trigger.getData().getExecutionCount(), e)) {
+
+            final OffsetDateTime retryAt = task.retryStrategy().retryAt(trigger.getData().getExecutionCount(), e);
+
+            result = editTrigger.failTrigger(trigger.getKey(), taskAndState.state, e, retryAt);
+
+        } else {
+            log.error("{} failed, no more retries! {}", trigger.getKey(), 
+                    e == null ? "No exception given." : e.getMessage(), e);
+            
+            result = editTrigger.failTrigger(trigger.getKey(), taskAndState.state, e, null);
+        }
+        return result;
+    }
+    
     @RequiredArgsConstructor
     class TaskAndState {
         final PersistentTask<Serializable> persistentTask;

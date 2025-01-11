@@ -209,8 +209,6 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         awaitRunningTasks();
 
         // THEN
-        hibernateAsserts.assertInsertCount(5);
-        // AND the last status before we are back to running should be FAILED
         var history = historyService.findAllDetailsForKey(key).getContent();
         assertThat(history.get(0).getData().getStatus())
             .isEqualTo(TriggerStatus.FAILED);

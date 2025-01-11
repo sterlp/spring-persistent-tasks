@@ -11,4 +11,9 @@ import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
  * </p>
  */
 public record TriggerCanceledEvent(long id, TriggerData data, Serializable state) implements TriggerLifeCycleEvent {
+
+    @Override
+    public boolean isDone() {
+        return true;
+    }
 }

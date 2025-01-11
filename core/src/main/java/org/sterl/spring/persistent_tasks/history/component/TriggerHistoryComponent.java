@@ -39,11 +39,9 @@ public class TriggerHistoryComponent {
                 e.getClass().getSimpleName(),
                 e.key(), e.status());
         
-        execute(e.id(), e.data());
+        execute(e.id(), e.data(), false);
     }
     
-    // @Transactional(timeout = 10)
-    // @EventListener
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     void onPersistentTaskEvent(TriggerLifeCycleEvent e) {
         if (e instanceof TriggerRunningEvent) return; // we have an own listener for that
@@ -51,14 +49,17 @@ public class TriggerHistoryComponent {
                 e.getClass().getSimpleName(),
                 e.key(), e.status());
         
-        execute(e.id(), e.data());
+        
+        execute(e.id(), e.data(), e.isDone());
     }
 
-    public void execute(final long triggerId, final TriggerData data) {
-        final var state = new TriggerHistoryLastStateEntity();
-        state.setId(triggerId);
-        state.setData(data.copy());
-        triggerHistoryLastStateRepository.save(state);
+    public void execute(final long triggerId, final TriggerData data, boolean isDone) {
+        if (isDone) {
+            final var state = new TriggerHistoryLastStateEntity();
+            state.setId(triggerId);
+            state.setData(data.copy());
+            triggerHistoryLastStateRepository.save(state);
+        }
 
         var detail = new TriggerHistoryDetailEntity();
         detail.setInstanceId(triggerId);
