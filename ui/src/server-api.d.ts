@@ -42,21 +42,23 @@ export interface MultiplicativeRetryStrategy extends RetryStrategy {
 export interface SpringBeanTask<T> extends PersistentTask<T> {
 }
 
-export interface TaskHistoryOverview {
+export interface TaskId<T> extends Serializable {
+    name: string;
+}
+
+export interface TaskTriggerBuilder<T> {
+}
+
+export interface TaskStatusHistoryOverview {
     taskName: string;
+    status: TriggerStatus;
     executionCount: number;
     firstRun: string;
     lastRun: string;
     maxDurationMs: number;
     minDurationMs: number;
     avgDurationMs: number;
-}
-
-export interface TaskId<T> extends Serializable {
-    name: string;
-}
-
-export interface TaskTriggerBuilder<T> {
+    avgExecutionCount: number;
 }
 
 export interface TransactionalTask<T> extends PersistentTask<T> {

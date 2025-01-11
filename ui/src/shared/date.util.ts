@@ -45,9 +45,10 @@ export function formatDateTime(inputDate?: string | Date): string {
 }
 
 export function formatMs(ms?: number) {
+    if (ms === undefined || ms === null) return "-";
     if (ms === 0) return "0ms";
-    if (!ms) return "";
-    if (ms < 9999) return ms + "ms";
+
+    if (ms < 9999) return Math.floor(ms) + "ms";
 
     const inS = Math.floor(ms / 1000);
     if (ms < 99999) {

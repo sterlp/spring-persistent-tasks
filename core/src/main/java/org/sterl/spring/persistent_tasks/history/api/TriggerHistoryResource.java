@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.sterl.spring.persistent_tasks.api.TaskHistoryOverview;
+import org.sterl.spring.persistent_tasks.api.TaskStatusHistoryOverview;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.history.HistoryService;
@@ -32,9 +32,9 @@ public class TriggerHistoryResource {
         return FromTriggerStateDetailEntity.INSTANCE.convert( //
                 historyService.findAllDetailsForInstance(instanceId));
     }
-    @GetMapping("task-history")
-    public List<TaskHistoryOverview> taskHistory() {
-        return historyService.taskHistory();
+    @GetMapping("task-status-history")
+    public List<TaskStatusHistoryOverview> taskStatusHistory() {
+        return historyService.taskStatusHistory();
     }
 
     @GetMapping("history")

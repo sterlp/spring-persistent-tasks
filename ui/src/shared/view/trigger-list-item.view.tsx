@@ -30,9 +30,7 @@ const TriggerItemView = ({ trigger, afterTriggerChanged }: TriggerProps) => {
     return (
         <Accordion.Item
             eventKey={trigger.id + ""}
-            onClick={() => {
-                if (!triggerHistory.data) triggerHistory.doGet();
-            }}
+            onClick={() => triggerHistory.doGet()}
         >
             <Accordion.Header>
                 <Container>
