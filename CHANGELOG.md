@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.5.1 - (2025-01-12)
+
+-  filter trigger by status
+-  filter history by status
+
 ## v1.5.0 - (2025-01-11)
 
 -   Adjusted transaction handling for trigger life cycle events

@@ -29,7 +29,7 @@ const TriggersPage = () => {
             <Row>
                 <Col>
                     <Form.Control
-                        value={query.id || ""}
+                        defaultValue={query.id || ""}
                         type="text"
                         placeholder="Search..."
                         onKeyUp={(e) =>
