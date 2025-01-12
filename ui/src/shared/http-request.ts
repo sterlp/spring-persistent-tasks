@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 export interface ServerObject<T> {
     isLoading: boolean,
@@ -36,9 +36,9 @@ export const useServerObject = <T>(url: string, startValue?: T): ServerObject<T>
             })
             .finally(() => setIsLoading(false));
         return () => controller.abort();
-    }
+    };
 
-    const doCall = (urlPart?: string, method: HttpMethod = "GET", dataToSend?: unknown) => {
+    const doCall = useCallback((urlPart?: string, method: HttpMethod = "GET", dataToSend?: unknown) => {
         return axios.request({
             baseURL: url + (urlPart ?? ""),
             data: dataToSend,
@@ -47,9 +47,10 @@ export const useServerObject = <T>(url: string, startValue?: T): ServerObject<T>
         .then((response) => setData(response.data as T))
         .catch(e => steError(e))
         .finally(() => setIsLoading(false));
-    }
+    }, [url]);
+
     return useMemo(
         () => ({ isLoading, data, error, doGet, doCall }),
-        [isLoading, data, error, doCall]
+        [isLoading, data, error, doCall, url]
     );
 }

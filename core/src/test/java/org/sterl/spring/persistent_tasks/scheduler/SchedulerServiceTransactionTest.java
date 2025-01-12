@@ -161,6 +161,8 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         // AND
         var data = persistentTaskService.getLastDetailData(trigger.key());
         assertThat(data.get().getStatus()).isEqualTo(TriggerStatus.FAILED);
+        assertThat(triggerService.get(trigger.getKey()).get().getRunningOn()).isNull();
+        assertThat(triggerService.get(trigger.getKey()).get().status()).isEqualTo(TriggerStatus.WAITING);
         // AND
         var history = historyService.findAllDetailsForKey(trigger.key()).getContent();
         assertThat(history.get(0).getData().getStatus()).isEqualTo(TriggerStatus.FAILED);
