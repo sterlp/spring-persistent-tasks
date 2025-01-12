@@ -7,6 +7,7 @@ import java.time.OffsetDateTime;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -16,12 +17,18 @@ import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
 import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.Trigger;
+import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
+import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
 
 class TriggerResourceTest extends AbstractSpringTest {
 
     @LocalServerPort
     private int port;
+    @Autowired
+    private TriggerRepository triggerRepository;
     private String baseUrl;
     private final RestTemplate template = new RestTemplate();
 
@@ -33,7 +40,8 @@ class TriggerResourceTest extends AbstractSpringTest {
     @Test
     void testList() {
         // GIVEN
-        var triggerKey = triggerService.queue(TaskTriggerBuilder.newTrigger("task1").build()).getKey();
+        var k1 = createStatus(new TriggerKey("1-foo", "foo"), TriggerStatus.WAITING).getKey();
+        var k2 = createStatus(new TriggerKey("2-foo", "bar"), TriggerStatus.WAITING).getKey();
         
         // WHEN
         var response = template.exchange(
@@ -45,8 +53,11 @@ class TriggerResourceTest extends AbstractSpringTest {
         // THEN
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody()).contains(triggerKey.getId());
-        assertThat(response.getBody()).contains(triggerKey.getTaskName());
+        assertThat(response.getBody()).contains(k1.getId());
+        assertThat(response.getBody()).contains(k1.getTaskName());
+        // AND
+        assertThat(response.getBody()).contains(k2.getId());
+        assertThat(response.getBody()).contains(k2.getTaskName());
     }
     
     @Test
@@ -69,6 +80,26 @@ class TriggerResourceTest extends AbstractSpringTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody()).contains(key1.getId());
         assertThat(response.getBody()).doesNotContain(key2.getId());
+    }
+    
+    @Test
+    void testSearchByStatus() {
+        // GIVEN
+        var k1 = createStatus(new TriggerKey("1-foo", "foo"), TriggerStatus.WAITING).getKey();
+        var k2 = createStatus(new TriggerKey("2-foo", "bar"), TriggerStatus.RUNNING).getKey();
+        
+        // WHEN
+        var response = template.exchange(
+                baseUrl + "?status=" + TriggerStatus.RUNNING,
+                HttpMethod.GET,
+                null,
+                String.class);
+        
+        // THEN
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).contains(k2.getId());
+        assertThat(response.getBody()).doesNotContain(k1.getId());
     }
     
     @Test
@@ -114,6 +145,26 @@ class TriggerResourceTest extends AbstractSpringTest {
         asserts.assertMissing(Task3.NAME + "::Hallo2");
         assertThat(triggerService.countTriggers(TriggerStatus.WAITING)).isOne();
         assertThat(response.getBody().getKey()).isEqualTo(triggerKey);
+    }
+    
+    
+    private TriggerEntity createStatus(TriggerKey key, TriggerStatus status) {
+        final var now = OffsetDateTime.now();
+        final var isCancel = status == TriggerStatus.CANCELED;
+
+        TriggerEntity result = new TriggerEntity();
+        result.setData(TriggerData
+                .builder()
+                .start(isCancel ? null : now.minusMinutes(1))
+                .end(isCancel ? null : now)
+                .createdTime(now)
+                .key(key)
+                .status(status)
+                .runningDurationInMs(isCancel ? null : 600L)
+                .build()
+            );
+        
+        return triggerRepository.save(result);
     }
 
 }

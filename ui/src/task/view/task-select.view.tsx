@@ -1,21 +1,20 @@
-import { useEffect, useState } from "react";
-import { Col, Form, Row, Spinner } from "react-bootstrap";
 import { useServerObject } from "@src/shared/http-request";
+import { useEffect } from "react";
+import { Col, Form, Row, Spinner } from "react-bootstrap";
 
 interface TaskSelectProps {
+    value?: string;
     onTaskChange?: (task: string) => void; // Define type for the callback
 }
 
-function TaskSelect({ onTaskChange }: TaskSelectProps) {
-    const [selectedTask, setSelectedTask] = useState<string>("");
+function TaskSelect({ value = "", onTaskChange }: TaskSelectProps) {
     const tasksState = useServerObject<string[]>("/spring-tasks-api/tasks");
 
     useEffect(tasksState.doGet, []);
 
     const handleTaskChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const newTask = event.target.value ?? "";
-        if (newTask !== selectedTask) {
-            setSelectedTask(newTask);
+        if (newTask !== value) {
             if (onTaskChange) onTaskChange(newTask);
         }
     };
@@ -41,7 +40,7 @@ function TaskSelect({ onTaskChange }: TaskSelectProps) {
             <Col sm="10">
                 <Form.Select
                     aria-label="Select task"
-                    value={selectedTask || ""}
+                    value={value}
                     onChange={handleTaskChange}
                 >
                     <option value="">All</option>

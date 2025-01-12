@@ -104,6 +104,7 @@ public class TriggerEntity implements HasTriggerData {
     public TriggerEntity runAt(OffsetDateTime runAt) {
         data.setStatus(TriggerStatus.WAITING);
         data.setRunAt(runAt);
+        setRunningOn(null);
         return this;
     }
 

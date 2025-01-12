@@ -96,18 +96,15 @@ public class HistoryService {
      * @return the found data, looking only the last states
      */
     public Page<TriggerHistoryLastStateEntity> findTriggerState(
-            @Nullable TriggerKey key, Pageable page) {
-        
+            @Nullable TriggerKey key, @Nullable TriggerStatus status, Pageable page) {
+
         page = applyDefaultSortIfNeeded(page);
-        if (key == null) return triggerHistoryLastStateRepository.findAll(page);
-        if (key.getId() == null && key.getTaskName() == null) return triggerHistoryLastStateRepository.findAll(page);
-        if (key.getId() == null && key.getTaskName() != null) {
-            return triggerHistoryLastStateRepository.findAll(key.getTaskName(), page);
+        if (key == null && status == null) {
+            return triggerHistoryLastStateRepository.findAll(page);
         }
-        return triggerHistoryLastStateRepository.findAll(
-                key.getId(),
-                key.getTaskName(),
-                page);
+        final var id = key == null ? null : key.getId();
+        final var name = key == null ? null : key.getTaskName();
+        return triggerHistoryLastStateRepository.findAll(id, name, status, page);
     }
 
     private Pageable applyDefaultSortIfNeeded(Pageable page) {

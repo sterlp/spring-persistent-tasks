@@ -94,8 +94,9 @@ public class TriggerService {
     }
 
     @Transactional(readOnly = true , timeout = 10)
-    public Page<TriggerEntity> findAllTriggers(TriggerKey key, Pageable page) {
-        return this.readTrigger.listTriggers(key, page);
+    public Page<TriggerEntity> findAllTriggers(
+            @Nullable TriggerKey key, @Nullable TriggerStatus status, Pageable page) {
+        return this.readTrigger.listTriggers(key, status, page);
     }
     
     @Transactional(readOnly = true , timeout = 10)
