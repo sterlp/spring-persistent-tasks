@@ -1,7 +1,7 @@
 mvn versions:display-dependency-updates
-mvn versions:set -DnewVersion=1.5.0 -DgenerateBackupPoms=false
-git tag -a v1.5.0 -m "v1.5.0 release"
-mvn versions:set -DnewVersion=1.5.1-SNAPSHOT -DgenerateBackupPoms=false
+mvn versions:set -DnewVersion=1.5.1 -DgenerateBackupPoms=false
+git tag -a v1.5.1 -m "v1.5.1 release"
+mvn versions:set -DnewVersion=1.5.2-SNAPSHOT -DgenerateBackupPoms=false
 
 ## postgres
 
