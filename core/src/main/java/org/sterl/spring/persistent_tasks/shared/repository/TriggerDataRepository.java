@@ -20,9 +20,12 @@ public interface TriggerDataRepository<T extends HasTriggerData> extends JpaRepo
             SELECT e FROM #{#entityName} e
             WHERE  (e.data.key.id LIKE :id% OR :id IS NULL)
             AND    (e.data.key.taskName = :taskName OR :taskName IS NULL)
+            AND    (e.data.status = :status OR :status IS NULL)
             """)
      Page<T> findAll(@Param("id") String id,
-             @Param("taskName") String taskName, Pageable page);
+             @Param("taskName") String taskName,
+             @Param("status") TriggerStatus status,
+             Pageable page);
 
     @Query("""
            SELECT e FROM #{#entityName} e

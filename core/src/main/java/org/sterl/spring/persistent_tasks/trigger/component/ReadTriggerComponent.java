@@ -50,10 +50,12 @@ public class ReadTriggerComponent {
         return triggerRepository.findTriggersLastPingAfter(dateTime);
     }
 
-    public Page<TriggerEntity> listTriggers(TriggerKey key, Pageable page) {
-        if (key == null) return triggerRepository.findAll(page);
-        if (key.getId() == null) return listTriggers(key.toTaskId(), page);
-        return triggerRepository.findAll(key.getId(), key.getTaskName(), page);
+    public Page<TriggerEntity> listTriggers(@Nullable TriggerKey key,
+            @Nullable TriggerStatus status, Pageable page) {
+        if (key == null && status == null) return triggerRepository.findAll(page);
+        final var id = key == null ? null : key.getId();
+        final var name = key == null ? null : key.getTaskName();
+        return triggerRepository.findAll(id, name, status, page);
     }
 
     public Page<TriggerEntity> listTriggers(TaskId<? extends Serializable> task, Pageable page) {

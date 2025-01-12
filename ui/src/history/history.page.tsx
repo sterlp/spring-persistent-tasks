@@ -49,7 +49,7 @@ const HistoryPage = () => {
                     <Col>
                         <TaskSelect onTaskChange={setTaskName} />
                     </Col>
-                    <Col className="align-items-center">
+                    <Col>
                         <PageView
                             onPage={(p) => setPage(p)}
                             data={triggers.data}

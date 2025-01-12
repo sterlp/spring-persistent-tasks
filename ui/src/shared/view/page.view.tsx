@@ -32,7 +32,7 @@ const PageView: React.FC<PageViewProps> = ({ data, onPage }) => {
         : "-";
 
     return (
-        <Pagination className="mb-0 mt-0 align-items-center">
+        <Pagination className="mb-0 mt-0 d-felx align-items-center justify-content-center">
             <Pagination.Prev
                 data-testid="prev"
                 onClick={handlePrevClick}

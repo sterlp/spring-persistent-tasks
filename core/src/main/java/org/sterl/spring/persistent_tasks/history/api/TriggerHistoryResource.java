@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.sterl.spring.persistent_tasks.api.TaskStatusHistoryOverview;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.history.HistoryService;
 import org.sterl.spring.persistent_tasks.history.api.HistoryConverter.FromLastTriggerStateEntity;
 import org.sterl.spring.persistent_tasks.history.api.HistoryConverter.FromTriggerStateDetailEntity;
@@ -41,11 +42,11 @@ public class TriggerHistoryResource {
     public PagedModel<Trigger> list(
             @RequestParam(name = "id", required = false) String id,
             @RequestParam(name = "taskName", required = false) String taskName,
-            @PageableDefault(size = 100) Pageable pageable) {
+            @RequestParam(name = "status", required = false) TriggerStatus status,
+            @PageableDefault(size = 100) Pageable page) {
 
+        var key = new TriggerKey(StringUtils.trimToNull(id), StringUtils.trimToNull(taskName));
         return FromLastTriggerStateEntity.INSTANCE.toPage( //
-                historyService.findTriggerState(
-                        new TriggerKey(StringUtils.trimToNull(id), StringUtils.trimToNull(taskName)), 
-                        pageable));
+                historyService.findTriggerState(key, status, page));
     }
 }

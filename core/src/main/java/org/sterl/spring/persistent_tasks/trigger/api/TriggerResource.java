@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.api.TriggerConverter.FromTriggerEntity;
 
@@ -39,12 +40,12 @@ public class TriggerResource {
     public PagedModel<Trigger> list(
             @RequestParam(name = "id", required = false) String id,
             @RequestParam(name = "taskName", required = false) String taskName,
+            @RequestParam(name = "status", required = false) TriggerStatus status,
             @PageableDefault(size = 100, direction = Direction.ASC, sort = "data.runAt")
             Pageable pageable) {
+        var key = new TriggerKey(StringUtils.trimToNull(id), StringUtils.trimToNull(taskName));
         return FromTriggerEntity.INSTANCE.toPage(
-                triggerService.findAllTriggers(
-                        new TriggerKey(StringUtils.trimToNull(id), StringUtils.trimToNull(taskName)), 
-                        pageable));
+                triggerService.findAllTriggers(key, status, pageable));
     }
     
     @PostMapping("triggers/{taskName}/{id}/run-at")
