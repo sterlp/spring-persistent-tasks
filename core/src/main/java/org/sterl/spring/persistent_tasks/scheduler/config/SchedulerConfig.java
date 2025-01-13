@@ -2,6 +2,7 @@ package org.sterl.spring.persistent_tasks.scheduler.config;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
@@ -23,6 +24,22 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SchedulerConfig {
 
+    public interface SchedulerCustomizer {
+        default String name() {
+            try {
+                final var ip = InetAddress.getLocalHost();
+                String name = ip.getHostName();
+                
+                if (name == null) {
+                    name = ip.toString();
+                }
+                return name;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     @ConditionalSchedulerServiceByProperty
     @Primary
     @DependsOnDatabaseInitialization
@@ -31,15 +48,12 @@ public class SchedulerConfig {
             TriggerService triggerService,
             @Value("${spring.persistent-tasks.max-threads:10}") int maxThreads,
             EditSchedulerStatusComponent editSchedulerStatus,
+            Optional<SchedulerCustomizer> customizer,
             TransactionTemplate trx) throws UnknownHostException {
+        
+        customizer = customizer.isEmpty() ? Optional.of(new SchedulerCustomizer() {}) : customizer;
 
-        final var ip = InetAddress.getLocalHost();
-        String name = ip.getHostName();
-
-        if (name == null) {
-            name = ip.toString();
-        }
-        return new SchedulerService(name, triggerService, 
+        return new SchedulerService(customizer.get().name(), triggerService, 
                 new TaskExecutorComponent(triggerService, maxThreads), 
                 editSchedulerStatus, trx);
     }

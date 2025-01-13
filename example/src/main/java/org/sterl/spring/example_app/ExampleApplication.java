@@ -22,6 +22,7 @@ import org.sterl.spring.persistent_tasks.EnableSpringPersistentTasks;
 import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
 import org.sterl.spring.persistent_tasks.scheduler.component.TaskExecutorComponent;
+import org.sterl.spring.persistent_tasks.scheduler.config.SchedulerConfig.SchedulerCustomizer;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks_ui.EnableSpringPersistentTasksUI;
 
@@ -34,6 +35,16 @@ public class ExampleApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(ExampleApplication.class, args);
+    }
+    
+    @Bean
+    SchedulerCustomizer SchedulerCustomizer() {
+        return new SchedulerCustomizer() {
+            @Override
+            public String name() {
+                return "Test-Scheduler";
+            }
+        };
     }
     
     @Bean

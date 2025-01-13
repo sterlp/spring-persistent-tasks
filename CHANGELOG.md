@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.5.2 - (2025-01-13)
+
+-  FixedIntervalRetryStrategy
+-  Added SchedulerCustomizer
+
 ## v1.5.1 - (2025-01-12)
 
 -  filter trigger by status

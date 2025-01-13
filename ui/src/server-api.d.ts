@@ -30,6 +30,9 @@ export interface PersistentTask<T> {
 export interface RetryStrategy {
 }
 
+export interface FixedIntervalRetryStrategy extends RetryStrategy {
+}
+
 export interface LinearRetryStrategy extends RetryStrategy {
 }
 

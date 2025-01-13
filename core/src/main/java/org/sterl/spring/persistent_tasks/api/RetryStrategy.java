@@ -111,4 +111,34 @@ public interface RetryStrategy {
             return OffsetDateTime.now().plus(scalingFactor * executionCount, unit);
         }
     }
+    
+    /**
+     * A retry strategy that determines the next retry time by adding a fixed
+     * interval to the current time in the specified temporal unit.
+     * 
+     * <p>This strategy can be used to create retry intervals that remain constant
+     * regardless of the number of attempts, providing a uniform delay between retries.</p>
+     *
+     * <p>Example:
+     * If {@code interval = 5}, {@code unit = ChronoUnit.SECONDS}, each retry will
+     * be scheduled after 5 seconds from the current time.</p>
+     *
+     * <p>Note: The retry attempts will stop once the maximum execution count
+     * ({@code maxExecutionCount}) is reached.</p>
+     */
+    @RequiredArgsConstructor
+    class FixedIntervalRetryStrategy implements RetryStrategy {
+        private final int maxExecutionCount;
+        private final TemporalUnit unit;
+        private final int interval;
+
+        @Override
+        public boolean shouldRetry(int executionCount, Exception error) {
+            return maxExecutionCount > executionCount;
+        }
+        @Override
+        public OffsetDateTime retryAt(int executionCount, Exception error) {
+            return OffsetDateTime.now().plus(interval, unit);
+        }
+    }
 }
