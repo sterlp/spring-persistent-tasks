@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.5.4 - (2025-01-14)
+
+-  adjusted trigger cols that the UI does not break
+-  showing always all existing schedulers
+
 ## v1.5.2 - (2025-01-13)
 
 -  FixedIntervalRetryStrategy
