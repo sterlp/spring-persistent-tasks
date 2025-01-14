@@ -2,7 +2,7 @@ import TriggerHistoryListView from "@src/history/view/trigger-history.view";
 import { Trigger } from "@src/server-api";
 import LabeledText from "@src/shared/view/labled-text.view";
 import JsonView from "@uiw/react-json-view";
-import { Accordion, Button, Col, Container, Row } from "react-bootstrap";
+import { Accordion, Button, Col, Container, Form, Row } from "react-bootstrap";
 import TriggerStatusView from "../../trigger/views/trigger-staus.view";
 import { formatMs, formatShortDateTime } from "../date.util";
 import { useServerObject } from "../http-request";
@@ -83,21 +83,22 @@ export default TriggerItemView;
 
 const TriggerCompactView = ({ trigger }: { trigger: Trigger }) => (
     <Row className="align-items-center">
-        <Col xs="3" xl="1">
+        <Col className="col-2">
             <TriggerStatusView data={trigger} />
         </Col>
-        <Col>
-            <small className="text-truncate text-muted">{trigger.key.id}</small>
-            <br />
-            {" " + trigger.key.taskName}
+        <Col className="col-5">
+            <Form.Text muted role="label">
+                {trigger.key.id}
+            </Form.Text>
+            <div>{trigger.key.taskName}</div>
         </Col>
-        <Col>
+        <Col className="col-2">
             <LabeledText
                 label="Run at"
                 value={formatShortDateTime(trigger.runAt)}
             />
         </Col>
-        <Col>
+        <Col className="col-3">
             {trigger.runningOn ? (
                 <LabeledText
                     label={`Running on (${trigger.executionCount})`}

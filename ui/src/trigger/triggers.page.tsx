@@ -20,7 +20,6 @@ const TriggersPage = () => {
             "?size=10&" + new URLSearchParams(query).toString()
         );
     };
-    console.info(query);
     useAutoRefresh(10000, doReload, [query]);
 
     return (

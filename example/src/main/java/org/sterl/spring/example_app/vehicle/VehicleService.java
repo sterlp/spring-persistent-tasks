@@ -2,6 +2,7 @@ package org.sterl.spring.example_app.vehicle;
 
 import java.time.OffsetDateTime;
 import java.util.Random;
+import java.util.UUID;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -34,7 +35,10 @@ public class VehicleService {
         v.setId(null);
         v.getEngine().setId(null);
 
-        eventPublisher.publishEvent(TriggerTaskCommand.of(BuildVehicleTask.ID.newUniqueTrigger(v)));
+        eventPublisher.publishEvent(TriggerTaskCommand.of(BuildVehicleTask.ID
+                .newTrigger(v)
+                .id(UUID.randomUUID().toString() + UUID.randomUUID().toString())
+                .build()));
 
         eventPublisher.publishEvent(TriggerTaskCommand.of(BuildVehicleTask.ID.newTrigger().state(v)
                 .runAt(OffsetDateTime.now().plusMinutes(RANDOM.nextInt(10_000))).build()));
@@ -48,6 +52,9 @@ public class VehicleService {
         v.getEngine().setId(null);
         v.setType(type);
 
-        persistentTaskService.runOrQueue(BuildVehicleTask.ID.newUniqueTrigger(v));
+        persistentTaskService.runOrQueue(BuildVehicleTask.ID
+                .newTrigger(v)
+                .id(UUID.randomUUID().toString() + UUID.randomUUID().toString())
+                .build());
     }
 }
