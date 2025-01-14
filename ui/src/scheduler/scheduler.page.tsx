@@ -1,5 +1,5 @@
 import SchedulerStatusView from "@src/scheduler/views/scheduler.view";
-import { TaskStatusHistoryOverview } from "@src/server-api";
+import { SchedulerEntity, TaskStatusHistoryOverview } from "@src/server-api";
 import { formatMs } from "@src/shared/date.util";
 import { useServerObject } from "@src/shared/http-request";
 import useAutoRefresh from "@src/shared/use-auto-refresh";
@@ -9,7 +9,7 @@ import { useEffect } from "react";
 import { Card, Col, ListGroup, Row } from "react-bootstrap";
 
 const SchedulersPage = () => {
-    const schedulers = useServerObject<string[]>(
+    const schedulers = useServerObject<SchedulerEntity[]>(
         "/spring-tasks-api/schedulers"
     );
     const tasks = useServerObject<string[]>("/spring-tasks-api/tasks");
@@ -29,9 +29,9 @@ const SchedulersPage = () => {
                 </Col>
             </Row>
             <Row>
-                {schedulers.data?.map((i) => (
-                    <Col key={i} xl="6" md="12" className="mb-2">
-                        <SchedulerStatusView name={i} />
+                {schedulers.data?.map((s) => (
+                    <Col key={s.id} xl="6" md="12" className="mb-2">
+                        <SchedulerStatusView scheduler={s} />
                     </Col>
                 ))}
 

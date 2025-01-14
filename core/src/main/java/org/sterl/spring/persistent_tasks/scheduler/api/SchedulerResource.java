@@ -1,6 +1,5 @@
 package org.sterl.spring.persistent_tasks.scheduler.api;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -21,12 +20,12 @@ import lombok.RequiredArgsConstructor;
 public class SchedulerResource {
 
     private final SchedulerService anyService;
-    private final Collection<SchedulerService> schedulerServices;
     
     @GetMapping("/schedulers")
-    public List<String> list() {
-        return schedulerServices.stream().map(SchedulerService::getName).toList();
+    public List<SchedulerEntity> listAll() {
+        return anyService.listAll();
     }
+    
     
     @GetMapping("/schedulers/{name}")
     public ResponseEntity<SchedulerEntity> get(@PathVariable("name") String name) {

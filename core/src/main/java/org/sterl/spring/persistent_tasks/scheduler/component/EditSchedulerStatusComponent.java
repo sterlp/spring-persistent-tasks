@@ -4,6 +4,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.OperatingSystemMXBean;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -40,6 +41,10 @@ public class EditSchedulerStatusComponent {
     public SchedulerEntity get(String name) {
         return schedulerRepository.findById(name)
                 .orElseGet(() -> new SchedulerEntity(name));
+    }
+    
+    public List<SchedulerEntity> listAll() {
+        return schedulerRepository.listAll();
     }
     
     public Optional<SchedulerEntity> find(String name) {

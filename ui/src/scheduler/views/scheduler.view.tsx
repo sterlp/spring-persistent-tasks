@@ -1,92 +1,74 @@
 import { SchedulerEntity } from "@src/server-api";
-import { useServerObject } from "@src/shared/http-request";
-import ReloadButton from "@src/shared/view/reload-button.view";
-import useAutoRefresh from "@src/shared/use-auto-refresh";
 import { DateTime } from "luxon";
 import { Card, Col, Form, ProgressBar, Row } from "react-bootstrap";
 
 interface Props {
-    name: string;
+    scheduler: SchedulerEntity;
 }
-const SchedulerStatusView = ({ name }: Props) => {
-    const status = useServerObject<SchedulerEntity>(
-        `/spring-tasks-api/schedulers/${name}`
-    );
-
-    useAutoRefresh(10000, status.doGet, [name]);
-
+const SchedulerStatusView = ({ scheduler }: Props) => {
     return (
         <Card>
             <Card.Header
                 as="h5"
                 className="d-flex justify-content-between align-items-center"
             >
-                <span>{name}</span>
-                <ReloadButton
-                    isLoading={status.isLoading}
-                    onClick={() => status.doGet()}
-                />
+                <span>{scheduler.id}</span>
             </Card.Header>
-            {status.data ? (
-                <Card.Body>
-                    <Row>
-                        <Col>
-                            Last Ping:{" "}
-                            {durationSince(new Date(status.data.lastPing))}
-                        </Col>
-                        <Col>
-                            <Form.Label htmlFor={"slot-" + name}>
-                                {"Running " +
-                                    status.data.runnungTasks +
-                                    " of " +
-                                    status.data.tasksSlotCount}
-                            </Form.Label>
-                            <ProgressBar
-                                id={"slot-" + name}
-                                animated={true}
-                                min={0}
-                                now={status.data.runnungTasks}
-                                max={status.data.tasksSlotCount}
-                            ></ProgressBar>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col>
-                            <Form.Label htmlFor={"cpu-" + name}>CPU</Form.Label>
-                            <ProgressBar
-                                id={"cpu-" + name}
-                                animated={true}
-                                min={0}
-                                now={status.data.systemLoadAverage}
-                                max={100}
-                                label={
-                                    Math.round(
-                                        status.data.systemLoadAverage * 10
-                                    ) /
-                                        10 +
-                                    "%"
-                                }
-                            ></ProgressBar>
-                        </Col>
-                        <Col>
-                            <Form.Label htmlFor={"memory-" + name}>
-                                Memory{" "}
-                                {formatMemory(status.data.usedHeap) +
-                                    " of " +
-                                    formatMemory(status.data.maxHeap)}
-                            </Form.Label>
-                            <ProgressBar
-                                id={"memory-" + name}
-                                animated={true}
-                                min={0}
-                                now={status.data.usedHeap}
-                                max={status.data.maxHeap}
-                                label={formatMemory(status.data.usedHeap)}
-                            ></ProgressBar>
-                        </Col>
-                    </Row>
-                </Card.Body>
-            ) : undefined}
+            <Card.Body>
+                <Row>
+                    <Col>
+                        Last Ping: {durationSince(new Date(scheduler.lastPing))}
+                    </Col>
+                    <Col>
+                        <Form.Label htmlFor={"slot-" + name}>
+                            {"Running " +
+                                scheduler.runnungTasks +
+                                " of " +
+                                scheduler.tasksSlotCount}
+                        </Form.Label>
+                        <ProgressBar
+                            id={"slot-" + name}
+                            animated={true}
+                            min={0}
+                            now={scheduler.runnungTasks}
+                            max={scheduler.tasksSlotCount}
+                        ></ProgressBar>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        <Form.Label htmlFor={"cpu-" + name}>CPU</Form.Label>
+                        <ProgressBar
+                            id={"cpu-" + name}
+                            animated={true}
+                            min={0}
+                            now={scheduler.systemLoadAverage}
+                            max={100}
+                            label={
+                                Math.round(scheduler.systemLoadAverage * 10) /
+                                    10 +
+                                "%"
+                            }
+                        ></ProgressBar>
+                    </Col>
+                    <Col>
+                        <Form.Label htmlFor={"memory-" + name}>
+                            Memory{" "}
+                            {formatMemory(scheduler.usedHeap) +
+                                " of " +
+                                formatMemory(scheduler.maxHeap)}
+                        </Form.Label>
+                        <ProgressBar
+                            id={"memory-" + name}
+                            animated={true}
+                            min={0}
+                            now={scheduler.usedHeap}
+                            max={scheduler.maxHeap}
+                            label={formatMemory(scheduler.usedHeap)}
+                        ></ProgressBar>
+                    </Col>
+                </Row>
+            </Card.Body>
         </Card>
     );
 };

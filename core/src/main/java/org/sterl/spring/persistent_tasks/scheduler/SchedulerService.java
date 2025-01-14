@@ -170,4 +170,8 @@ public class SchedulerService {
         log.debug("({}) - {} trigger(s) are running on {} schedulers", running, runningKeys, schedulers);
         return triggerService.rescheduleAbandonedTasks(timeout);
     }
+
+    public List<SchedulerEntity> listAll() {
+        return editSchedulerStatus.listAll();
+    }
 }
