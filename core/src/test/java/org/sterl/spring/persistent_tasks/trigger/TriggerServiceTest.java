@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.event.ApplicationEvents;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
@@ -21,6 +22,11 @@ import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryLastStateRepository;
 import org.sterl.spring.persistent_tasks.task.repository.TaskRepository;
+import org.sterl.spring.persistent_tasks.trigger.component.StateSerializer.DeSerializationFailedException;
+import org.sterl.spring.persistent_tasks.trigger.event.TriggerAddedEvent;
+import org.sterl.spring.persistent_tasks.trigger.event.TriggerCanceledEvent;
+import org.sterl.spring.persistent_tasks.trigger.event.TriggerFailedEvent;
+import org.sterl.spring.persistent_tasks.trigger.event.TriggerSuccessEvent;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
 
@@ -34,6 +40,9 @@ class TriggerServiceTest extends AbstractSpringTest {
     private TaskRepository taskRepository;
     @Autowired
     private TriggerHistoryLastStateRepository triggerHistoryLastStateRepository;
+    
+    @Autowired
+    private ApplicationEvents events;
 
     // ensure persistentTask in the spring context
     @Autowired
@@ -66,6 +75,8 @@ class TriggerServiceTest extends AbstractSpringTest {
         // AND
         assertThat(triggerHistoryLastStateRepository.count()).isZero();
         // AND
+        assertThat(events.stream(TriggerAddedEvent.class).count()).isOne();
+        // AND
         final var e = subject.get(triggerId);
         assertThat(e).isPresent();
         assertThat(e.get().getData().getRunAt().toEpochSecond()).isEqualTo(triggerTime.toEpochSecond());
@@ -87,6 +98,8 @@ class TriggerServiceTest extends AbstractSpringTest {
 
         // THEN
         assertThat(subject.countTriggers(taskId)).isEqualTo(2);
+        // AND
+        assertThat(events.stream(TriggerAddedEvent.class).count()).isEqualTo(2);
     }
     
     @Test
@@ -106,6 +119,9 @@ class TriggerServiceTest extends AbstractSpringTest {
         
         assertThat(subject.get(key1)).isEmpty();
         assertThat(subject.get(key2)).isPresent();
+        
+        // AND
+        assertThat(events.stream(TriggerCanceledEvent.class).count()).isOne();
     }
 
     @Test
@@ -119,6 +135,9 @@ class TriggerServiceTest extends AbstractSpringTest {
         // THEN
         assertThat(taskRepository.contains(Task3.NAME)).isTrue();
         asserts.awaitValue(Task3.NAME + "::trigger3");
+        // AND
+        assertThat(events.stream(TriggerSuccessEvent.class).count()).isOne();
+        assertThat(events.stream(TriggerFailedEvent.class).count()).isZero();
     }
 
     @Test
@@ -163,7 +182,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         assertThat(e.get().getData().getEnd()).isNotNull();
         assertThat(e.get().getData().getExecutionCount()).isOne();
     }
-    
+
     @Test
     void testFailedIsOnRetry() throws Exception {
         // GIVEN
@@ -179,6 +198,9 @@ class TriggerServiceTest extends AbstractSpringTest {
         trigger = triggerService.get(trigger.getKey()).get();
         assertThat(trigger.getData().getRunAt()).isAfter(OffsetDateTime.now());
         assertThat(trigger.getData().getStatus()).isEqualTo(TriggerStatus.WAITING);
+        // AND
+        assertThat(events.stream(TriggerSuccessEvent.class).count()).isZero();
+        assertThat(events.stream(TriggerFailedEvent.class).count()).isOne();
     }
 
     @Test
@@ -390,6 +412,9 @@ class TriggerServiceTest extends AbstractSpringTest {
         // WHEN
         var triggerData = persistentTaskService.getLastTriggerData(t.getKey()).get();
         assertThat(triggerData.getStatus()).isEqualTo(TriggerStatus.FAILED);
-        assertThat(triggerData.getExceptionName()).isEqualTo(RuntimeException.class.getName());
+        assertThat(triggerData.getExceptionName()).isEqualTo(DeSerializationFailedException.class.getName());
+        // AND
+        assertThat(events.stream(TriggerSuccessEvent.class).count()).isZero();
+        assertThat(events.stream(TriggerFailedEvent.class).count()).isOne();
     }
 }

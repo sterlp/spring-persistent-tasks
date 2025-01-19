@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 /**
  * Unique key of a trigger during it's execution. But it after that the same key
@@ -17,7 +18,8 @@ import lombok.NoArgsConstructor;
  * is currently scheduled for execution.
  */
 @Data
-@Builder(toBuilder = true)
+@ToString
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class TriggerKey implements Serializable {

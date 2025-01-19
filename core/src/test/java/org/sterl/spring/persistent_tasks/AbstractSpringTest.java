@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
+import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.api.PersistentTask;
@@ -40,6 +41,7 @@ import uk.co.jemos.podam.api.PodamFactoryImpl;
 
 // @ActiveProfiles("mssql") // postgres mssql mariadb mysql
 @SpringBootTest(classes = SampleApp.class, webEnvironment = WebEnvironment.RANDOM_PORT)
+@RecordApplicationEvents
 public class AbstractSpringTest {
 
     @Autowired
