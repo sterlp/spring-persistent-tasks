@@ -1,10 +1,10 @@
 # Changelog
 
-## v1.5.5 - (2025-01-19)
+## v1.5.4 - (2025-01-19)
 
 -  Added MdcTriggerInterceptor
 
-## v1.5.4 - (2025-01-14)
+## v1.5.3 - (2025-01-14)
 
 -  adjusted trigger cols that the UI does not break
 -  showing always all existing schedulers
