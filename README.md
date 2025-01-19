@@ -36,9 +36,12 @@ The README contains a shorter how to use.
 
 -   [JavaDoc](https://sterlp.github.io/spring-persistent-tasks/javadoc-core/org/sterl/spring/persistent_tasks/PersistentTaskService.html)
 
-# Maven setup
+# Quickstart
 
 -   [Maven Central spring-persistent-tasks-core](https://central.sonatype.com/artifact/org.sterl.spring/spring-persistent-tasks-core/versions)
+
+## Setup with Maven
+
 
 ```xml
 <dependency>
@@ -48,7 +51,7 @@ The README contains a shorter how to use.
 </dependency>
 ```
 
-# Setup Spring
+## Setup Spring
 
 ```java
 @SpringBootApplication
@@ -56,61 +59,7 @@ The README contains a shorter how to use.
 public class ExampleApplication {
 ```
 
-## Setup a spring persistent task
-
-### As a class
-
-```java
-@Component(BuildVehicleTask.NAME)
-@RequiredArgsConstructor
-@Slf4j
-public class BuildVehicleTask implements PersistentTask<Vehicle> {
-
-    private static final String NAME = "buildVehicleTask";
-    public static final TaskId<Vehicle> ID = new TaskId<>(NAME);
-
-    private final VehicleRepository vehicleRepository;
-
-    @Override
-    public void accept(Vehicle vehicle) {
-        // do stuff
-        // save
-        vehicleRepository.save(vehicle);
-    }
-    // OPTIONAL
-    @Override
-    public RetryStrategy retryStrategy() {
-        // run 5 times, multiply the execution count with 4, add the result in HOURS to now.
-        return new MultiplicativeRetryStrategy(5, ChronoUnit.HOURS, 4)
-    }
-    // OPTIONAL
-    // if the task in accept requires a DB transaction, join them together with the framework
-    // if true the TransactionTemplate is used. Set here any timeouts.
-    @Override
-    public boolean isTransactional() {
-        return true;
-    }
-}
-```
-
-Consider setting a timeout to the `TransactionTemplate`:
-
-```java
-@Bean
-TransactionTemplate transactionTemplate(PlatformTransactionManager transactionManager) {
-    TransactionTemplate template = new TransactionTemplate(transactionManager);
-    template.setTimeout(10);
-    return template;
-}
-```
-
-### As a closure
-
-Simple task will use defaults:
-
-- Not a transactional task, e.g. HTTP calls
-- 4 executions, one regular and 3 retries, linear
-- using minutes with an offset of 1 which is added to now
+## Create a Task
 
 ```java
 @Bean
@@ -119,29 +68,15 @@ PersistentTask<Vehicle> task1(VehicleHttpConnector vehicleHttpConnector) {
 }
 ```
 
-### Task Transaction Management
-
-[Transaction-Management Task](https://github.com/sterlp/spring-persistent-tasks/wiki/Transaction-Management)
-
-## Queue a task execution
-
-### Direct usage of the `TriggerService` or `PersistentTaskService`.
+## Trigger a task
 
 ```java
-private final TriggerService triggerService;
-private final PersistentTaskService persistentTaskService;
+@Autowired
+PersistentTaskService persistentTaskService;
 
-public void buildVehicle() {
-    // Vehicle has to be Serializable
-    final var v = new Vehicle();
-    // set any data to v ...
-
-    // EITHER: queue it - will always run later
-    triggerService.queue(BuildVehicleTask.ID.newUniqueTrigger(v));
-
-    // OR: will queue it and run it now if possible.
-    // if the scheduler service is missing it is same as using the TriggerService
-    persistentTaskService.runOrQueue(BuildVehicleTask.ID.newUniqueTrigger(v));
+public void triggerTask1(Vehicle vehicle) {
+    persistentTaskService.runOrQueue(
+        TaskTriggerBuilder.newTrigger("task1").state(vehicle).build());
 }
 ```
 
