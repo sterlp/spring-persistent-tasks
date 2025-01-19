@@ -10,6 +10,7 @@ import org.slf4j.event.Level;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
@@ -148,6 +149,7 @@ public class EditTriggerComponent {
                 OffsetDateTime.now(), TriggerStatus.RUNNING);
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS)
     public void triggerIsNowRunning(TriggerEntity trigger, Serializable state) {
         if (!trigger.isRunning()) trigger.runOn(trigger.getRunningOn());
         publisher.publishEvent(new TriggerRunningEvent(
