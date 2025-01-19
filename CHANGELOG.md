@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.5.5
+## v1.5.5 - (2025-01-19)
 
 -  Added MdcTriggerInterceptor
 
