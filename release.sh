@@ -11,7 +11,7 @@ echo "Releasing version: $RELEASE_VERSION"
 # Set the new release version and tag it in Git
 mvn versions:set -DnewVersion="$RELEASE_VERSION" -DgenerateBackupPoms=false
 # Deploy the project
-mvn clean source:jar javadoc:jar deploy -DskipTests -Prelease
+mvn clean source:jar javadoc:jar deploy -Prelease
 # update git
 git add '**/pom.xml'
 git commit -am "$RELEASE_VERSION release"
