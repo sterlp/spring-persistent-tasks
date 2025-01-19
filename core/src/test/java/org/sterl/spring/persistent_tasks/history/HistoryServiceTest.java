@@ -17,7 +17,8 @@ import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 class HistoryServiceTest extends AbstractSpringTest {
 
-    @Autowired HistoryService subject;
+    @Autowired 
+    private HistoryService subject;
 
     @Test
     void testReQueueTrigger() {

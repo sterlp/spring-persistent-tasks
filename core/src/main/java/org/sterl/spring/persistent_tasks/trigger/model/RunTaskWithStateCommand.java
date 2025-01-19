@@ -17,8 +17,10 @@ public record RunTaskWithStateCommand (
 
     public Optional<TriggerEntity> execute(EditTriggerComponent editTrigger) {
         if (trx.isPresent()) {
+            System.err.println("IN TRX");
             return trx.get().execute(t -> runTask(editTrigger));
         } else {
+            System.err.println("NO TRX");
             return runTask(editTrigger);
         }
     }

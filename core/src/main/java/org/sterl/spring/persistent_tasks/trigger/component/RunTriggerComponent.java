@@ -32,19 +32,19 @@ public class RunTriggerComponent {
             return Optional.empty();
         }
 
-        final var taskAndState = getTastAndState(trigger);
+        final var runTaskWithState = buildTaskWithStateFor(trigger);
         // something went really wrong this trigger is crap
-        if (taskAndState == null) return Optional.of(trigger);
+        if (runTaskWithState == null) return Optional.of(trigger);
 
         try {
-            return taskAndState.execute(editTrigger);
+            return runTaskWithState.execute(editTrigger);
         } catch (Exception e) {
-            return failTaskAndState(taskAndState, e);
+            return failTaskAndState(runTaskWithState, e);
         }
     }
 
     @Nullable
-    private RunTaskWithStateCommand getTastAndState(TriggerEntity trigger) {
+    private RunTaskWithStateCommand buildTaskWithStateFor(TriggerEntity trigger) {
         try {
             final var task = taskService.assertIsKnown(trigger.newTaskId());
             final var trx = taskService.getTransactionTemplate(task);
