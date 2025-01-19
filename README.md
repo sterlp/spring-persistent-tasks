@@ -8,6 +8,11 @@ Focus is the usage with spring boot and JPA.
 
 Secondary goal is to support [Poor mans Workflow](https://github.com/sterlp/pmw)
 
+# Documentation
+
+Use for more advanced doc the [WIKI](https://github.com/sterlp/spring-persistent-tasks/wiki).
+The README contains a shorter how to use.
+
 # DBs for storage
 
 ## Tested in the pipeline
@@ -27,11 +32,11 @@ Secondary goal is to support [Poor mans Workflow](https://github.com/sterlp/pmw)
 
 -   mySQL: sequences are not supported
 
-# Setup and Run a Task
+# JavaDoc
 
 -   [JavaDoc](https://sterlp.github.io/spring-persistent-tasks/javadoc-core/org/sterl/spring/persistent_tasks/PersistentTaskService.html)
 
-## Maven
+# Maven setup
 
 -   [Maven Central spring-persistent-tasks-core](https://central.sonatype.com/artifact/org.sterl.spring/spring-persistent-tasks-core/versions)
 
@@ -43,7 +48,7 @@ Secondary goal is to support [Poor mans Workflow](https://github.com/sterlp/pmw)
 </dependency>
 ```
 
-## Setup Spring
+# Setup Spring
 
 ```java
 @SpringBootApplication
@@ -131,61 +136,18 @@ public void buildVehicle() {
     final var v = new Vehicle();
     // set any data to v ...
 
-    // EITHER: queue it, will run later
+    // EITHER: queue it - will always run later
     triggerService.queue(BuildVehicleTask.ID.newUniqueTrigger(v));
 
-    // OR: will queue it and run it if possible.
+    // OR: will queue it and run it now if possible.
     // if the scheduler service is missing it is same as using the TriggerService
     persistentTaskService.runOrQueue(BuildVehicleTask.ID.newUniqueTrigger(v));
-}
-```
-
-### Build complex Trigger
-
-```java
-private final PersistentTaskService persistentTaskService;
-
-public void buildVehicle() {
-   var trigger = TaskTriggerBuilder
-            .<Vehicle>newTrigger("task2")
-            .id("my-id") // will overwrite existing triggers
-            .state(new Vehicle("funny"))
-            .runAfter(Duration.ofHours(2))
-            .build();
-
-    persistentTaskService.runOrQueue(trigger);
-}
-```
-
-### Use a Spring Event
-
-```java
-private final ApplicationEventPublisher eventPublisher;
-
-public void buildVehicle() {
-    // Vehicle has to be Serializable
-    final var v = new Vehicle();
-    // send an event with the trigger inside - same as calling the PersistentTaskService
-    eventPublisher.publishEvent(TriggerTaskCommand.of(BuildVehicleTask.ID.newUniqueTrigger(v)));
 }
 ```
 
 ### JUnit Tests
 
 - [Persistent Task and Testing](https://github.com/sterlp/spring-persistent-tasks/wiki/Triggers-and-Tasks-in-JUnit-Tests)
-
-
-### Spring configuration options
-
-| Property                                       | Type                 | Description                                                              | Default Value      |
-| ---------------------------------------------- | -------------------- | ------------------------------------------------------------------------ | ------------------ |
-| `spring.persistent-tasks.poll-rate`            | `java.lang.Integer`  | The interval at which the scheduler checks for new tasks, in seconds.    | `30`               |
-| `spring.persistent-tasks.max-threads`          | `java.lang.Integer`  | The number of threads to use; set to 0 to disable task processing.       | `10`               |
-| `spring.persistent-tasks.task-timeout`         | `java.time.Duration` | The maximum time allowed for a task and scheduler to complete a task.    | `PT5M` (5 minutes) |
-| `spring.persistent-tasks.poll-task-timeout`    | `java.lang.Integer`  | The interval at which the system checks for abandoned tasks, in seconds. | `300` (5 minutes)  |
-| `spring.persistent-tasks.scheduler-enabled`    | `java.lang.Boolean`  | Indicates whether this node should handle triggers.                      | `true`             |
-| `spring.persistent-tasks.history.delete-after` | `java.time.Duration` | The max age for a trigger in the hstory.                                 | `PT72H` (30 days)  |
-| `spring.persistent-tasks.history.delete-rate`  | `java.time.Integer`  | The interval at which old triggers are deleted, in hours.                | `24` (24 hours)    |
 
 # Setup DB with Liquibase
 
@@ -245,25 +207,6 @@ public class ExampleApplication {
 ## History
 
 ![History](screenshots/history-screen.png)
-
-## Spring Boot CSRF config for the UI
-
-Axios should work with the following spring config out of the box with csrf:
-
-```java
-@Bean
-SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http
-        .httpBasic(org.springframework.security.config.Customizer.withDefaults())
-        .csrf(c ->
-            c.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-             .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-        );
-    return http.build();
-}
-```
-
-more informations: https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html
 
 # Alternatives
 
