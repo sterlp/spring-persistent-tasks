@@ -1,5 +1,5 @@
 mvn versions:display-dependency-updates
-mvn versions:set -DnewVersion=1.5.3 -DgenerateBackupPoms=false
+mvn versions:set -DnewVersion=1.5.5 -DgenerateBackupPoms=false
 git tag -a v1.5.3 -m "v1.5.3 release"
 mvn versions:set -DnewVersion=1.5.4-SNAPSHOT -DgenerateBackupPoms=false
 

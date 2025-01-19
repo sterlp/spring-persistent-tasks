@@ -7,10 +7,27 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import org.sterl.spring.persistent_tasks.exception.SpringPersistentTaskException;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class StateSerializer {
+    public static class DeSerializationFailedException extends SpringPersistentTaskException {
+        private static final long serialVersionUID = 1L;
+
+        public DeSerializationFailedException(byte[] bytes, Exception e) {
+            super("Failed to deserialize state of length " + bytes.length, bytes, e);
+        }
+    }
+    
+    public static class SerializationFailedException extends SpringPersistentTaskException {
+        private static final long serialVersionUID = 1L;
+
+        public SerializationFailedException(Serializable obj, Exception e) {
+            super("Failed to serialize state " + obj.getClass(), obj, e);
+        }
+    }
 
     public byte[] serialize(final Serializable obj) {
         if (obj == null) {
@@ -23,7 +40,7 @@ public class StateSerializer {
             out.writeObject(obj);
             return bos.toByteArray();
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            throw new SerializationFailedException(obj, ex);
         }
     }
 
@@ -36,7 +53,7 @@ public class StateSerializer {
         try (ObjectInput in = new ObjectInputStream(bis)) {
             return (Serializable)in.readObject();
         } catch (Exception ex) {
-            throw new RuntimeException("Failed to deserialize state of length " + bytes.length, ex);
+            throw new DeSerializationFailedException(bytes, ex);
         }
     }
     

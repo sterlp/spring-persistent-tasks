@@ -10,6 +10,7 @@ import org.slf4j.event.Level;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
@@ -18,6 +19,7 @@ import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerAddedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerCanceledEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerFailedEvent;
+import org.sterl.spring.persistent_tasks.trigger.event.TriggerRunningEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerSuccessEvent;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
@@ -40,9 +42,9 @@ public class EditTriggerComponent {
 
         result.ifPresent(t -> {
             t.complete(null);
+            log.debug("{} set to status={}", key, t.getData().getStatus());
             publisher.publishEvent(new TriggerSuccessEvent(
                     t.getId(), t.copyData(), state));
-            log.debug("Setting {} to status={}", key, t.getData().getStatus());
             triggerRepository.delete(t);
         });
         return result;
@@ -145,5 +147,12 @@ public class EditTriggerComponent {
     public int markTriggersAsRunning(Collection<TriggerKey> keys, String runOn) {
         return triggerRepository.markTriggersAsRunning(keys, runOn, 
                 OffsetDateTime.now(), TriggerStatus.RUNNING);
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public void triggerIsNowRunning(TriggerEntity trigger, Serializable state) {
+        if (!trigger.isRunning()) trigger.runOn(trigger.getRunningOn());
+        publisher.publishEvent(new TriggerRunningEvent(
+                trigger.getId(), trigger.copyData(), state, trigger.getRunningOn()));
     }
 }

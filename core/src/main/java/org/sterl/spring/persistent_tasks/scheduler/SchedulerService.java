@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
 import org.springframework.lang.NonNull;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -105,6 +106,7 @@ public class SchedulerService {
      * This method should not be called in a transaction!
      * </p>
      */
+    @Transactional(propagation = Propagation.NEVER)
     @NonNull
     public List<Future<TriggerKey>> triggerNextTasks(OffsetDateTime timeDue) {
         if (taskExecutor.getFreeThreads() > 0) {
