@@ -88,7 +88,7 @@ PersistentTaskService persistentTaskService;
 
 public void triggerTask1(Vehicle vehicle) {
     persistentTaskService.runOrQueue(
-        TaskTriggerBuilder.newTrigger("task1").state(vehicle).build());
+        TriggerBuilder.newTrigger("task1").state(vehicle).build());
 }
 ```
 
