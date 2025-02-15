@@ -6,9 +6,12 @@ import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
 import org.junit.jupiter.api.Test;
-import org.sterl.spring.persistent_tasks.api.PersistentTask;
+import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.RetryStrategy;
 import org.sterl.spring.persistent_tasks.api.TaskId;
+import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
+import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
+import org.sterl.spring.persistent_tasks.api.task.RunningTrigger;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 
 class TaskSchedulerServiceTest extends AbstractSpringTest {
@@ -66,5 +69,21 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
             asserts.awaitValueOnce("t" + i);
         }
         assertThat(historyService.countTriggers(TriggerStatus.SUCCESS)).isEqualTo(100);
+    }
+    
+    @Test
+    void testChainedTask() {
+        // GIVEN
+        TaskId<Integer> task1 = taskService.<Integer>replace("chainTask1",
+                new PersistentTask<Integer>() {
+                    @Override
+                    public void accept(Integer state) {}
+                    @Override
+                    public AddTriggerRequest<String> accept(RunningTrigger<Integer> state) {
+                        asserts.info(state.getData());
+                        return TriggerBuilder.newTrigger("chainTask2", state.getData() + "::next")
+                                .build();
+                    }
+                });
     }
 }

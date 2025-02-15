@@ -12,13 +12,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
-import org.sterl.spring.persistent_tasks.api.PersistentTask;
 import org.sterl.spring.persistent_tasks.api.RetryStrategy;
-import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
-import org.sterl.spring.persistent_tasks.api.TransactionalTask;
+import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
+import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
+import org.sterl.spring.persistent_tasks.api.task.TransactionalTask;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
-import org.sterl.spring.sample_app.person.PersonBE;
+import org.sterl.spring.sample_app.person.PersonEntity;
 import org.sterl.spring.sample_app.person.PersonRepository;
 import org.sterl.test.Countdown;
 
@@ -36,7 +36,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
             return new TransactionalTask<String>() {
                 @Override
                 public void accept(String name) {
-                    personRepository.save(new PersonBE(name));
+                    personRepository.save(new PersonEntity(name));
                     COUNTDOWN.await();
                     if (sendError.get()) {
                         throw new RuntimeException("Error requested for " + name);
@@ -55,7 +55,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
                 @Override
                 public void accept(String name) {
                     trx.executeWithoutResult(t -> {
-                        personRepository.save(new PersonBE(name));
+                        personRepository.save(new PersonEntity(name));
                         COUNTDOWN.await();
                         if (sendError.get()) {
                             throw new RuntimeException("Error requested for " + name);
@@ -85,7 +85,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
     @Test
     void testSaveNoTransactions() throws Exception {
         // GIVEN
-        final var request = TaskTriggerBuilder.newTrigger("savePersonNoTrx").state("Paul").build();
+        final var request = TriggerBuilder.newTrigger("savePersonNoTrx").state("Paul").build();
         var trigger = triggerService.queue(request);
 
         // WHEN
@@ -115,7 +115,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
     @Test
     void testSaveTransactions() throws Exception {
         // GIVEN
-        final var request = TaskTriggerBuilder.newTrigger("savePersonInTrx").state("Paul").build();
+        final var request = TriggerBuilder.newTrigger("savePersonInTrx").state("Paul").build();
         var trigger = triggerService.queue(request);
 
         // WHEN
@@ -141,7 +141,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
     @Test
     void test_fail_in_transaction() throws Exception {
         // GIVEN
-        final var request = TaskTriggerBuilder.newTrigger("savePersonInTrx").state("Paul").build();
+        final var request = TriggerBuilder.newTrigger("savePersonInTrx").state("Paul").build();
         var trigger = triggerService.queue(request);
         sendError.set(true);
 
@@ -173,8 +173,8 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
     @Test
     void testRunOrQueueShowsRunning() throws Exception {
         // GIVEN
-        var k1 = subject.runOrQueue(TaskTriggerBuilder.newTrigger("savePersonInTrx").state("Paul").build());
-        var k2 = subject.runOrQueue(TaskTriggerBuilder.newTrigger("savePersonInTrx").state("Paul").build());
+        var k1 = subject.runOrQueue(TriggerBuilder.newTrigger("savePersonInTrx").state("Paul").build());
+        var k2 = subject.runOrQueue(TriggerBuilder.newTrigger("savePersonInTrx").state("Paul").build());
 
         // WHEN
         assertThat(persistentTaskService.getLastTriggerData(k1).get().getStatus())
@@ -201,7 +201,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
     @Test
     void testRollbackAndRetry() throws Exception {
         // GIVEN
-        final var triggerRequest = TaskTriggerBuilder.newTrigger("savePersonInTrx")
+        final var triggerRequest = TriggerBuilder.newTrigger("savePersonInTrx")
                 .state("Paul").build();
         sendError.set(true);
 

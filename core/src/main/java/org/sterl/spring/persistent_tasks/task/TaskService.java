@@ -8,8 +8,8 @@ import java.util.function.Consumer;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.sterl.spring.persistent_tasks.api.PersistentTask;
 import org.sterl.spring.persistent_tasks.api.TaskId;
+import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
 import org.sterl.spring.persistent_tasks.task.component.TaskTransactionComponent;
 import org.sterl.spring.persistent_tasks.task.repository.TaskRepository;
 

@@ -6,15 +6,16 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
-import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
+import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
 
 /**
  * An event to trigger one or multiple persistentTask executions
  */
-public record TriggerTaskCommand<T extends Serializable>(Collection<AddTriggerRequest<T>> triggers) {
+public record TriggerTaskCommand<T extends Serializable>(
+        Collection<AddTriggerRequest<T>> triggers) implements PersistentTasksEvent {
 
     public static <T extends Serializable> TriggerTaskCommand<T> of(String name, T state) {
-        return new TriggerTaskCommand<>(Collections.singleton(TaskTriggerBuilder
+        return new TriggerTaskCommand<>(Collections.singleton(TriggerBuilder
                 .<T>newTrigger(name)
                 .state(state)
                 .build()));

@@ -1,4 +1,4 @@
-package org.sterl.spring.persistent_tasks.api;
+package org.sterl.spring.persistent_tasks.api.task;
 
 import java.io.Serializable;
 
@@ -13,7 +13,7 @@ import java.io.Serializable;
  * @param <T> the type of the state, which must be {@link Serializable}
  */
 @FunctionalInterface
-public interface TransactionalTask<T extends Serializable> extends PersistentTask<T> {
+public interface ComplexTransactionalTask<T extends Serializable> extends ComplexPersistentTask<T> {
     /**
      * Whether the persistentTask is transaction or not. If <code>true</code> the execution
      * is wrapped into the default transaction template together with the state update

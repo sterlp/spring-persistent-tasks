@@ -15,7 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.client.RestTemplate;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
-import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
+import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
@@ -63,9 +63,9 @@ class TriggerResourceTest extends AbstractSpringTest {
     @Test
     void testSearchById() {
         // GIVEN
-        var key1 = triggerService.queue(TaskTriggerBuilder
+        var key1 = triggerService.queue(TriggerBuilder
                 .newTrigger("task1").build()).getKey();
-        var key2 = triggerService.queue(TaskTriggerBuilder
+        var key2 = triggerService.queue(TriggerBuilder
                 .newTrigger("task1").build()).getKey();
         
         // WHEN
@@ -107,7 +107,7 @@ class TriggerResourceTest extends AbstractSpringTest {
         // GIVEN
         var template = new RestTemplate();
         
-        var triggerKey = triggerService.queue(TaskTriggerBuilder.newTrigger("task1").build()).getKey();
+        var triggerKey = triggerService.queue(TriggerBuilder.newTrigger("task1").build()).getKey();
         
         // WHEN
         var canceled = template.exchange(baseUrl + "/" +

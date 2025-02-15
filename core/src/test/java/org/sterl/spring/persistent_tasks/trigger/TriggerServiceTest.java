@@ -17,7 +17,7 @@ import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
-import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
+import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryLastStateRepository;
@@ -127,7 +127,7 @@ class TriggerServiceTest extends AbstractSpringTest {
     @Test
     void testTriggerSpringSimpleTask() throws Exception {
         // GIVEN
-        final var trigger = TaskTriggerBuilder.newTrigger(Task3.NAME).state("trigger3").build();
+        final var trigger = TriggerBuilder.newTrigger(Task3.NAME).state("trigger3").build();
 
         // WHEN
         subject.run(subject.queue(trigger));
