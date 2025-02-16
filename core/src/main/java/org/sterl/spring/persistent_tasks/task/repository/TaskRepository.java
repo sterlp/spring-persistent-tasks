@@ -10,23 +10,23 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.sterl.spring.persistent_tasks.api.TaskId;
-import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
+import org.sterl.spring.persistent_tasks.api.task.PersistentTaskBase;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
 public class TaskRepository {
-    private final Map<TaskId<? extends Serializable>, PersistentTask<? extends Serializable>> persistentTasks = new ConcurrentHashMap<>();
+    private final Map<TaskId<? extends Serializable>, PersistentTaskBase<? extends Serializable>> persistentTasks = new ConcurrentHashMap<>();
 
-    public <T extends Serializable> PersistentTask<? extends Serializable> remove(TaskId<T> taskId) {
+    public <T extends Serializable> PersistentTaskBase<? extends Serializable> remove(TaskId<T> taskId) {
         if (taskId == null) {
             return null;
         }
         return persistentTasks.remove(taskId);
     }
 
-    public <T extends Serializable> TaskId<T> addTask(@NonNull TaskId<T> taskId, PersistentTask<T> task) {
+    public <T extends Serializable> TaskId<T> addTask(@NonNull TaskId<T> taskId, PersistentTaskBase<T> task) {
         if (contains(taskId)) {
             throw new IllegalStateException("The " + taskId + " is already used!");
         }
@@ -37,9 +37,9 @@ public class TaskRepository {
 
     @NonNull
     @SuppressWarnings("unchecked")
-    public <T extends Serializable> Optional<PersistentTask<T>> get(@NonNull TaskId<T> taskId) {
+    public <T extends Serializable> Optional<PersistentTaskBase<T>> get(@NonNull TaskId<T> taskId) {
         assert taskId != null;
-        return Optional.ofNullable((PersistentTask<T>)persistentTasks.get(taskId));
+        return Optional.ofNullable((PersistentTaskBase<T>)persistentTasks.get(taskId));
     }
 
     /**

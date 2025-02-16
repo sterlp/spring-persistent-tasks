@@ -12,9 +12,10 @@ import org.sterl.spring.persistent_tasks.api.Trigger;
  * provides default implementations for retry strategies.
  *
  * @param <T> the type of the state, which must be {@link Serializable}
+ * @param <R> the result state type for the next trigger
  */
 @FunctionalInterface
-public interface ComplexPersistentTask<T extends Serializable> extends PersistentTaskBase<T> {
+public interface ComplexPersistentTask<T extends Serializable, R extends Serializable> extends PersistentTaskBase<T> {
 
     /**
      * Default execution method of a trigger, which also allows to queue the next trigger as needed.
@@ -22,5 +23,5 @@ public interface ComplexPersistentTask<T extends Serializable> extends Persisten
      * @param data the data of the current trigger
      * @return optional next trigger to queue, <code>null</code> means done.
      */
-    <R extends Serializable> AddTriggerRequest<R> accept(RunningTrigger<T> data);
+    AddTriggerRequest<R> accept(RunningTrigger<T> data);
 }

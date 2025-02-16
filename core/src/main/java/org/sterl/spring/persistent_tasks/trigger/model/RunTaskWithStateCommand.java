@@ -34,7 +34,7 @@ public record RunTaskWithStateCommand (
         editTrigger.triggerIsNowRunning(trigger, state);
 
         AddTriggerRequest<Serializable> nextTrigger = null;
-        if (task instanceof ComplexPersistentTask<Serializable> complexTask) {
+        if (task instanceof ComplexPersistentTask<Serializable, Serializable> complexTask) {
             final var runningTrigger = new RunningTrigger<>(
                 key(),
                 executionCount(),

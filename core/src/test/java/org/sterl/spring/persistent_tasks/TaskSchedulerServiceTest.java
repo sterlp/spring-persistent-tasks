@@ -6,13 +6,11 @@ import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
 import org.junit.jupiter.api.Test;
-import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.RetryStrategy;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
-import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
-import org.sterl.spring.persistent_tasks.api.task.RunningTrigger;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
+import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
 
 class TaskSchedulerServiceTest extends AbstractSpringTest {
 
@@ -74,16 +72,22 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
     @Test
     void testChainedTask() {
         // GIVEN
-        TaskId<Integer> task1 = taskService.<Integer>replace("chainTask1",
-                new PersistentTask<Integer>() {
-                    @Override
-                    public void accept(Integer state) {}
-                    @Override
-                    public AddTriggerRequest<String> accept(RunningTrigger<Integer> state) {
-                        asserts.info(state.getData());
-                        return TriggerBuilder.newTrigger("chainTask2", state.getData() + "::next")
-                                .build();
-                    }
+        TaskId<Integer> task1 = taskService.replaceComplex("chainTask1", 
+                state -> {
+                    asserts.info(state.getData() + "::chainTask1");
+                    return TriggerBuilder.newTrigger("chainTask2", state.getData() + "::chainTask1")
+                            .build();
                 });
+        TaskId<String> task2 = taskService.replaceComplex("chainTask2", 
+                state -> {
+                    asserts.info("chainTask1::" + state.getData());
+                    return null;
+                });
+        
+        // WHEN
+        persistentTaskService.runOrQueue(task1.newUniqueTrigger(234));
+
+        // THEN
+        asserts.awaitOrdered("234::chainTask1", "chainTask1::234::chainTask1");
     }
 }

@@ -11,9 +11,11 @@ import java.io.Serializable;
  * relevant events.
  *
  * @param <T> the type of the state, which must be {@link Serializable}
+ * @param <R> the result state type for the next trigger, which must be {@link Serializable}
  */
 @FunctionalInterface
-public interface ComplexTransactionalTask<T extends Serializable> extends ComplexPersistentTask<T> {
+public interface ComplexTransactionalTask<T extends Serializable, R extends Serializable> 
+    extends ComplexPersistentTask<T, R> {
     /**
      * Whether the persistentTask is transaction or not. If <code>true</code> the execution
      * is wrapped into the default transaction template together with the state update
