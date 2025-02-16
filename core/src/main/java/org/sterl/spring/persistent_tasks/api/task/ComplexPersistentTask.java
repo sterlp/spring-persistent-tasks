@@ -1,6 +1,7 @@
 package org.sterl.spring.persistent_tasks.api.task;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.Trigger;
@@ -19,9 +20,10 @@ public interface ComplexPersistentTask<T extends Serializable, R extends Seriali
 
     /**
      * Default execution method of a trigger, which also allows to queue the next trigger as needed.
+     * 
      * @param <R> the state type of the next trigger
      * @param data the data of the current trigger
      * @return optional next trigger to queue, <code>null</code> means done.
      */
-    AddTriggerRequest<R> accept(RunningTrigger<T> data);
+    Collection<AddTriggerRequest<R>> accept(RunningTrigger<T> data);
 }

@@ -1,6 +1,7 @@
 package org.sterl.spring.persistent_tasks.trigger.model;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Optional;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -20,7 +21,23 @@ public record RunTaskWithStateCommand (
         PersistentTaskBase<Serializable> task,
         Optional<TransactionTemplate> trx,
         Serializable state,
-        TriggerEntity trigger) implements HasTriggerData {
+        TriggerEntity trigger,
+        RunningTrigger<Serializable> runningTrigger) implements HasTriggerData {
+    
+    public RunTaskWithStateCommand(ApplicationEventPublisher eventPublisher,
+        PersistentTaskBase<Serializable> task,
+        Optional<TransactionTemplate> trx,
+        Serializable state,
+        TriggerEntity trigger) {
+        
+        this(eventPublisher, task, trx, state, trigger,
+            new RunningTrigger<>(
+                    trigger.getKey(),
+                    trigger.getData().getCorrelationId(),
+                    trigger.getData().getExecutionCount(),
+                    state
+                ));
+    }
 
     public Optional<TriggerEntity> execute(EditTriggerComponent editTrigger) {
         if (trx.isPresent()) {
@@ -33,14 +50,9 @@ public record RunTaskWithStateCommand (
     private Optional<TriggerEntity> runTask(EditTriggerComponent editTrigger) {
         editTrigger.triggerIsNowRunning(trigger, state);
 
-        AddTriggerRequest<Serializable> nextTrigger = null;
+        Collection<AddTriggerRequest<Serializable>> nextTriggers = null;
         if (task instanceof ComplexPersistentTask<Serializable, Serializable> complexTask) {
-            final var runningTrigger = new RunningTrigger<>(
-                key(),
-                executionCount(),
-                state
-            );
-            nextTrigger = complexTask.accept(runningTrigger);
+            nextTriggers = complexTask.accept(runningTrigger);
         } else if (task instanceof PersistentTask<Serializable> simpleTask) {
             simpleTask.accept(state); // Direct state handling
         } else {
@@ -50,9 +62,13 @@ public record RunTaskWithStateCommand (
         var result = editTrigger.completeTaskWithSuccess(trigger.getKey(), state);
         editTrigger.deleteTrigger(trigger);
 
-        if (nextTrigger != null) eventPublisher.publishEvent(TriggerTaskCommand.of(nextTrigger));
+        if (hasValues(nextTriggers)) eventPublisher.publishEvent(TriggerTaskCommand.of(nextTriggers));
 
         return result;
+    }
+    
+    boolean hasValues(Collection<?> elements) {
+        return elements != null && !elements.isEmpty();
     }
 
     @Override

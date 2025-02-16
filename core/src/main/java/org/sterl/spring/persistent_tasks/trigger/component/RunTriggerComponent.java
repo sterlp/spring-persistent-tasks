@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.task.TaskService;
+import org.sterl.spring.persistent_tasks.trigger.RunningTriggerContextHolder;
 import org.sterl.spring.persistent_tasks.trigger.model.RunTaskWithStateCommand;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
@@ -39,9 +40,12 @@ public class RunTriggerComponent {
         if (runTaskWithState == null) return Optional.of(trigger);
 
         try {
+            RunningTriggerContextHolder.setContext(runTaskWithState.runningTrigger());
             return runTaskWithState.execute(editTrigger);
         } catch (Exception e) {
             return failTaskAndState(runTaskWithState, e);
+        } finally {
+            RunningTriggerContextHolder.clearContext();
         }
     }
 

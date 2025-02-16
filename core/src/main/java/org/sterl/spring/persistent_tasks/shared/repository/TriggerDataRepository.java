@@ -1,6 +1,7 @@
 package org.sterl.spring.persistent_tasks.shared.repository;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -65,4 +66,11 @@ public interface TriggerDataRepository<T extends HasTriggerData> extends JpaRepo
            """)
     @Modifying
     long deleteOlderThan(@Param("age") OffsetDateTime age);
+    
+    @Query("""
+            SELECT e FROM #{#entityName} e
+            WHERE  e.data.correlationId = :correlationId
+            ORDER BY e.data.createdTime ASC
+            """)
+    List<T> findByCorrelationId(@Param("correlationId") String correlationId);
 }

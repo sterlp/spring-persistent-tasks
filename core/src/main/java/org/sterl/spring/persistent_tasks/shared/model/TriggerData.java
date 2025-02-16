@@ -5,7 +5,6 @@ import java.time.OffsetDateTime;
 
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
-import org.sterl.spring.persistent_tasks.api.task.RunningTrigger;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
@@ -30,7 +29,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Embeddable
-@ToString(of = {"key", "status", "priority", "executionCount", "createdTime", "runAt", "start", "end"})
+@ToString(of = {"key", "correlationId", "status", "priority", "executionCount", "createdTime", "runAt", "start", "end"})
 @Builder(toBuilder = true)
 public class TriggerData {
     
@@ -45,10 +44,14 @@ public class TriggerData {
     @Embedded
     @AttributeOverrides(@AttributeOverride(
             name = "id",
-            column = @Column(name = "trigger_id", nullable = false, length = 200)
+            column = @Column(name = "trigger_id", nullable = false, length = 200, updatable = false)
         )
     )
     private TriggerKey key;
+
+    @NotNull
+    @Column(nullable = false, updatable = false)
+    private String correlationId;
 
     @Default
     @NotNull

@@ -17,6 +17,7 @@ public enum ToTrigger implements ExtendetConvert<HasTriggerData, Trigger> {
         final var source = hasData.getData();
         final var result = new Trigger();
         result.setKey(source.getKey());
+        result.setCorrelationId(source.getCorrelationId());
         result.setCreatedTime(source.getCreatedTime());
         result.setEnd(source.getEnd());
         result.setExceptionName(source.getExceptionName());

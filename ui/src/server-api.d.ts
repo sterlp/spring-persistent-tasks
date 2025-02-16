@@ -21,6 +21,7 @@ export interface AddTriggerRequest<T> {
     state: T;
     runtAt: string;
     priority: number;
+    correlationId: string;
 }
 
 export interface RetryStrategy {
@@ -58,6 +59,7 @@ export interface Trigger {
     id: number;
     instanceId: number;
     key: TriggerKey;
+    correlationId: string;
     runningOn: string;
     createdTime: string;
     runAt: string;
@@ -87,10 +89,10 @@ export interface TriggerTaskCommand<T> extends PersistentTasksEvent {
     triggers: AddTriggerRequest<T>[];
 }
 
-export interface ComplexPersistentTask<T> extends PersistentTaskBase<T> {
+export interface ComplexPersistentTask<T, R> extends PersistentTaskBase<T> {
 }
 
-export interface ComplexTransactionalTask<T> extends ComplexPersistentTask<T> {
+export interface ComplexTransactionalTask<T, R> extends ComplexPersistentTask<T, R> {
 }
 
 export interface PersistentTask<T> extends PersistentTaskBase<T> {
@@ -102,6 +104,7 @@ export interface PersistentTaskBase<T> {
 
 export interface RunningTrigger<T> {
     key: TriggerKey;
+    correlationId: string;
     executionCount: number;
     data: T;
 }

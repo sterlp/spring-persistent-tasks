@@ -33,6 +33,7 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
     public static class TriggerBuilder<T extends Serializable> {
         private final TaskId<T> taskId;
         private String id;
+        private String correlationId;
         private T state;
         private OffsetDateTime when = OffsetDateTime.now();
         private int priority = AddTriggerRequest.DEFAULT_PRIORITY;
@@ -45,16 +46,34 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
         }
         public AddTriggerRequest<T> build() {
             var key = TriggerKey.of(id, taskId);
-            return new AddTriggerRequest<>(key, state, when, priority);
+            return new AddTriggerRequest<>(key, state, when, priority, correlationId);
         }
+        /**
+         * The ID of this task, same queued ids are replaced.
+         */
         public TriggerBuilder<T> id(String id) {
             this.id = id;
+            return this;
+        }
+        /**
+         * An unique ID which is taken over to a chain/set of tasks.
+         * If task is triggered it in a task, this ID is taken over.
+         */
+        public TriggerBuilder<T> correlationId(String correlationId) {
+            this.correlationId = correlationId;
             return this;
         }
         public TriggerBuilder<T> state(T state) {
             this.state = state;
             return this;
         }
+        /**
+         * The higher the {@link #priority} the earlier this task is picked.
+         * Same as JMS priority. Default is also 4, like in JMS.
+         * 
+         * @param priority custom priority e.g. 0-9, also higher numbers are supported
+         * @return this {@link TriggerBuilder}
+         */
         public TriggerBuilder<T> priority(int priority) {
             this.priority = priority;
             return this;

@@ -9,6 +9,7 @@ import lombok.Data;
 @Data
 public class RunningTrigger<T extends Serializable> {
     private final TriggerKey key;
+    private final String correlationId;
     private final int executionCount;
     private final T data;
 }

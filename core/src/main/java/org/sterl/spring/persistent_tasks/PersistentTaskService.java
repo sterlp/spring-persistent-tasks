@@ -3,6 +3,7 @@ package org.sterl.spring.persistent_tasks;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -17,6 +18,7 @@ import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
 import org.sterl.spring.persistent_tasks.history.HistoryService;
+import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryLastStateEntity;
 import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
@@ -37,7 +39,7 @@ public class PersistentTaskService {
     private final List<SchedulerService> schedulers;
     private final TriggerService triggerService;
     private final HistoryService historyService;
-    
+
     /**
      * Returns the last known {@link TriggerData} to a given key. First running triggers are checked.
      * Maybe out of the history event from a retry execution of the very same id.
@@ -64,7 +66,7 @@ public class PersistentTaskService {
     
     @EventListener
     void queue(TriggerTaskCommand<? extends Serializable> event) {
-        if (event.triggers().size() == 1) {
+        if (event.size() == 1) {
             runOrQueue(event.triggers().iterator().next());
         } else {
             queue(event.triggers());
@@ -81,6 +83,8 @@ public class PersistentTaskService {
     @Transactional(timeout = 10)
     @NonNull
     public <T extends Serializable> List<TriggerKey> queue(Collection<AddTriggerRequest<T>> triggers) {
+        if (triggers == null || triggers.isEmpty()) return Collections.emptyList();
+
         return triggers.stream() //
             .map(t -> triggerService.queue(t)) //
             .map(TriggerEntity::getKey) //
@@ -147,6 +151,21 @@ public class PersistentTaskService {
             }
         } while (!triggers.isEmpty());
 
+        return result;
+    }
+
+    public List<TriggerData> findTriggerByCorrelationId(String correlationId) {
+        var running = triggerService.findTriggerByCorrelationId(correlationId)
+                .stream().map(TriggerEntity::getData)
+                .toList();
+
+        var done = historyService.findTriggerByCorrelationId(correlationId)
+            .stream().map(TriggerHistoryLastStateEntity::getData)
+            .toList();
+        
+        var result = new ArrayList<TriggerData>(running.size() + done.size());
+        result.addAll(running);
+        result.addAll(done);
         return result;
     }
 }
