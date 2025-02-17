@@ -38,7 +38,7 @@ public class RunningTriggerContextHolder {
      * @return either the set correlationId or the desired one or a random build one.
      */
     public static String buildOrGetCorrelationId(String newCorrelationId) {
-        var correlationId = RunningTriggerContextHolder.getCorrelationId();
+        var correlationId = getCorrelationId();
         if (correlationId == null) correlationId = newCorrelationId;
         if (correlationId == null) correlationId = UUID.randomUUID().toString();
         return correlationId;

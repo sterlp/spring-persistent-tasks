@@ -15,14 +15,14 @@ import org.sterl.spring.persistent_tasks.trigger.component.EditTriggerComponent;
 
 public record RunTaskWithStateCommand (
         ApplicationEventPublisher eventPublisher,
-        PersistentTaskBase<Serializable> task,
+        PersistentTaskBase task,
         Optional<TransactionTemplate> trx,
         Serializable state,
         TriggerEntity trigger,
         RunningTrigger<Serializable> runningTrigger) implements HasTriggerData {
     
     public RunTaskWithStateCommand(ApplicationEventPublisher eventPublisher,
-        PersistentTaskBase<Serializable> task,
+        PersistentTaskBase task,
         Optional<TransactionTemplate> trx,
         Serializable state,
         TriggerEntity trigger) {
@@ -48,9 +48,9 @@ public record RunTaskWithStateCommand (
         editTrigger.triggerIsNowRunning(trigger, state);
 
         Collection<AddTriggerRequest<Serializable>> nextTriggers = null;
-        if (task instanceof ComplexPersistentTask<Serializable, Serializable> complexTask) {
+        if (task instanceof ComplexPersistentTask complexTask) {
             nextTriggers = complexTask.accept(runningTrigger);
-        } else if (task instanceof PersistentTask<Serializable> simpleTask) {
+        } else if (task instanceof PersistentTask simpleTask) {
             simpleTask.accept(state); // Direct state handling
         } else {
             throw new IllegalStateException("Unsupported task type: " + task.getClass());
