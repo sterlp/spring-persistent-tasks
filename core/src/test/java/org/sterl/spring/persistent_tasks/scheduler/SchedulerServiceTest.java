@@ -13,7 +13,7 @@ import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
-import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
+import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity;
@@ -43,7 +43,7 @@ class SchedulerServiceTest extends AbstractSpringTest {
     void testWillTriggerOnlyFreeThreadSize() throws Exception {
         // GIVEN
         for (int i = 0; i < 15; i++) {
-            triggerService.queue(TaskTriggerBuilder
+            triggerService.queue(TriggerBuilder
                     .newTrigger("slowTask")
                     .state(200L)
                     .build()
@@ -65,7 +65,7 @@ class SchedulerServiceTest extends AbstractSpringTest {
     @Test
     void verifyRunningStatusTest() throws Exception {
         // GIVEN
-        final TriggerKey triggerKey = triggerService.queue(TaskTriggerBuilder
+        final TriggerKey triggerKey = triggerService.queue(TriggerBuilder
                 .newTrigger("slowTask")
                 .state(50L)
                 .build()

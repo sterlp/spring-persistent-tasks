@@ -3,13 +3,17 @@ package org.sterl.spring.persistent_tasks;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
-import org.sterl.spring.persistent_tasks.api.PersistentTask;
 import org.sterl.spring.persistent_tasks.api.RetryStrategy;
 import org.sterl.spring.persistent_tasks.api.TaskId;
+import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
+import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
+import org.sterl.spring.persistent_tasks.trigger.RunningTriggerContextHolder;
 
 class TaskSchedulerServiceTest extends AbstractSpringTest {
 
@@ -66,5 +70,39 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
             asserts.awaitValueOnce("t" + i);
         }
         assertThat(historyService.countTriggers(TriggerStatus.SUCCESS)).isEqualTo(100);
+    }
+    
+    @Test
+    void testChainedTasks() {
+        // GIVEN
+        final AtomicReference<String> correlationFound = new AtomicReference<>();
+        TaskId<Integer> task1 = taskService.replaceComplex("chainTask1", 
+                state -> {
+                    asserts.info(state.getData() + "::chainTask1");
+                    return TriggerBuilder.newTrigger("chainTask2", state.getData() + "::chainTask1")
+                            .correlationId(UUID.randomUUID().toString()) // should be ignored!
+                            .build()
+                            .toList();
+                });
+        TaskId<String> task2 = taskService.replaceComplex("chainTask2", 
+                state -> {
+                    correlationFound.set(state.getCorrelationId());
+                    asserts.info("chainTask1::" + state.getData());
+                    assertThat(state.getCorrelationId()).isEqualTo(RunningTriggerContextHolder.getCorrelationId());
+                    return null;
+                });
+        
+        // WHEN
+        var correlationId = UUID.randomUUID().toString();
+        persistentTaskService.runOrQueue(task1.newTrigger(234).correlationId(correlationId).build());
+
+        // THEN
+        asserts.awaitOrdered("234::chainTask1", "chainTask1::234::chainTask1");
+        assertThat(correlationId).isEqualTo(correlationFound.get());
+        // AND
+        var trigger= persistentTaskService.findTriggerByCorrelationId(correlationId);
+        assertThat(trigger).hasSize(2);
+        assertThat(trigger.get(0).getCorrelationId()).isEqualTo(correlationId);
+        assertThat(trigger.get(1).getCorrelationId()).isEqualTo(correlationId);
     }
 }

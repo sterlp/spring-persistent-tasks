@@ -16,6 +16,7 @@ import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
+import org.sterl.spring.persistent_tasks.trigger.RunningTriggerContextHolder;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerAddedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerCanceledEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerFailedEvent;
@@ -124,13 +125,17 @@ public class EditTriggerComponent {
 
     private <T extends Serializable> TriggerEntity toTriggerEntity(AddTriggerRequest<T> trigger) {
         byte[] state = stateSerializer.serialize(trigger.state());
+
+        var correlationId = RunningTriggerContextHolder.buildOrGetCorrelationId(trigger.correlationId());
+        final var data = TriggerData.builder()
+                .key(trigger.key())
+                .runAt(trigger.runtAt())
+                .priority(trigger.priority())
+                .state(state)
+                .correlationId(correlationId);
+
         final var t = TriggerEntity.builder()
-            .data(TriggerData.builder()
-                    .key(trigger.key())
-                    .runAt(trigger.runtAt())
-                    .priority(trigger.priority())
-                    .state(state)
-                    .build())
+            .data(data.build())
             .build();
         return t;
     }

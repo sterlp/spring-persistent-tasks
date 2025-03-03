@@ -185,4 +185,9 @@ public class TriggerService {
             return t;
         });
     }
+
+    public List<TriggerEntity> findTriggerByCorrelationId(String correlationId) {
+        return readTrigger.findTriggerByCorrelationId(correlationId);
+        
+    }
 }

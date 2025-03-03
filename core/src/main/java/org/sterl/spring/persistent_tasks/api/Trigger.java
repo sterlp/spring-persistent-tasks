@@ -15,6 +15,8 @@ public class Trigger {
     /** the business key which is unique it is combination for triggers but not the history! */
     private TriggerKey key;
     
+    private String correlationId;
+    
     private String runningOn;
 
     private OffsetDateTime createdTime = OffsetDateTime.now();

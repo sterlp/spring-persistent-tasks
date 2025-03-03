@@ -13,6 +13,9 @@ public interface HasTriggerData {
     default TriggerKey key() {
         return getData().getKey();
     }
+    default int executionCount() {
+        return getData().getExecutionCount();
+    }
     default TriggerStatus status() {
         return getData().getStatus();
     }
