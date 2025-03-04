@@ -150,10 +150,10 @@
                         <target>${java.version}</target>
                         <encoding>${project.reporting.outputEncoding}</encoding>
                         <compilerArgs>
+                            <arg>-parameters</arg>
                             <arg>-Xlint:all</arg>
                             <arg>-Xlint:-options</arg>
                             <arg>-Xlint:-path</arg>
-                            <arg>-parameters</arg>
                         </compilerArgs>
                     </configuration>
                 </plugin>

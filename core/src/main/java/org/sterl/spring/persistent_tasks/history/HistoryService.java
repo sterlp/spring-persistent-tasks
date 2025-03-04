@@ -102,7 +102,8 @@ public class HistoryService {
         if (key == null && status == null) {
             return triggerHistoryLastStateRepository.findAll(page);
         }
-        final var id = key == null ? null : key.getId();
+        var id = key == null ? null : key.getId();
+        if (id != null) id = id += "%";
         final var name = key == null ? null : key.getTaskName();
         return triggerHistoryLastStateRepository.findAll(id, name, status, page);
     }
