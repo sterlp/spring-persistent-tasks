@@ -1,23 +1,27 @@
 # Changelog
 
+## v1.5.5 - (2025-03-04)
+
+-   MdcTriggerInterceptor adds now start date and scheduler name
+
 ## v1.5.4 - (2025-01-19)
 
--  Added MdcTriggerInterceptor
+-   Added MdcTriggerInterceptor
 
 ## v1.5.3 - (2025-01-14)
 
--  adjusted trigger cols that the UI does not break
--  showing always all existing schedulers
+-   adjusted trigger cols that the UI does not break
+-   showing always all existing schedulers
 
 ## v1.5.2 - (2025-01-13)
 
--  FixedIntervalRetryStrategy
--  Added SchedulerCustomizer
+-   FixedIntervalRetryStrategy
+-   Added SchedulerCustomizer
 
 ## v1.5.1 - (2025-01-12)
 
--  filter trigger by status
--  filter history by status
+-   filter trigger by status
+-   filter history by status
 
 ## v1.5.0 - (2025-01-11)
 
