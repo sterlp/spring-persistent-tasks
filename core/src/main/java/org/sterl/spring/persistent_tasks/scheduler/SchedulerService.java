@@ -169,7 +169,8 @@ public class SchedulerService {
                 .toList();
 
         int running = triggerService.markTriggersAsRunning(runningKeys, name);
-        log.debug("({}) - {} trigger(s) are running on {} schedulers", running, runningKeys, schedulers);
+        log.debug("({}) - {} trigger(s) are running on {} schedulers", 
+                running, runningKeys, schedulers);
         return triggerService.rescheduleAbandonedTasks(timeout);
     }
 
