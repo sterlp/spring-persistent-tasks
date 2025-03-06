@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.5.6 - (2025-03-06)
+
+-   Better ID search
+-   Added info to the UI how to search
+
 ## v1.5.5 - (2025-03-04)
 
 -   MdcTriggerInterceptor adds now start date and scheduler name

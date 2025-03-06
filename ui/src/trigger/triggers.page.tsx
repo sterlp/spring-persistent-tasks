@@ -30,11 +30,12 @@ const TriggersPage = () => {
                     <Form.Control
                         defaultValue={query.id || ""}
                         type="text"
-                        placeholder="Search..."
+                        placeholder="ID search, '*' any string, '_' any character ..."
                         onKeyUp={(e) =>
                             e.key == "Enter"
                                 ? setQuery((prev) => ({
                                       ...prev,
+                                      page: 0 + "",
                                       id: (e.target as HTMLInputElement).value,
                                   }))
                                 : null

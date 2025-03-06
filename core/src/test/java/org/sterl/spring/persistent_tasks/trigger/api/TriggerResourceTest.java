@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,14 +64,18 @@ class TriggerResourceTest extends AbstractSpringTest {
     @Test
     void testSearchById() {
         // GIVEN
+        var uuid = UUID.randomUUID().toString();
         var key1 = triggerService.queue(TaskTriggerBuilder
-                .newTrigger("task1").build()).getKey();
+                .newTrigger("task1")
+                    .id("[@foo:bar@hallo.de:" + uuid + "]")
+                    .build())
+                .getKey();
         var key2 = triggerService.queue(TaskTriggerBuilder
                 .newTrigger("task1").build()).getKey();
         
         // WHEN
         var response = template.exchange(
-                baseUrl + "?id=" + key1.getId().substring(0, 30),
+                baseUrl + "?id=" + key1.getId().substring(0, 30) + "*",
                 HttpMethod.GET,
                 null,
                 String.class);
@@ -80,21 +85,30 @@ class TriggerResourceTest extends AbstractSpringTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody()).contains(key1.getId());
         assertThat(response.getBody()).doesNotContain(key2.getId());
+        
+        // WHEN
+        response = template.exchange(
+                baseUrl + "?id=*" + key1.getId().substring(10, 30) + "*",
+                HttpMethod.GET,
+                null,
+                String.class);
+        assertThat(response.getBody()).contains(key1.getId());
+        assertThat(response.getBody()).doesNotContain(key2.getId());
     }
-    
+
     @Test
     void testSearchByStatus() {
         // GIVEN
         var k1 = createStatus(new TriggerKey("1-foo", "foo"), TriggerStatus.WAITING).getKey();
         var k2 = createStatus(new TriggerKey("2-foo", "bar"), TriggerStatus.RUNNING).getKey();
-        
+
         // WHEN
         var response = template.exchange(
                 baseUrl + "?status=" + TriggerStatus.RUNNING,
                 HttpMethod.GET,
                 null,
                 String.class);
-        
+
         // THEN
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();

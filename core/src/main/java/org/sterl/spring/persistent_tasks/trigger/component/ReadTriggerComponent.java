@@ -11,6 +11,7 @@ import org.springframework.lang.Nullable;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
+import org.sterl.spring.persistent_tasks.shared.StringHelper;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalCompontant;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
@@ -53,7 +54,7 @@ public class ReadTriggerComponent {
     public Page<TriggerEntity> listTriggers(@Nullable TriggerKey key,
             @Nullable TriggerStatus status, Pageable page) {
         if (key == null && status == null) return triggerRepository.findAll(page);
-        final var id = key == null ? null : key.getId();
+        final var id = StringHelper.applySearchWildCard(key);
         final var name = key == null ? null : key.getTaskName();
         return triggerRepository.findAll(id, name, status, page);
     }
