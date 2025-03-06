@@ -75,6 +75,16 @@ class TriggerResourceTest extends AbstractSpringTest {
         
         // WHEN
         var response = template.exchange(
+                baseUrl + "?id=*" + key2.getId().substring(5, 30) + "*",
+                HttpMethod.GET,
+                null,
+                String.class);
+        // THEN
+        assertThat(response.getBody()).contains(key2.getId());
+        assertThat(response.getBody()).doesNotContain(key1.getId());
+        
+        // WHEN
+        response = template.exchange(
                 baseUrl + "?id=" + key1.getId().substring(0, 30) + "*",
                 HttpMethod.GET,
                 null,
@@ -83,15 +93,6 @@ class TriggerResourceTest extends AbstractSpringTest {
         // THEN
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody()).contains(key1.getId());
-        assertThat(response.getBody()).doesNotContain(key2.getId());
-        
-        // WHEN
-        response = template.exchange(
-                baseUrl + "?id=*" + key1.getId().substring(10, 30) + "*",
-                HttpMethod.GET,
-                null,
-                String.class);
         assertThat(response.getBody()).contains(key1.getId());
         assertThat(response.getBody()).doesNotContain(key2.getId());
     }

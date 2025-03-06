@@ -9,7 +9,7 @@ public class StringHelper {
      */
     public static String applySearchWildCard(String value) {
         if (value == null || value.length() == 0) return null;
-        return value.replace('*', '%');
+        return value.replace('*', '%').replace('[', '_');
     }
 
     /**

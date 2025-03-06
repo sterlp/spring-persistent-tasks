@@ -18,9 +18,9 @@ import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
 public interface TriggerDataRepository<T extends HasTriggerData> extends JpaRepository<T, Long> {
     @Query("""
             SELECT e FROM #{#entityName} e
-            WHERE  (e.data.key.id LIKE :id OR :id IS NULL)
-            AND    (e.data.key.taskName = :taskName OR :taskName IS NULL)
-            AND    (e.data.status = :status OR :status IS NULL)
+            WHERE  (:id IS NULL       OR e.data.key.id LIKE :id)
+            AND    (:taskName IS NULL OR e.data.key.taskName = :taskName)
+            AND    (:status IS NULL   OR e.data.status = :status)
             """)
      Page<T> findAll(@Param("id") String id,
              @Param("taskName") String taskName,
