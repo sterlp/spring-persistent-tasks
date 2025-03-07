@@ -8,7 +8,7 @@
                         http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet author="sterlp" id="2024-12-27-initial-test-db">
-        <createTable tableName="personbe">
+        <createTable tableName="person">
             <column computed="false" name="id" type="bigint">
                 <constraints nullable="false" primaryKey="true"
                     primaryKeyName="pk_personbe_id" />
@@ -16,7 +16,7 @@
             <column computed="false" name="name" type="varchar(255)" />
         </createTable>
         <createSequence cycle="false" incrementBy="50" maxValue="9223372036854775807"
-            minValue="-9223372036854775808" sequenceName="personbe_seq" startValue="1" />
+            minValue="-9223372036854775808" sequenceName="person_seq" startValue="1" />
     </changeSet>
 
     <include file="spring-persistent-tasks/db.changelog-master.xml" />

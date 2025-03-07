@@ -7,6 +7,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
@@ -367,12 +368,12 @@ class TriggerServiceTest extends AbstractSpringTest {
     void testRescheduleAbandonedTasks() {
         // GIVEN
         var now = OffsetDateTime.now();
-        var t1 = new TriggerEntity(new TriggerKey("fooTask"))
+        var t1 = new TriggerEntity(new TriggerKey("fooTask"), UUID.randomUUID().toString())
                 .runOn("fooScheduler");
         t1.setLastPing(now.minusSeconds(60));
         triggerRepository.save(t1);
         
-        var t2 = new TriggerEntity(new TriggerKey("barTask"))
+        var t2 = new TriggerEntity(new TriggerKey("barTask"), UUID.randomUUID().toString())
                 .runOn("barScheduler");
         t2.setLastPing(now.minusSeconds(58));
         triggerRepository.save(t2);
@@ -388,7 +389,9 @@ class TriggerServiceTest extends AbstractSpringTest {
     @Test
     void testUnknownTriggersNoRetry() {
         // GIVEN
-        var t = triggerRepository.save(new TriggerEntity(new TriggerKey("fooTask-unknown")));
+        var t = triggerRepository.save(
+                new TriggerEntity(
+                    new TriggerKey("fooTask-unknown"), UUID.randomUUID().toString()));
         
         // WHEN
         runNextTrigger();
@@ -402,7 +405,7 @@ class TriggerServiceTest extends AbstractSpringTest {
     @Test
     void testBadStateNoRetry() {
         var t = triggerRepository.save(new TriggerEntity(
-                new TriggerKey("slowTask")
+                new TriggerKey("slowTask"), UUID.randomUUID().toString()
             ).withState(new byte[] {12, 54})
         );
         

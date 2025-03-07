@@ -7,7 +7,7 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Table
+@Table(name = "person")
 @Entity
 @Data @NoArgsConstructor
 public class PersonEntity{

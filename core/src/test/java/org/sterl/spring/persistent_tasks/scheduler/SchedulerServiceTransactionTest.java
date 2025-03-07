@@ -100,6 +100,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         // 2. one the event running 
         // 3. for the work
         // 4. for success status
+        // 5. the history
         hibernateAsserts.assertTrxCount(5);
         assertThat(personRepository.count()).isOne();
         // AND

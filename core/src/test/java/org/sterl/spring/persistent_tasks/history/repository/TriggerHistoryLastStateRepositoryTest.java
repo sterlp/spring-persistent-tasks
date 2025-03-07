@@ -3,6 +3,7 @@ package org.sterl.spring.persistent_tasks.history.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.OffsetDateTime;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.jupiter.api.Test;
@@ -64,6 +65,7 @@ class TriggerHistoryLastStateRepositoryTest extends AbstractSpringTest {
                 .end(isCancel ? null : now)
                 .createdTime(now)
                 .key(key)
+                .correlationId(UUID.randomUUID().toString())
                 .status(status)
                 .runningDurationInMs(isCancel ? null : 600L)
                 .build()

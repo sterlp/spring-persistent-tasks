@@ -162,7 +162,6 @@ class TriggerResourceTest extends AbstractSpringTest {
         assertThat(response.getBody().getKey()).isEqualTo(triggerKey);
     }
     
-    
     private TriggerEntity createStatus(TriggerKey key, TriggerStatus status) {
         final var now = OffsetDateTime.now();
         final var isCancel = status == TriggerStatus.CANCELED;
@@ -170,6 +169,7 @@ class TriggerResourceTest extends AbstractSpringTest {
         TriggerEntity result = new TriggerEntity();
         result.setData(TriggerData
                 .builder()
+                .correlationId(UUID.randomUUID().toString())
                 .start(isCancel ? null : now.minusMinutes(1))
                 .end(isCancel ? null : now)
                 .createdTime(now)
