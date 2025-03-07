@@ -8,7 +8,6 @@ import TriggerStatusSelect from "@src/shared/view/triger-status-select.view";
 import TriggerItemView from "@src/shared/view/trigger-list-item.view";
 import TaskSelect from "@src/task/view/task-select.view";
 import { useQuery } from "crossroad";
-import { useState } from "react";
 import { Accordion, Col, Form, Row, Stack } from "react-bootstrap";
 
 const HistoryPage = () => {
@@ -19,7 +18,7 @@ const HistoryPage = () => {
     );
 
     const doReload = () => {
-        triggers.doGet("?size=10&" + new URLSearchParams(query).toString());
+        triggers.doGet("?size=4&" + new URLSearchParams(query).toString());
     };
 
     useAutoRefresh(10000, doReload, [query]);
@@ -33,11 +32,12 @@ const HistoryPage = () => {
                         <Form.Control
                             defaultValue={query.id || ""}
                             type="text"
-                            placeholder="Search..."
+                            placeholder="ID search, '*' any string, '_' any character ..."
                             onKeyUp={(e) =>
                                 e.key == "Enter"
                                     ? setQuery((prev) => ({
                                           ...prev,
+                                          page: 0 + "",
                                           id: (e.target as HTMLInputElement)
                                               .value,
                                       }))

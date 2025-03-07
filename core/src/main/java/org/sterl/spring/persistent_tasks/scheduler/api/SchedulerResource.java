@@ -25,8 +25,7 @@ public class SchedulerResource {
     public List<SchedulerEntity> listAll() {
         return anyService.listAll();
     }
-    
-    
+
     @GetMapping("/schedulers/{name}")
     public ResponseEntity<SchedulerEntity> get(@PathVariable("name") String name) {
         return ResponseEntity.of(anyService.findStatus(name));

@@ -17,6 +17,7 @@ import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryDetailEntit
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryLastStateEntity;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryDetailRepository;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryLastStateRepository;
+import org.sterl.spring.persistent_tasks.shared.StringHelper;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
@@ -102,7 +103,7 @@ public class HistoryService {
         if (key == null && status == null) {
             return triggerHistoryLastStateRepository.findAll(page);
         }
-        final var id = key == null ? null : key.getId();
+        final var id = StringHelper.applySearchWildCard(key);
         final var name = key == null ? null : key.getTaskName();
         return triggerHistoryLastStateRepository.findAll(id, name, status, page);
     }
