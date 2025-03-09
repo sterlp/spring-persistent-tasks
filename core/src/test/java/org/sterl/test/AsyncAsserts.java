@@ -20,7 +20,7 @@ public class AsyncAsserts {
     private final List<String> values = Collections.synchronizedList(new ArrayList<String>());
     private final Map<String, Integer> counts = new ConcurrentHashMap<>();
     @Setter
-    private Duration defaultTimeout = Duration.ofSeconds(5);
+    private Duration defaultTimeout = Duration.ofSeconds(3);
 
     public synchronized void clear() {
         values.clear();
@@ -66,7 +66,7 @@ public class AsyncAsserts {
         while (!values.contains(value)
                 && (System.currentTimeMillis() - start.toEpochMilli() <= defaultTimeout.toMillis())) {
             try {
-                Thread.sleep(50);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 if (Thread.interrupted()) {
                     break;

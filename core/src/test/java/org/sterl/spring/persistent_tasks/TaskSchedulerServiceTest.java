@@ -8,14 +8,18 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.sterl.spring.persistent_tasks.api.RetryStrategy;
 import org.sterl.spring.persistent_tasks.api.TaskId;
-import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
+import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
 import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
-import org.sterl.spring.persistent_tasks.trigger.RunningTriggerContextHolder;
+import org.sterl.spring.persistent_tasks.api.task.RunningTriggerContextHolder;
 
 class TaskSchedulerServiceTest extends AbstractSpringTest {
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     @Test
     void testFailedTasksAreRetried() throws Exception {
@@ -73,27 +77,27 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
     }
     
     @Test
-    void testChainedTasks() {
+    void testChainedTasks() throws Exception {
         // GIVEN
         final AtomicReference<String> correlationFound = new AtomicReference<>();
-        TaskId<Integer> task1 = taskService.replaceComplex("chainTask1", 
-                state -> {
-                    asserts.info(state.getData() + "::chainTask1");
-                    return TriggerBuilder.newTrigger("chainTask2", state.getData() + "::chainTask1")
-                            .correlationId(UUID.randomUUID().toString()) // should be ignored!
-                            .build()
-                            .toList();
-                });
-        TaskId<String> task2 = taskService.replaceComplex("chainTask2", 
-                state -> {
-                    correlationFound.set(state.getCorrelationId());
-                    asserts.info("chainTask1::" + state.getData());
-                    assertThat(state.getCorrelationId()).isEqualTo(RunningTriggerContextHolder.getCorrelationId());
-                    return null;
-                });
-        
+
+        final TaskId<Integer> task1 = taskService.replace("chainTask1", s -> {
+            var state = RunningTriggerContextHolder.getContext();
+            asserts.info(state.getData() + "::chainTask1");
+            eventPublisher.publishEvent(
+                    TriggerTaskCommand.of("chainTask2", state.getData() + "::chainTask1",
+                    UUID.randomUUID().toString())); // should be ignored!
+        });
+
+        taskService.replace("chainTask2", s -> {
+            var state = RunningTriggerContextHolder.getContext();
+            correlationFound.set(state.getCorrelationId());
+            asserts.info("chainTask1::" + state.getData());
+            assertThat(state.getCorrelationId()).isEqualTo(RunningTriggerContextHolder.getCorrelationId());
+        });
+        final var correlationId = UUID.randomUUID().toString();
+
         // WHEN
-        var correlationId = UUID.randomUUID().toString();
         persistentTaskService.runOrQueue(task1.newTrigger(234).correlationId(correlationId).build());
 
         // THEN

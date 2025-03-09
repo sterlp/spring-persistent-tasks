@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.GenericApplicationContext;
 import org.sterl.spring.persistent_tasks.api.TaskId;
-import org.sterl.spring.persistent_tasks.api.task.PersistentTaskBase;
+import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
 import org.sterl.spring.persistent_tasks.task.TaskService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +19,8 @@ public class TaskConfig {
     @Autowired
     void configureSimpleTasks(GenericApplicationContext context,
             TaskService taskService) {
-        final var simpleTasks = context.getBeansOfType(PersistentTaskBase.class);
-        for(Entry<String, PersistentTaskBase> t : simpleTasks.entrySet()) {
+        final var simpleTasks = context.getBeansOfType(PersistentTask.class);
+        for(Entry<String, PersistentTask> t : simpleTasks.entrySet()) {
             var id = taskService.register(t.getKey(), t.getValue());
 
             addTaskIdIfMissing(context, id);

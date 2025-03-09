@@ -1,10 +1,8 @@
-package org.sterl.spring.persistent_tasks.trigger;
+package org.sterl.spring.persistent_tasks.api.task;
 
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
-
-import org.sterl.spring.persistent_tasks.api.task.RunningTrigger;
 
 /**
  * The {@link RunningTrigger} state will be provided by this context holder to any thread.

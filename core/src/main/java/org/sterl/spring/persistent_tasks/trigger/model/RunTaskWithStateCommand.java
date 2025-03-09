@@ -4,30 +4,27 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Optional;
 
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
-import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
-import org.sterl.spring.persistent_tasks.api.task.*;
+import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
+import org.sterl.spring.persistent_tasks.api.task.RunningTrigger;
 import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 import org.sterl.spring.persistent_tasks.trigger.component.EditTriggerComponent;
 
 public record RunTaskWithStateCommand (
-        ApplicationEventPublisher eventPublisher,
-        PersistentTaskBase task,
+        PersistentTask<Serializable> task,
         Optional<TransactionTemplate> trx,
         Serializable state,
         TriggerEntity trigger,
         RunningTrigger<Serializable> runningTrigger) implements HasTriggerData {
     
-    public RunTaskWithStateCommand(ApplicationEventPublisher eventPublisher,
-        PersistentTaskBase task,
+    public RunTaskWithStateCommand(
+        PersistentTask<Serializable> task,
         Optional<TransactionTemplate> trx,
         Serializable state,
         TriggerEntity trigger) {
         
-        this(eventPublisher, task, trx, state, trigger,
+        this(task, trx, state, trigger,
             new RunningTrigger<>(
                     trigger.getKey(),
                     trigger.getData().getCorrelationId(),
@@ -46,20 +43,11 @@ public record RunTaskWithStateCommand (
 
     private Optional<TriggerEntity> runTask(EditTriggerComponent editTrigger) {
         editTrigger.triggerIsNowRunning(trigger, state);
-
-        Collection<AddTriggerRequest<Serializable>> nextTriggers = null;
-        if (task instanceof ComplexPersistentTask complexTask) {
-            nextTriggers = complexTask.accept(runningTrigger);
-        } else if (task instanceof PersistentTask simpleTask) {
-            simpleTask.accept(state); // Direct state handling
-        } else {
-            throw new IllegalStateException("Unsupported task type: " + task.getClass());
-        }
+        
+        task.accept(state);
 
         var result = editTrigger.completeTaskWithSuccess(trigger.getKey(), state);
         editTrigger.deleteTrigger(trigger);
-
-        if (hasValues(nextTriggers)) eventPublisher.publishEvent(TriggerTaskCommand.of(nextTriggers));
 
         return result;
     }

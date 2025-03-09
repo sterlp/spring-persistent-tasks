@@ -171,7 +171,7 @@ public class AbstractSpringTest {
             if (System.currentTimeMillis() - start > 2000) {
                 throw new TimeoutException("Still running after 2s");
             }
-            Thread.sleep(50);
+            Thread.sleep(100);
         }
     }
 

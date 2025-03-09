@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.sterl.spring.persistent_tasks.api.task.PersistentTaskBase;
+import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
 import org.sterl.spring.persistent_tasks.task.util.ReflectionUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -28,9 +28,9 @@ public class TaskTransactionComponent {
     private final TransactionTemplate template;
     private final Set<Propagation> joinTransaction = EnumSet.of(
             Propagation.MANDATORY, Propagation.REQUIRED, Propagation.SUPPORTS);
-    private final Map<PersistentTaskBase<? extends Serializable>, Optional<TransactionTemplate>> cache = new ConcurrentHashMap<>();
+    private final Map<PersistentTask<? extends Serializable>, Optional<TransactionTemplate>> cache = new ConcurrentHashMap<>();
     
-    public Optional<TransactionTemplate> getTransactionTemplate(PersistentTaskBase<? extends Serializable> task) {
+    public Optional<TransactionTemplate> getTransactionTemplate(PersistentTask<? extends Serializable> task) {
         if (cache.containsKey(task)) return cache.get(task);
 
         Optional<TransactionTemplate> result;
@@ -47,7 +47,7 @@ public class TaskTransactionComponent {
         return result;
     }
 
-    private TransactionTemplate builTransactionTemplate(PersistentTaskBase<? extends Serializable> task, Transactional annotation) {
+    private TransactionTemplate builTransactionTemplate(PersistentTask<? extends Serializable> task, Transactional annotation) {
         TransactionTemplate result;
         if (joinTransaction.contains(annotation.propagation())) {
             // No direct mapping for 'rollbackFor' or 'noRollbackFor'

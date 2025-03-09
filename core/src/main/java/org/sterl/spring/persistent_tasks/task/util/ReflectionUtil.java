@@ -6,11 +6,11 @@ import java.lang.annotation.Annotation;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ReflectionUtils;
-import org.sterl.spring.persistent_tasks.api.task.PersistentTaskBase;
+import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
 
 public abstract class ReflectionUtil {
 
-    public static <A extends Annotation> A getAnnotation(PersistentTaskBase<? extends Serializable> inTask, Class<A> searchFor) {
+    public static <A extends Annotation> A getAnnotation(PersistentTask<? extends Serializable> inTask, Class<A> searchFor) {
         var task = AopProxyUtils.ultimateTargetClass(inTask);
         var targetMethod = ReflectionUtils.findMethod(task, "accept", Serializable.class);
         

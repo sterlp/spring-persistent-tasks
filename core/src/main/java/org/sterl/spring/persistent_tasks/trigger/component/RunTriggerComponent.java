@@ -3,13 +3,12 @@ package org.sterl.spring.persistent_tasks.trigger.component;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.sterl.spring.persistent_tasks.api.task.RunningTriggerContextHolder;
 import org.sterl.spring.persistent_tasks.task.TaskService;
-import org.sterl.spring.persistent_tasks.trigger.RunningTriggerContextHolder;
 import org.sterl.spring.persistent_tasks.trigger.model.RunTaskWithStateCommand;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
@@ -21,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class RunTriggerComponent {
 
-    private final ApplicationEventPublisher eventPublisher;
     private final TaskService taskService;
     private final EditTriggerComponent editTrigger;
     private final StateSerializer serializer = new StateSerializer();
@@ -55,9 +53,9 @@ public class RunTriggerComponent {
             final var task = taskService.assertIsKnown(trigger.newTaskId());
             final var trx = taskService.getTransactionTemplate(task);
             final var state = serializer.deserialize(trigger.getData().getState());
-            return new RunTaskWithStateCommand(eventPublisher, task, trx, state, trigger);
+            return new RunTaskWithStateCommand(task, trx, state, trigger);
         } catch (Exception e) {
-            failTaskAndState(new RunTaskWithStateCommand(eventPublisher, null, Optional.empty(), null, trigger), e);
+            failTaskAndState(new RunTaskWithStateCommand(null, Optional.empty(), null, trigger), e);
             return null;
         }
     }

@@ -89,16 +89,7 @@ export interface TriggerTaskCommand<T> extends PersistentTasksEvent {
     triggers: AddTriggerRequest<T>[];
 }
 
-export interface ComplexPersistentTask<T, R> extends PersistentTaskBase<T> {
-}
-
-export interface ComplexTransactionalTask<T, R> extends ComplexPersistentTask<T, R> {
-}
-
-export interface PersistentTask<T> extends PersistentTaskBase<T> {
-}
-
-export interface PersistentTaskBase<T> {
+export interface PersistentTask<T> {
     transactional: boolean;
 }
 
@@ -107,6 +98,9 @@ export interface RunningTrigger<T> {
     correlationId: string;
     executionCount: number;
     data: T;
+}
+
+export interface RunningTriggerContextHolder {
 }
 
 export interface TransactionalTask<T> extends PersistentTask<T> {

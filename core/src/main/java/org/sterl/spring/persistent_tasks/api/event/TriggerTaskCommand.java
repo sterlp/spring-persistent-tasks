@@ -24,6 +24,14 @@ public record TriggerTaskCommand<T extends Serializable>(
                 .state(state)
                 .build()));
     }
+    
+    public static <T extends Serializable> TriggerTaskCommand<T> of(String name, T state, String correlationId) {
+        return new TriggerTaskCommand<>(Collections.singleton(TriggerBuilder
+                .<T>newTrigger(name)
+                .state(state)
+                .correlationId(correlationId)
+                .build()));
+    }
 
     public static <T extends Serializable> TriggerTaskCommand<T> of(Collection<AddTriggerRequest<T>> triggers) {
         return new TriggerTaskCommand<>(triggers);
