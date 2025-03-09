@@ -96,6 +96,25 @@ class TriggerResourceTest extends AbstractSpringTest {
         assertThat(response.getBody()).contains(key1.getId());
         assertThat(response.getBody()).doesNotContain(key2.getId());
     }
+    
+    @Test
+    void testSearchByCorrelationId() {
+        // GIVEN
+        var t1 = triggerService.queue(TriggerBuilder.newTrigger("task1").build());
+        var t2 = triggerService.queue(TriggerBuilder.newTrigger("task1").build());
+        var t3 = triggerService.queue(TriggerBuilder.newTrigger("task2").build());
+        
+        // WHEN
+        var response = template.exchange(
+                baseUrl + "?id=" + t3.getData().getCorrelationId().substring(0, 28) + "*",
+                HttpMethod.GET,
+                null,
+                String.class);
+        // THEN
+        assertThat(response.getBody()).contains(t3.getData().getCorrelationId());
+        assertThat(response.getBody()).doesNotContain(t2.getData().getCorrelationId());
+        assertThat(response.getBody()).doesNotContain(t1.getData().getCorrelationId());
+    }
 
     @Test
     void testSearchByStatus() {

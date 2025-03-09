@@ -19,7 +19,8 @@ import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
 public interface TriggerDataRepository<T extends HasTriggerData> extends JpaRepository<T, Long> {
     @Query("""
             SELECT e FROM #{#entityName} e
-            WHERE  (:id IS NULL       OR e.data.key.id LIKE :id)
+            WHERE ((:id IS NULL       OR e.data.key.id LIKE :id)
+                OR (:id IS NULL       OR e.data.correlationId LIKE :id))
             AND    (:taskName IS NULL OR e.data.key.taskName = :taskName)
             AND    (:status IS NULL   OR e.data.status = :status)
             """)

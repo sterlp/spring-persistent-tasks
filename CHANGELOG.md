@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.6
+
+-   Running triggers can be canceled now
+-   Running triggers can be failed now
+-   https://github.com/sterlp/spring-persistent-tasks/wiki/Cancel-a-task-trigger
+-   Triggers have now correlationId to collect them
+-   Correlation Id is shown in the UI
+-   ID search includes also Correlation Id
+
 ## v1.5.6 - (2025-03-06)
 
 -   Better ID search

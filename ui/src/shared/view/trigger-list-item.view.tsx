@@ -8,16 +8,28 @@ import { formatMs, formatShortDateTime } from "../date.util";
 import { useServerObject } from "../http-request";
 import HttpErrorView from "./http-error.view";
 import StackTraceView from "./stacktrace-view";
+import { useUrl } from "crossroad";
+import { useEffect } from "react";
 interface TriggerProps {
     trigger: Trigger;
     afterTriggerChanged?: () => void;
+    showReRunButton: boolean;
 }
 
-const TriggerItemView = ({ trigger, afterTriggerChanged }: TriggerProps) => {
+const TriggerItemView = ({
+    trigger,
+    afterTriggerChanged,
+    showReRunButton,
+}: TriggerProps) => {
     // className="d-flex justify-content-between align-items-center"
+    const [url, setUrl] = useUrl();
 
     const triggerHistory = useServerObject<Trigger[]>(
         "/spring-tasks-api/history/instance/" + trigger.instanceId
+    );
+
+    const reRunTrigger = useServerObject<Trigger>(
+        `/spring-tasks-api/history/${trigger.id}/re-run`
     );
 
     const editTrigger = useServerObject<Trigger[]>(
@@ -26,6 +38,12 @@ const TriggerItemView = ({ trigger, afterTriggerChanged }: TriggerProps) => {
             "/" +
             trigger.key.id
     );
+
+    useEffect(() => {
+        if (reRunTrigger.data && reRunTrigger.data.id) {
+            setUrl("/task-ui/triggers");
+        }
+    }, [setUrl, reRunTrigger.data]);
 
     return (
         <Accordion.Item
@@ -42,33 +60,51 @@ const TriggerItemView = ({ trigger, afterTriggerChanged }: TriggerProps) => {
             </Accordion.Header>
             <Accordion.Body>
                 <HttpErrorView
-                    error={triggerHistory.error || editTrigger.error}
+                    error={
+                        triggerHistory.error ||
+                        editTrigger.error ||
+                        reRunTrigger.error
+                    }
                 />
-                {trigger.status === "WAITING" && afterTriggerChanged ? (
-                    <div className="d-flex gap-2 mb-2">
+                <div className="d-flex gap-2 mb-2">
+                    {trigger.status === "WAITING" && afterTriggerChanged ? (
+                        <>
+                            <Button
+                                onClick={() => {
+                                    editTrigger
+                                        .doCall("/run-at", "POST", new Date())
+                                        .then(afterTriggerChanged)
+                                        .catch((e) => console.info(e));
+                                }}
+                            >
+                                Run now
+                            </Button>
+                            <Button
+                                variant="danger"
+                                onClick={() => {
+                                    editTrigger
+                                        .doCall("", "DELETE")
+                                        .then(afterTriggerChanged)
+                                        .catch((e) => console.info(e));
+                                }}
+                            >
+                                Cancel Trigger
+                            </Button>
+                        </>
+                    ) : undefined}
+                    {showReRunButton ? (
                         <Button
+                            variant="warning"
                             onClick={() => {
-                                editTrigger
-                                    .doCall("/run-at", "POST", new Date())
-                                    .then(afterTriggerChanged)
+                                reRunTrigger
+                                    .doCall("", "POST")
                                     .catch((e) => console.info(e));
                             }}
                         >
-                            Run now
+                            Run Trigger again
                         </Button>
-                        <Button
-                            variant="danger"
-                            onClick={() => {
-                                editTrigger
-                                    .doCall("", "DELETE")
-                                    .then(afterTriggerChanged)
-                                    .catch((e) => console.info(e));
-                            }}
-                        >
-                            Cancel Trigger
-                        </Button>
-                    </div>
-                ) : undefined}
+                    ) : undefined}
+                </div>
                 <TriggerDetailsView
                     key={trigger.id + "TriggerDetailsView"}
                     trigger={trigger}
@@ -124,36 +160,44 @@ const TriggerDetailsView = ({
     return (
         <>
             <Row>
-                <Col xs="6">
+                <Col md="6" xl="4">
                     <LabeledText label="Key Id" value={trigger.key.id} />
                 </Col>
-                <Col xs="3">
+                <Col md="6" xl="4">
                     <LabeledText label="Task" value={trigger.key.taskName} />
                 </Col>
-                <Col xs="3">
+                <Col md="6" xl="4">
                     <LabeledText label="Priority" value={trigger.priority} />
                 </Col>
             </Row>
             <Row>
-                <Col md="6" xl="3">
+                <Col md="6" xl="4">
+                    <LabeledText
+                        label="Correlation Id"
+                        value={trigger.correlationId}
+                    />
+                </Col>
+                <Col md="6" xl="4">
                     <LabeledText
                         label="Run at"
                         value={formatShortDateTime(trigger.runAt)}
                     />
                 </Col>
-                <Col md="6" xl="3">
+            </Row>
+            <Row>
+                <Col md="6" xl="4">
                     <LabeledText
                         label="Started at"
                         value={formatShortDateTime(trigger.start)}
                     />
                 </Col>
-                <Col md="6" xl="3">
+                <Col md="6" xl="4">
                     <LabeledText
                         label="Finished at"
                         value={formatShortDateTime(trigger.end)}
                     />
                 </Col>
-                <Col md="6" xl="3">
+                <Col md="6" xl="4">
                     <LabeledText
                         label="Duration MS"
                         value={formatMs(trigger.runningDurationInMs)}
