@@ -119,4 +119,8 @@ public class HistoryService {
     public List<TaskStatusHistoryOverview> taskStatusHistory() {
         return triggerHistoryLastStateRepository.listTriggerStatus();
     }
+
+    public List<TriggerHistoryLastStateEntity> findTriggerByCorrelationId(String correlationId) {
+        return triggerHistoryLastStateRepository.findByCorrelationId(correlationId);
+    }
 }

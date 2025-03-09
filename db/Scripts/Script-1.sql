@@ -1,1 +1,0 @@
-select * from PT_SCHEDULER

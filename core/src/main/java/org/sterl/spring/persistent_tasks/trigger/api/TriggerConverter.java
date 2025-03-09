@@ -5,9 +5,9 @@ import org.sterl.spring.persistent_tasks.shared.ExtendetConvert;
 import org.sterl.spring.persistent_tasks.shared.converter.ToTrigger;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
-class TriggerConverter {
+public class TriggerConverter {
     
-    enum FromTriggerEntity implements ExtendetConvert<TriggerEntity, Trigger> {
+    public enum FromTriggerEntity implements ExtendetConvert<TriggerEntity, Trigger> {
         INSTANCE;
 
         @Override

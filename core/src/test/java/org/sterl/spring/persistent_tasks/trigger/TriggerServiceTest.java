@@ -7,6 +7,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
@@ -17,10 +18,12 @@ import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
-import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
+import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryLastStateRepository;
+import org.sterl.spring.persistent_tasks.task.exception.CancelTaskException;
+import org.sterl.spring.persistent_tasks.task.exception.FailTaskNoRetryException;
 import org.sterl.spring.persistent_tasks.task.repository.TaskRepository;
 import org.sterl.spring.persistent_tasks.trigger.component.StateSerializer.DeSerializationFailedException;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerAddedEvent;
@@ -127,7 +130,7 @@ class TriggerServiceTest extends AbstractSpringTest {
     @Test
     void testTriggerSpringSimpleTask() throws Exception {
         // GIVEN
-        final var trigger = TaskTriggerBuilder.newTrigger(Task3.NAME).state("trigger3").build();
+        final var trigger = TriggerBuilder.newTrigger(Task3.NAME).state("trigger3").build();
 
         // WHEN
         subject.run(subject.queue(trigger));
@@ -367,12 +370,12 @@ class TriggerServiceTest extends AbstractSpringTest {
     void testRescheduleAbandonedTasks() {
         // GIVEN
         var now = OffsetDateTime.now();
-        var t1 = new TriggerEntity(new TriggerKey("fooTask"))
+        var t1 = new TriggerEntity(new TriggerKey("fooTask"), UUID.randomUUID().toString())
                 .runOn("fooScheduler");
         t1.setLastPing(now.minusSeconds(60));
         triggerRepository.save(t1);
         
-        var t2 = new TriggerEntity(new TriggerKey("barTask"))
+        var t2 = new TriggerEntity(new TriggerKey("barTask"), UUID.randomUUID().toString())
                 .runOn("barScheduler");
         t2.setLastPing(now.minusSeconds(58));
         triggerRepository.save(t2);
@@ -388,7 +391,9 @@ class TriggerServiceTest extends AbstractSpringTest {
     @Test
     void testUnknownTriggersNoRetry() {
         // GIVEN
-        var t = triggerRepository.save(new TriggerEntity(new TriggerKey("fooTask-unknown")));
+        var t = triggerRepository.save(
+                new TriggerEntity(
+                    new TriggerKey("fooTask-unknown"), UUID.randomUUID().toString()));
         
         // WHEN
         runNextTrigger();
@@ -402,7 +407,7 @@ class TriggerServiceTest extends AbstractSpringTest {
     @Test
     void testBadStateNoRetry() {
         var t = triggerRepository.save(new TriggerEntity(
-                new TriggerKey("slowTask")
+                new TriggerKey("slowTask"), UUID.randomUUID().toString()
             ).withState(new byte[] {12, 54})
         );
         
@@ -416,5 +421,47 @@ class TriggerServiceTest extends AbstractSpringTest {
         // AND
         assertThat(events.stream(TriggerSuccessEvent.class).count()).isZero();
         assertThat(events.stream(TriggerFailedEvent.class).count()).isOne();
+    }
+    
+    @Test
+    void tesCancelRunningTrigger() {
+        // GIVEN
+        TaskId<String> taskId = taskService.replace("foo-cancel", c -> {
+            throw new CancelTaskException(c);
+        });
+        var key1 = subject.queue(taskId.newTrigger().build()).getKey();
+
+        // WHEN
+        assertThat(runNextTrigger()).isPresent();
+        assertThat(runNextTrigger()).isEmpty();
+
+        // THEN
+        assertThat(historyService.findLastKnownStatus(key1).get().status()).isEqualTo(TriggerStatus.CANCELED);
+        
+        // AND
+        assertThat(events.stream(TriggerCanceledEvent.class).count()).isOne();
+        assertThat(events.stream(TriggerFailedEvent.class).count()).isZero();
+        assertThat(events.stream(TriggerSuccessEvent.class).count()).isZero();
+    }
+    
+    @Test
+    void tesFailRunningTriggerNoRetry() {
+        // GIVEN
+        TaskId<String> taskId = taskService.replace("foo-fail", c -> {
+            throw new FailTaskNoRetryException(c);
+        });
+        var key1 = subject.queue(taskId.newTrigger().build()).getKey();
+
+        // WHEN
+        assertThat(runNextTrigger()).isPresent();
+        assertThat(runNextTrigger()).isEmpty();
+
+        // THEN
+        assertThat(historyService.findLastKnownStatus(key1).get().status()).isEqualTo(TriggerStatus.FAILED);
+        
+        // AND
+        assertThat(events.stream(TriggerFailedEvent.class).count()).isOne();
+        assertThat(events.stream(TriggerCanceledEvent.class).count()).isZero();
+        assertThat(events.stream(TriggerSuccessEvent.class).count()).isZero();
     }
 }

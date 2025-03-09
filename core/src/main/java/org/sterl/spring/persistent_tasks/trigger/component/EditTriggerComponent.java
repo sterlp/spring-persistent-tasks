@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import org.slf4j.event.Level;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -15,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
+import org.sterl.spring.persistent_tasks.api.task.RunningTriggerContextHolder;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerAddedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerCanceledEvent;
@@ -51,7 +51,7 @@ public class EditTriggerComponent {
     }
 
     /**
-     * Sets success or error based on the fact if an exception is given or not.
+     * Sets error based on the fact if an exception is given or not.
      */
     public Optional<TriggerEntity> failTrigger(
             TriggerKey key, 
@@ -62,10 +62,6 @@ public class EditTriggerComponent {
 
 
         result.ifPresent(t -> {
-            log.atLevel(retryAt == null ? Level.ERROR : Level.WARN)
-            .setCause(e)
-            .log("{} failed, retryAt={}",
-                    key, retryAt == null ? "no" : retryAt);
             t.complete(e);
             publisher.publishEvent(new TriggerFailedEvent(t.getId(), t.copyData(), state, e, retryAt));
 
@@ -75,6 +71,7 @@ public class EditTriggerComponent {
                 t.runAt(retryAt);
             }
         });
+
         if (result.isEmpty()) {
             log.error("Trigger with key={} not found and may be at a wrong state!",
                     key, e);
@@ -83,17 +80,19 @@ public class EditTriggerComponent {
         return result;
     }
 
-    public Optional<TriggerEntity> cancelTask(TriggerKey id) {
+    public Optional<TriggerEntity> cancelTask(TriggerKey id, Exception e) {
         return triggerRepository //
                 .findByKey(id) //
-                .map(t -> {
-                    t.cancel();
-                    publisher.publishEvent(new TriggerCanceledEvent(
-                            t.getId(), t.copyData(),
-                            stateSerializer.deserializeOrNull(t.getData().getState())));
-                    triggerRepository.delete(t);
-                    return t;
-                });
+                .map(t -> cancelTask(t, e));
+    }
+
+    private TriggerEntity cancelTask(TriggerEntity t, Exception e) {
+        t.cancel(e);
+        publisher.publishEvent(new TriggerCanceledEvent(
+                t.getId(), t.copyData(),
+                stateSerializer.deserializeOrNull(t.getData().getState())));
+        triggerRepository.delete(t);
+        return t;
     }
 
     public <T extends Serializable> TriggerEntity addTrigger(AddTriggerRequest<T> tigger) {
@@ -124,13 +123,17 @@ public class EditTriggerComponent {
 
     private <T extends Serializable> TriggerEntity toTriggerEntity(AddTriggerRequest<T> trigger) {
         byte[] state = stateSerializer.serialize(trigger.state());
+
+        var correlationId = RunningTriggerContextHolder.buildOrGetCorrelationId(trigger.correlationId());
+        final var data = TriggerData.builder()
+                .key(trigger.key())
+                .runAt(trigger.runtAt())
+                .priority(trigger.priority())
+                .state(state)
+                .correlationId(correlationId);
+
         final var t = TriggerEntity.builder()
-            .data(TriggerData.builder()
-                    .key(trigger.key())
-                    .runAt(trigger.runtAt())
-                    .priority(trigger.priority())
-                    .state(state)
-                    .build())
+            .data(data.build())
             .build();
         return t;
     }

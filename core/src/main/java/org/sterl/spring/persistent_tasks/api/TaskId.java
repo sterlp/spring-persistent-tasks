@@ -12,16 +12,16 @@ import lombok.RequiredArgsConstructor;
  */
 public record TaskId<T extends Serializable>(String name) implements Serializable {
 
-    public TaskTriggerBuilder<T> newTrigger() {
-        return new TaskTriggerBuilder<>(this);
+    public TriggerBuilder<T> newTrigger() {
+        return new TriggerBuilder<>(this);
     }
     
-    public TaskTriggerBuilder<T> newTrigger(T state) {
-        return new TaskTriggerBuilder<>(this).state(state);
+    public TriggerBuilder<T> newTrigger(T state) {
+        return new TriggerBuilder<>(this).state(state);
     }
 
     public AddTriggerRequest<T> newUniqueTrigger(T state) {
-        return new TaskTriggerBuilder<>(this).state(state).build();
+        return new TriggerBuilder<>(this).state(state).build();
     }
 
     public static TaskId<Serializable> of(String taskId) {
@@ -30,46 +30,65 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
     }
     
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class TaskTriggerBuilder<T extends Serializable> {
+    public static class TriggerBuilder<T extends Serializable> {
         private final TaskId<T> taskId;
         private String id;
+        private String correlationId;
         private T state;
         private OffsetDateTime when = OffsetDateTime.now();
         private int priority = AddTriggerRequest.DEFAULT_PRIORITY;
 
-        public static <T extends Serializable> TaskTriggerBuilder<T> newTrigger(String name) {
-            return new TaskTriggerBuilder<>(new TaskId<T>(name));
+        public static <T extends Serializable> TriggerBuilder<T> newTrigger(String name) {
+            return new TriggerBuilder<>(new TaskId<T>(name));
         }
-        public static <T extends Serializable> TaskTriggerBuilder<T> newTrigger(String name, T state) {
-            return new TaskTriggerBuilder<>(new TaskId<T>(name)).state(state);
+        public static <T extends Serializable> TriggerBuilder<T> newTrigger(String name, T state) {
+            return new TriggerBuilder<>(new TaskId<T>(name)).state(state);
         }
         public AddTriggerRequest<T> build() {
             var key = TriggerKey.of(id, taskId);
-            return new AddTriggerRequest<>(key, state, when, priority);
+            return new AddTriggerRequest<>(key, state, when, priority, correlationId);
         }
-        public TaskTriggerBuilder<T> id(String id) {
+        /**
+         * The ID of this task, same queued ids are replaced.
+         */
+        public TriggerBuilder<T> id(String id) {
             this.id = id;
             return this;
         }
-        public TaskTriggerBuilder<T> state(T state) {
+        /**
+         * An unique ID which is taken over to a chain/set of tasks.
+         * If task is triggered it in a task, this ID is taken over.
+         */
+        public TriggerBuilder<T> correlationId(String correlationId) {
+            this.correlationId = correlationId;
+            return this;
+        }
+        public TriggerBuilder<T> state(T state) {
             this.state = state;
             return this;
         }
-        public TaskTriggerBuilder<T> priority(int priority) {
+        /**
+         * The higher the {@link #priority} the earlier this task is picked.
+         * Same as JMS priority. Default is also 4, like in JMS.
+         * 
+         * @param priority custom priority e.g. 0-9, also higher numbers are supported
+         * @return this {@link TriggerBuilder}
+         */
+        public TriggerBuilder<T> priority(int priority) {
             this.priority = priority;
             return this;
         }
         /**
          * synonym for {@link #runAt(OffsetDateTime)}
          */
-        public TaskTriggerBuilder<T> when(OffsetDateTime when) {
+        public TriggerBuilder<T> when(OffsetDateTime when) {
             return runAt(when);
         }
-        public TaskTriggerBuilder<T> runAt(OffsetDateTime when) {
+        public TriggerBuilder<T> runAt(OffsetDateTime when) {
             this.when = when;
             return this;
         }
-        public TaskTriggerBuilder<T> runAfter(Duration duration) {
+        public TriggerBuilder<T> runAfter(Duration duration) {
             runAt(OffsetDateTime.now().plus(duration));
             return this;
         }
