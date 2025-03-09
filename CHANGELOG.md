@@ -6,6 +6,7 @@
 -   Running triggers can be failed now
 -   https://github.com/sterlp/spring-persistent-tasks/wiki/Cancel-a-task-trigger
 -   Triggers have now correlationId to collect them
+-   Added Re-Queue / Re-Run trigger to history page
 -   Correlation Id is shown in the UI
 -   ID search includes also Correlation Id
 

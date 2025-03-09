@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import org.sterl.spring.example_app.vehicle.model.Vehicle;
 import org.sterl.spring.example_app.vehicle.repository.VehicleRepository;
 import org.sterl.spring.persistent_tasks.api.TaskId;
-import org.sterl.spring.persistent_tasks.api.task.TransactionalTask;
+import org.sterl.spring.persistent_tasks.api.TransactionalTask;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

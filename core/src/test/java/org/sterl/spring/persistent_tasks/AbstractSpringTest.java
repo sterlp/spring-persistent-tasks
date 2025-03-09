@@ -36,8 +36,6 @@ import org.sterl.test.HibernateAsserts;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import uk.co.jemos.podam.api.PodamFactory;
-import uk.co.jemos.podam.api.PodamFactoryImpl;
 
 // @ActiveProfiles("mssql") // postgres mssql mariadb mysql
 @SpringBootTest(classes = SampleApp.class, webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -71,8 +69,6 @@ public class AbstractSpringTest {
     protected AsyncAsserts asserts;
     @Autowired
     protected HibernateAsserts hibernateAsserts;
-
-    protected final PodamFactory pm = new PodamFactoryImpl();
 
     @Configuration
     public static class TaskConfig {

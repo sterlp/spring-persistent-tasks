@@ -3,14 +3,19 @@ spring:
     name: example
   jpa:
     open-in-view: false
+    hibernate:
+      ddl-auto: none
 
   persistent-tasks:
     max-threads: 1
-    
+
+  liquibase:
+      change-log: classpath:db/changelog/db.changelog-master.xml
+
 springdoc:
   swagger-ui:
     use-root-path: true
-
+    
 logging:
   level:
     org.sterl.spring.persistent_tasks: DEBUG
