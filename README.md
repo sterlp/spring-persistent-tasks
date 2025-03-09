@@ -25,6 +25,10 @@ Secondary goal is to support [Poor mans Workflow](https://github.com/sterlp/pmw)
 Use for more advanced doc the [WIKI](https://github.com/sterlp/spring-persistent-tasks/wiki).
 The README contains a shorter how to use.
 
+# Known issues
+
+- spring-boot-devtools: cause java.lang.ClassCastException exceptions during the state serialization - this is a java/spring issue
+
 # DBs for storage
 
 ## Tested in the pipeline
