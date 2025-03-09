@@ -12,22 +12,29 @@
 
     <artifactId>spring-persistent-tasks-example</artifactId>
     <description>Sample project for the Spring Persistent Tasks</description>
+    
+    <!--
+        <spt.version>1.5.6</spt.version>
+    -->
+    <properties>
+        <spt.version>1.6.0-SNAPSHOT</spt.version>
+    </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.sterl.spring</groupId>
             <artifactId>spring-persistent-tasks-core</artifactId>
-            <version>1.5.6</version>
+            <version>${spt.version}</version>
         </dependency>
         <dependency>
             <groupId>org.sterl.spring</groupId>
             <artifactId>spring-persistent-tasks-ui</artifactId>
-            <version>1.5.6</version>
+            <version>${spt.version}</version>
         </dependency>
         <dependency>
             <groupId>org.sterl.spring</groupId>
             <artifactId>spring-persistent-tasks-db</artifactId>
-            <version>1.5.6</version>
+            <version>${spt.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

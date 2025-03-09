@@ -49,8 +49,7 @@ public class TriggerData {
     )
     private TriggerKey key;
 
-    @NotNull
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = true, updatable = false)
     private String correlationId;
 
     @Default

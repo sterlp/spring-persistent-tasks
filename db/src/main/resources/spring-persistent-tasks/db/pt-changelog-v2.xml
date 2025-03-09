@@ -10,21 +10,15 @@
     <changeSet author="sterlp" id="2025-02-16-correlation-id">
 
         <addColumn tableName="pt_task_triggers">
-            <column name="correlation_id" type="varchar(64)">
-                <constraints nullable="false" />
-            </column>
+            <column name="correlation_id" type="varchar(64)" />
         </addColumn>
         
         <addColumn tableName="pt_trigger_history_details">
-            <column name="correlation_id" type="varchar(64)">
-                <constraints nullable="false" />
-            </column>
+            <column name="correlation_id" type="varchar(64)" />
         </addColumn>
         
         <addColumn tableName="pt_trigger_history_last_states">
-            <column name="correlation_id" type="varchar(64)">
-                <constraints nullable="false" />
-            </column>
+            <column name="correlation_id" type="varchar(64)" />
         </addColumn>
 
         <createIndex indexName="idx_pt_triggers_correlation_id" tableName="pt_task_triggers">
@@ -40,5 +34,4 @@
         </createIndex>
 
     </changeSet>
-    
 </databaseChangeLog>
