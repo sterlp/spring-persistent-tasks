@@ -118,6 +118,10 @@ public class SchedulerService {
 
             return taskExecutor.submit(result);
         } else {
+            log.debug("No free threads {}/{} right now to run jobs due for: {}",
+                    taskExecutor.getFreeThreads(),
+                    taskExecutor.getMaxThreads(),
+                    timeDue);
             pingRegistry();
             return Collections.emptyList();
         }
@@ -155,6 +159,7 @@ public class SchedulerService {
             log.debug("New triger added for imidiate execution {}", addedTrigger.key());
             taskExecutor.submit(toRun);
         }
+        // TODO implement a cleanup for old pending triggers which may never been triggered!
     }
 
     public SchedulerEntity getStatus() {
@@ -176,5 +181,9 @@ public class SchedulerService {
 
     public List<SchedulerEntity> listAll() {
         return editSchedulerStatus.listAll();
+    }
+    
+    public boolean hasRunningTriggers() {
+        return !this.taskExecutor.getRunningTriggers().isEmpty();
     }
 }

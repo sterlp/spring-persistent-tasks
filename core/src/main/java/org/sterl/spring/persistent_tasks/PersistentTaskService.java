@@ -1,6 +1,7 @@
 package org.sterl.spring.persistent_tasks;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -139,6 +140,7 @@ public class PersistentTaskService {
         final var result = new ArrayList<TriggerKey>();
 
         List<Future<TriggerKey>> triggers;
+        var isSomethingRunning = false;
         do {
             triggers = executeTriggers();
             for (Future<TriggerKey> future : triggers) {
@@ -149,12 +151,34 @@ public class PersistentTaskService {
                     throw cause == null ? e : cause;
                 }
             }
-        } while (!triggers.isEmpty());
+            
+            isSomethingRunning = hasRunningTriggers();
+            if (isSomethingRunning) {
+                Thread.sleep(Duration.ofMillis(100));
+            }
+
+        } while (!triggers.isEmpty() || isSomethingRunning);
 
         return result;
     }
 
-    public List<TriggerData> findTriggerByCorrelationId(String correlationId) {
+    private boolean hasRunningTriggers() {
+        var running = this.schedulers.stream()
+                .map(s -> s.hasRunningTriggers())
+                .filter(r -> r == true)
+                .findAny();
+
+        return running.isPresent() && running.get() == true;
+    }
+
+    /**
+     * Returns all triggers for a correlationId sorted by the creation time.
+     * @param correlationId the id to search for
+     * @return the found {@link TriggerData} sorted by create time ASC
+     */
+    @Transactional(readOnly = true, timeout = 5)
+    public List<TriggerData> findAllTriggerByCorrelationId(String correlationId) {
+
         var running = triggerService.findTriggerByCorrelationId(correlationId)
                 .stream().map(TriggerEntity::getData)
                 .toList();
@@ -163,9 +187,10 @@ public class PersistentTaskService {
             .stream().map(TriggerHistoryLastStateEntity::getData)
             .toList();
         
+
         var result = new ArrayList<TriggerData>(running.size() + done.size());
-        result.addAll(running);
         result.addAll(done);
+        result.addAll(running);
         return result;
     }
 }

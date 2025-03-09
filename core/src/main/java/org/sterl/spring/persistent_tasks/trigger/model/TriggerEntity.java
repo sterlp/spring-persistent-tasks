@@ -115,6 +115,10 @@ public class TriggerEntity implements HasTriggerData {
         return this;
     }
     
+    public boolean isWaiting() {
+        return data.getStatus() == TriggerStatus.WAITING;
+    }
+    
     public TriggerData copyData() {
         if (data == null) return null;
         return this.data.copy();

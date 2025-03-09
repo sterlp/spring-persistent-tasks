@@ -136,6 +136,13 @@ public class TriggerService {
         return editTrigger.cancelTask(key);
     }
 
+    public List<TriggerEntity> cancel(Collection<TriggerKey> key) {
+        return key.stream().map(editTrigger::cancelTask)
+           .filter(Optional::isPresent)
+           .map(Optional::get)
+           .toList();
+    }
+
     /**
      * Counts the trigger using the name only from the {@link TaskId}
      *

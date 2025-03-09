@@ -100,7 +100,7 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
         asserts.awaitOrdered("234::chainTask1", "chainTask1::234::chainTask1");
         assertThat(correlationId).isEqualTo(correlationFound.get());
         // AND
-        var trigger= persistentTaskService.findTriggerByCorrelationId(correlationId);
+        var trigger= persistentTaskService.findAllTriggerByCorrelationId(correlationId);
         assertThat(trigger).hasSize(2);
         assertThat(trigger.get(0).getCorrelationId()).isEqualTo(correlationId);
         assertThat(trigger.get(1).getCorrelationId()).isEqualTo(correlationId);
