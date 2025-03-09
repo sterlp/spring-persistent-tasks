@@ -136,6 +136,11 @@ public class AbstractSpringTest {
 
             @Override
             public void accept(String state) {
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
                 asserts.info(NAME + "::" + state);
             }
         }
