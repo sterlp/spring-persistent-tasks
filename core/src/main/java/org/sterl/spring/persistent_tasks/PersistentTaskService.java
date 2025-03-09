@@ -44,7 +44,7 @@ public class PersistentTaskService {
     /**
      * Returns the last known {@link TriggerData} to a given key. First running triggers are checked.
      * Maybe out of the history event from a retry execution of the very same id.
-     * 
+     *
      * @param key the {@link TriggerKey} to look for
      * @return the {@link TriggerData} to the {@link TriggerKey}
      */
@@ -52,19 +52,23 @@ public class PersistentTaskService {
         final Optional<TriggerEntity> trigger = triggerService.get(key);
         if (trigger.isEmpty()) {
             var history = historyService.findLastKnownStatus(key);
-            if (history.isPresent()) return Optional.ofNullable(history.get().getData());
+            if (history.isPresent()) {
+                return Optional.ofNullable(history.get().getData());
+            }
             return Optional.empty();
         } else {
             return Optional.ofNullable(trigger.get().getData());
         }
     }
-    
+
     public Optional<TriggerData> getLastDetailData(TriggerKey key) {
         var data = historyService.findAllDetailsForKey(key, Pageable.ofSize(1));
-        if (data.isEmpty()) return Optional.empty();
+        if (data.isEmpty()) {
+            return Optional.empty();
+        }
         return Optional.of(data.getContent().get(0).getData());
     }
-    
+
     @EventListener
     void queue(TriggerTaskCommand<? extends Serializable> event) {
         if (event.size() == 1) {
@@ -76,7 +80,7 @@ public class PersistentTaskService {
 
     /**
      * Queues/updates the given triggers, if the {@link TriggerKey} is already present
-     * 
+     *
      * @param <T> the state type
      * @param triggers the triggers to add
      * @return the {@link TriggerKey}
@@ -84,7 +88,9 @@ public class PersistentTaskService {
     @Transactional(timeout = 10)
     @NonNull
     public <T extends Serializable> List<TriggerKey> queue(Collection<AddTriggerRequest<T>> triggers) {
-        if (triggers == null || triggers.isEmpty()) return Collections.emptyList();
+        if (triggers == null || triggers.isEmpty()) {
+            return Collections.emptyList();
+        }
 
         return triggers.stream() //
             .map(t -> triggerService.queue(t)) //
@@ -93,7 +99,7 @@ public class PersistentTaskService {
     }
     /**
      * Queues/updates the given trigger, if the {@link TriggerKey} is already present.
-     * 
+     *
      * @param <T> the state type
      * @param trigger the trigger to add
      * @return the {@link TriggerKey}
@@ -107,7 +113,7 @@ public class PersistentTaskService {
     /**
      * Runs the given trigger if a free threads are available
      * and the runAt time is not in the future.
-     * @return the reference to the {@link TriggerKey} 
+     * @return the reference to the {@link TriggerKey}
      */
     public <T extends Serializable> TriggerKey runOrQueue(
             AddTriggerRequest<T> triggerRequest) {
@@ -118,10 +124,10 @@ public class PersistentTaskService {
         }
         return triggerRequest.key();
     }
-    
+
     /**
      * Triggers the execution of all pending triggers.
-     * 
+     *
      * @return the reference to the {@link TriggerKey} of the running tasks
      */
     public List<Future<TriggerKey>> executeTriggers() {
@@ -131,7 +137,7 @@ public class PersistentTaskService {
         }
         return result;
     }
-    
+
     /**
      * Triggers the execution of all pending triggers and wait for the result.
      */
@@ -151,7 +157,7 @@ public class PersistentTaskService {
                     throw cause == null ? e : cause;
                 }
             }
-            
+
             isSomethingRunning = hasRunningTriggers();
             if (isSomethingRunning) {
                 Thread.sleep(Duration.ofMillis(100));
@@ -165,7 +171,7 @@ public class PersistentTaskService {
     private boolean hasRunningTriggers() {
         var running = this.schedulers.stream()
                 .map(s -> s.hasRunningTriggers())
-                .filter(r -> r == true)
+                .filter(r -> r)
                 .findAny();
 
         return running.isPresent() && running.get() == true;
@@ -186,7 +192,7 @@ public class PersistentTaskService {
         var done = historyService.findTriggerByCorrelationId(correlationId)
             .stream().map(TriggerHistoryLastStateEntity::getData)
             .toList();
-        
+
 
         var result = new ArrayList<TriggerData>(running.size() + done.size());
         result.addAll(done);

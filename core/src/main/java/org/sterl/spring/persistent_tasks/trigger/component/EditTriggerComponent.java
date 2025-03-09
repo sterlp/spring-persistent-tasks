@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import org.slf4j.event.Level;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -52,7 +51,7 @@ public class EditTriggerComponent {
     }
 
     /**
-     * Sets success or error based on the fact if an exception is given or not.
+     * Sets error based on the fact if an exception is given or not.
      */
     public Optional<TriggerEntity> failTrigger(
             TriggerKey key, 
@@ -63,10 +62,6 @@ public class EditTriggerComponent {
 
 
         result.ifPresent(t -> {
-            log.atLevel(retryAt == null ? Level.ERROR : Level.WARN)
-            .setCause(e)
-            .log("{} failed, retryAt={}",
-                    key, retryAt == null ? "no" : retryAt);
             t.complete(e);
             publisher.publishEvent(new TriggerFailedEvent(t.getId(), t.copyData(), state, e, retryAt));
 
@@ -76,6 +71,7 @@ public class EditTriggerComponent {
                 t.runAt(retryAt);
             }
         });
+
         if (result.isEmpty()) {
             log.error("Trigger with key={} not found and may be at a wrong state!",
                     key, e);
@@ -84,17 +80,19 @@ public class EditTriggerComponent {
         return result;
     }
 
-    public Optional<TriggerEntity> cancelTask(TriggerKey id) {
+    public Optional<TriggerEntity> cancelTask(TriggerKey id, Exception e) {
         return triggerRepository //
                 .findByKey(id) //
-                .map(t -> {
-                    t.cancel();
-                    publisher.publishEvent(new TriggerCanceledEvent(
-                            t.getId(), t.copyData(),
-                            stateSerializer.deserializeOrNull(t.getData().getState())));
-                    triggerRepository.delete(t);
-                    return t;
-                });
+                .map(t -> cancelTask(t, e));
+    }
+
+    private TriggerEntity cancelTask(TriggerEntity t, Exception e) {
+        t.cancel(e);
+        publisher.publishEvent(new TriggerCanceledEvent(
+                t.getId(), t.copyData(),
+                stateSerializer.deserializeOrNull(t.getData().getState())));
+        triggerRepository.delete(t);
+        return t;
     }
 
     public <T extends Serializable> TriggerEntity addTrigger(AddTriggerRequest<T> tigger) {

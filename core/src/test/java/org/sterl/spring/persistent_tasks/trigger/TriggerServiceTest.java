@@ -22,6 +22,8 @@ import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryLastStateRepository;
+import org.sterl.spring.persistent_tasks.task.exception.CancelTaskException;
+import org.sterl.spring.persistent_tasks.task.exception.FailTaskNoRetryException;
 import org.sterl.spring.persistent_tasks.task.repository.TaskRepository;
 import org.sterl.spring.persistent_tasks.trigger.component.StateSerializer.DeSerializationFailedException;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerAddedEvent;
@@ -419,5 +421,47 @@ class TriggerServiceTest extends AbstractSpringTest {
         // AND
         assertThat(events.stream(TriggerSuccessEvent.class).count()).isZero();
         assertThat(events.stream(TriggerFailedEvent.class).count()).isOne();
+    }
+    
+    @Test
+    void tesCancelRunningTrigger() {
+        // GIVEN
+        TaskId<String> taskId = taskService.replace("foo-cancel", c -> {
+            throw new CancelTaskException(c);
+        });
+        var key1 = subject.queue(taskId.newTrigger().build()).getKey();
+
+        // WHEN
+        assertThat(runNextTrigger()).isPresent();
+        assertThat(runNextTrigger()).isEmpty();
+
+        // THEN
+        assertThat(historyService.findLastKnownStatus(key1).get().status()).isEqualTo(TriggerStatus.CANCELED);
+        
+        // AND
+        assertThat(events.stream(TriggerCanceledEvent.class).count()).isOne();
+        assertThat(events.stream(TriggerFailedEvent.class).count()).isZero();
+        assertThat(events.stream(TriggerSuccessEvent.class).count()).isZero();
+    }
+    
+    @Test
+    void tesFailRunningTriggerNoRetry() {
+        // GIVEN
+        TaskId<String> taskId = taskService.replace("foo-fail", c -> {
+            throw new FailTaskNoRetryException(c);
+        });
+        var key1 = subject.queue(taskId.newTrigger().build()).getKey();
+
+        // WHEN
+        assertThat(runNextTrigger()).isPresent();
+        assertThat(runNextTrigger()).isEmpty();
+
+        // THEN
+        assertThat(historyService.findLastKnownStatus(key1).get().status()).isEqualTo(TriggerStatus.FAILED);
+        
+        // AND
+        assertThat(events.stream(TriggerFailedEvent.class).count()).isOne();
+        assertThat(events.stream(TriggerCanceledEvent.class).count()).isZero();
+        assertThat(events.stream(TriggerSuccessEvent.class).count()).isZero();
     }
 }
