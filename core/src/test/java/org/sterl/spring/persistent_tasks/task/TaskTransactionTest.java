@@ -14,11 +14,11 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
-import org.sterl.spring.persistent_tasks.api.PersistentTask;
-import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
-import org.sterl.spring.persistent_tasks.api.TransactionalTask;
+import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
+import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
+import org.sterl.spring.persistent_tasks.api.task.TransactionalTask;
 import org.sterl.spring.persistent_tasks.task.util.ReflectionUtil;
-import org.sterl.spring.sample_app.person.PersonBE;
+import org.sterl.spring.sample_app.person.PersonEntity;
 import org.sterl.spring.sample_app.person.PersonRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -32,8 +32,8 @@ class TaskTransactionTest extends AbstractSpringTest {
         private final PersonRepository personRepository;
         @Override
         public void accept(String name) {
-            personRepository.save(new PersonBE(name));
-            personRepository.save(new PersonBE(name));
+            personRepository.save(new PersonEntity(name));
+            personRepository.save(new PersonEntity(name));
         }
     }
 
@@ -45,8 +45,8 @@ class TaskTransactionTest extends AbstractSpringTest {
         @Transactional(timeout = 6, propagation = Propagation.MANDATORY, isolation = Isolation.REPEATABLE_READ)
         @Override
         public void accept(String name) {
-            personRepository.save(new PersonBE(name));
-            personRepository.save(new PersonBE(name));
+            personRepository.save(new PersonEntity(name));
+            personRepository.save(new PersonEntity(name));
         }
     }
 
@@ -61,15 +61,15 @@ class TaskTransactionTest extends AbstractSpringTest {
                 @Transactional(timeout = 7, propagation = Propagation.REQUIRES_NEW)
                 @Override
                 public void accept(String name) {
-                    personRepository.save(new PersonBE(name));
+                    personRepository.save(new PersonEntity(name));
                 } 
             };
         }
         @Bean("transactionalClosure")
         TransactionalTask<String> transactionalClosure(PersonRepository personRepository) {
             return name -> {
-                personRepository.save(new PersonBE(name));
-                personRepository.save(new PersonBE(name));
+                personRepository.save(new PersonEntity(name));
+                personRepository.save(new PersonEntity(name));
             };
         }
     }
@@ -119,7 +119,7 @@ class TaskTransactionTest extends AbstractSpringTest {
     @Test
     void testRequiresNewHasOwnTransaction() {
         // GIVEN
-        var t = triggerService.queue(TaskTriggerBuilder
+        var t = triggerService.queue(TriggerBuilder
                 .newTrigger("transactionalAnonymous", "test").build());
         
         // WHEN
@@ -136,7 +136,7 @@ class TaskTransactionTest extends AbstractSpringTest {
     @ValueSource(strings = {"transactionalClass", "transactionalMethod", "transactionalClosure"})
     void testTransactionalTask(String task) throws InterruptedException {
         // GIVEN
-        var t = triggerService.queue(TaskTriggerBuilder
+        var t = triggerService.queue(TriggerBuilder
                 .newTrigger(task, "test").build());
         
         // WHEN

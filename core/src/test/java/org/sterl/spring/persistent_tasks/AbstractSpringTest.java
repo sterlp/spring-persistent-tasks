@@ -19,10 +19,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.sterl.spring.persistent_tasks.api.PersistentTask;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
+import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
 import org.sterl.spring.persistent_tasks.history.HistoryService;
 import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
@@ -36,8 +36,6 @@ import org.sterl.test.HibernateAsserts;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import uk.co.jemos.podam.api.PodamFactory;
-import uk.co.jemos.podam.api.PodamFactoryImpl;
 
 // @ActiveProfiles("mssql") // postgres mssql mariadb mysql
 @SpringBootTest(classes = SampleApp.class, webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -71,8 +69,6 @@ public class AbstractSpringTest {
     protected AsyncAsserts asserts;
     @Autowired
     protected HibernateAsserts hibernateAsserts;
-
-    protected final PodamFactory pm = new PodamFactoryImpl();
 
     @Configuration
     public static class TaskConfig {
@@ -140,6 +136,11 @@ public class AbstractSpringTest {
 
             @Override
             public void accept(String state) {
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
                 asserts.info(NAME + "::" + state);
             }
         }
@@ -171,7 +172,7 @@ public class AbstractSpringTest {
             if (System.currentTimeMillis() - start > 2000) {
                 throw new TimeoutException("Still running after 2s");
             }
-            Thread.sleep(50);
+            Thread.sleep(100);
         }
     }
 

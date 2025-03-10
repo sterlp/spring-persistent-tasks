@@ -6,7 +6,7 @@ import java.lang.annotation.Annotation;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ReflectionUtils;
-import org.sterl.spring.persistent_tasks.api.PersistentTask;
+import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
 
 public abstract class ReflectionUtil {
 

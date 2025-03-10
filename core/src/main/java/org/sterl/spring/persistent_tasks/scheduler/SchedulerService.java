@@ -118,6 +118,10 @@ public class SchedulerService {
 
             return taskExecutor.submit(result);
         } else {
+            log.debug("No free threads {}/{} right now to run jobs due for: {}",
+                    taskExecutor.getFreeThreads(),
+                    taskExecutor.getMaxThreads(),
+                    timeDue);
             pingRegistry();
             return Collections.emptyList();
         }
@@ -139,6 +143,7 @@ public class SchedulerService {
                 trigger = triggerService.markTriggersAsRunning(trigger, name);
                 pingRegistry().addRunning(1);
                 shouldRun.put(trigger.getId(), trigger);
+                log.debug("{} added for immediate execution, waitng for commit on={}", trigger.getKey(), name);
             } else {
                 log.debug("Currently not enough free thread available {} of {} in use. PersistentTask {} queued.",
                         taskExecutor.getFreeThreads(), taskExecutor.getMaxThreads(), trigger.getKey());
@@ -152,9 +157,10 @@ public class SchedulerService {
     void checkIfTrigerIsRunning(TriggerAddedEvent addedTrigger) {
         final var toRun = shouldRun.remove(addedTrigger.id());
         if (toRun != null) {
-            log.debug("New triger added for imidiate execution {}", addedTrigger.key());
             taskExecutor.submit(toRun);
+            log.debug("{} immediately started on={}.", addedTrigger.key(), name);
         }
+        // TODO implement a cleanup for old pending triggers which may never been triggered!
     }
 
     public SchedulerEntity getStatus() {
@@ -176,5 +182,9 @@ public class SchedulerService {
 
     public List<SchedulerEntity> listAll() {
         return editSchedulerStatus.listAll();
+    }
+    
+    public boolean hasRunningTriggers() {
+        return !this.taskExecutor.getRunningTriggers().isEmpty();
     }
 }

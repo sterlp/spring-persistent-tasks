@@ -31,6 +31,7 @@ import lombok.NoArgsConstructor;
         @Index(name = "idx_pt_triggers_run_at", columnList = "run_at"),
         @Index(name = "idx_pt_triggers_status", columnList = "status"),
         @Index(name = "idx_pt_triggers_ping", columnList = "last_ping"),
+        @Index(name = "idx_pt_triggers_correlation_id", columnList = "correlation_id"),
 })
 @Data
 @NoArgsConstructor
@@ -54,9 +55,10 @@ public class TriggerEntity implements HasTriggerData {
     @Nullable
     private OffsetDateTime lastPing;
 
-    public TriggerEntity(TriggerKey key) {
+    public TriggerEntity(TriggerKey key, String correlationId) {
         if (this.data == null) this.data = new TriggerData();
         this.data.setKey(key);
+        this.data.setCorrelationId(correlationId);
     }
 
     public TriggerKey getKey() {
@@ -64,11 +66,18 @@ public class TriggerEntity implements HasTriggerData {
         return data.getKey();
     }
 
-    public TriggerEntity cancel() {
+    public TriggerEntity cancel(Exception e) {
         this.data.setEnd(OffsetDateTime.now());
         this.data.setStatus(TriggerStatus.CANCELED);
-        this.data.setExceptionName("PersistentTask canceled");
-        this.data.setRunningDurationInMs(null);
+
+        if (e == null) {
+            this.data.setExceptionName("PersistentTask canceled");
+        } else {
+            data.setExceptionName(e.getClass().getName());
+            data.setLastException(ExceptionUtils.getStackTrace(e));
+        }
+
+        data.updateRunningDuration();
         return this;
     }
 
@@ -111,6 +120,10 @@ public class TriggerEntity implements HasTriggerData {
     public TriggerEntity withState(byte[] state) {
         this.data.setState(state);
         return this;
+    }
+    
+    public boolean isWaiting() {
+        return data.getStatus() == TriggerStatus.WAITING;
     }
     
     public TriggerData copyData() {

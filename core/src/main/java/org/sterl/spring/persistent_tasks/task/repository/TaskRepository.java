@@ -9,8 +9,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
-import org.sterl.spring.persistent_tasks.api.PersistentTask;
 import org.sterl.spring.persistent_tasks.api.TaskId;
+import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
 
 import lombok.extern.slf4j.Slf4j;
 

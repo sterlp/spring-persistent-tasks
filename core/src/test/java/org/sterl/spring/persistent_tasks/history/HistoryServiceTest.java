@@ -2,6 +2,7 @@ package org.sterl.spring.persistent_tasks.history;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
@@ -34,7 +35,7 @@ class HistoryServiceTest extends AbstractSpringTest {
         // THEN
         assertThat(t).isPresent();
         // AND
-        persistentTaskService.executeTriggersAndWait();
+        persistentTaskService.executeTriggersAndWait(Duration.ofSeconds(2));
         asserts.assertValue(Task3.NAME + "::Hallo");
         // AND
         assertThat(subject.countTriggers(trigger.getKey())).isEqualTo(2);
@@ -45,7 +46,7 @@ class HistoryServiceTest extends AbstractSpringTest {
         // GIVEN
         final var trigger = Task3.ID.newUniqueTrigger("Hallo");
         triggerService.queue(trigger);
-        persistentTaskService.executeTriggersAndWait();
+        persistentTaskService.executeTriggersAndWait(Duration.ofSeconds(2));
         // WHEN
         var triggers = subject.findAllDetailsForKey(trigger.key(), PageRequest.of(0, 100)).getContent();
         

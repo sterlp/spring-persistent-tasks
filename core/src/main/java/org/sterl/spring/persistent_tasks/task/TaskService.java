@@ -6,10 +6,11 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.sterl.spring.persistent_tasks.api.PersistentTask;
 import org.sterl.spring.persistent_tasks.api.TaskId;
+import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
 import org.sterl.spring.persistent_tasks.task.component.TaskTransactionComponent;
 import org.sterl.spring.persistent_tasks.task.repository.TaskRepository;
 
@@ -54,18 +55,19 @@ public class TaskService {
     }
 
     /**
-     * A way to manually register a persistentTask, usually better to use {@link PersistentTask}.
+     * A way to manually register a PersistentTask, usually better to use {@link PersistentTask}.
      */
     public TaskId<Serializable> register(String name, Consumer<Serializable> task) {
         return register(name, new PersistentTask<Serializable>() {
+            private static final long serialVersionUID = 1L;
             @Override
-            public void accept(Serializable state) {
+            public void accept(@Nullable Serializable state) {
                 task.accept(state);
             }
         });
     }
     /**
-     * A way to manually register a persistentTask, usually not needed as spring beans will be added automatically.
+     * A way to manually register a PersistentTask, usually not needed as spring beans will be added automatically.
      */
     @SuppressWarnings("unchecked")
     public <T extends Serializable> TaskId<T> register(String name, PersistentTask<T> task) {
@@ -73,15 +75,14 @@ public class TaskService {
         return register(id, task);
     }
     /**
-     * A way to manually register a persistentTask, usually not needed as spring beans will be added automatically.
+     * A way to manually register a PersistentTask, usually not needed as spring beans will be added automatically.
      */
     public <T extends Serializable> TaskId<T> register(TaskId<T> id, PersistentTask<T> task) {
-        // init any transaction as needed
         taskTransactionComponent.getTransactionTemplate(task);
         return taskRepository.addTask(id, task);
     }
     /**
-     * A way to manually register a persistentTask, usually not needed as spring beans will be added automatically.
+     * A way to manually register a PersistentTask, usually not needed as spring beans will be added automatically.
      */
     @SuppressWarnings("unchecked")
     public <T extends Serializable> TaskId<T> replace(String name, PersistentTask<T> task) {

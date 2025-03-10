@@ -6,8 +6,8 @@ import java.util.Map.Entry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.GenericApplicationContext;
-import org.sterl.spring.persistent_tasks.api.PersistentTask;
 import org.sterl.spring.persistent_tasks.api.TaskId;
+import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
 import org.sterl.spring.persistent_tasks.task.TaskService;
 
 import lombok.extern.slf4j.Slf4j;
