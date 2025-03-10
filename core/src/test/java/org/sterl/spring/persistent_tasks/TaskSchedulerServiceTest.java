@@ -2,6 +2,7 @@ package org.sterl.spring.persistent_tasks;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -40,8 +41,8 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
         var runTrigger = triggerService.queue(task.newTrigger().state("hallo").build());
 
         // WHEN
-        persistentTaskService.executeTriggersAndWait();
-        persistentTaskService.executeTriggersAndWait();
+        persistentTaskService.executeTriggersAndWait(Duration.ofSeconds(2));
+        persistentTaskService.executeTriggersAndWait(Duration.ofSeconds(1));
 
         // THEN
         assertThat(asserts.getCount("hallo")).isEqualTo(4);
@@ -67,7 +68,7 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
             lockInvocations.add(() -> runNextTrigger());
         }
 
-        persistentTaskService.executeTriggersAndWait();
+        persistentTaskService.executeTriggersAndWait(Duration.ofSeconds(2));
 
         // THEN
         for (int i = 1; i <= 100; ++i) {

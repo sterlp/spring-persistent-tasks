@@ -338,7 +338,7 @@ class TriggerServiceTest extends AbstractSpringTest {
             }
             
             executor.invokeAll(lockInvocations);
-            persistentTaskService.executeTriggersAndWait();
+            persistentTaskService.executeTriggersAndWait(Duration.ofSeconds(2));
 
             // THEN
             for (int i = 1; i <= 100; ++i) {
@@ -359,7 +359,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         subject.queue(triggerRequest);
         
         // WHEN
-        persistentTaskService.executeTriggersAndWait();
+        persistentTaskService.executeTriggersAndWait(Duration.ofSeconds(2));
         
         // THEN
         asserts.assertMissing(Task3.NAME + "::Hallo");

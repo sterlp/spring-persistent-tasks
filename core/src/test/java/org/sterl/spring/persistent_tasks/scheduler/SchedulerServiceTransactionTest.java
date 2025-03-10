@@ -2,6 +2,7 @@ package org.sterl.spring.persistent_tasks.scheduler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -222,7 +223,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
 
         // WHEN
         sendError.set(false);
-        var executed = persistentTaskService.executeTriggersAndWait();
+        var executed = persistentTaskService.executeTriggersAndWait(Duration.ofSeconds(2));
 
         // THEN
         assertThat(executed).hasSize(1);

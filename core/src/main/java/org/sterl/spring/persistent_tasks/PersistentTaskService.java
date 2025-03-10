@@ -142,8 +142,9 @@ public class PersistentTaskService {
      * Triggers the execution of all pending triggers and wait for the result.
      */
     @SneakyThrows
-    public List<TriggerKey> executeTriggersAndWait() {
+    public List<TriggerKey> executeTriggersAndWait(Duration maxWaitTime) {
         final var result = new ArrayList<TriggerKey>();
+        final var timeOut = System.currentTimeMillis() + maxWaitTime.toMillis();
 
         List<Future<TriggerKey>> triggers;
         var isSomethingRunning = false;
@@ -161,6 +162,10 @@ public class PersistentTaskService {
             isSomethingRunning = hasRunningTriggers();
             if (isSomethingRunning) {
                 Thread.sleep(Duration.ofMillis(100));
+            }
+            
+            if (System.currentTimeMillis() > timeOut) {
+                throw new RuntimeException("Timeout waiting for triggers after " + maxWaitTime);
             }
 
         } while (!triggers.isEmpty() || isSomethingRunning);
