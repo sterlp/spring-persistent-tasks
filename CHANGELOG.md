@@ -9,6 +9,7 @@
 -   Added Re-Queue / Re-Run trigger to history page
 -   Correlation Id is shown in the UI
 -   ID search includes also Correlation Id
+-   Moved helper classes to own test jar
 
 ## v1.5.6 - (2025-03-06)
 

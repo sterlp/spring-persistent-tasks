@@ -32,7 +32,7 @@ import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 import org.sterl.spring.sample_app.SampleApp;
 import org.sterl.test.AsyncAsserts;
-import org.sterl.test.HibernateAsserts;
+import org.sterl.test.hibernate_asserts.HibernateAsserts;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
