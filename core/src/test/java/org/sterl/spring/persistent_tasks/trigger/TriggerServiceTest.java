@@ -342,6 +342,9 @@ class TriggerServiceTest extends AbstractSpringTest {
             }
             
             executor.invokeAll(lockInvocations);
+            // start any others - as MSSQL and mySQL has now row lock, only table locks implemented
+            var s = persistentTaskTestService.scheduleNextTriggersAndWait(Duration.ofSeconds(2));
+            System.err.println("---------> " + s.size());
 
             // THEN
             for (int i = 1; i <= 100; ++i) {
