@@ -63,4 +63,8 @@ public class ReadTriggerComponent {
         if (task == null) return triggerRepository.findAll(page);
         return triggerRepository.findAll(task.name(), page);
     }
+
+    public List<TriggerEntity> findTriggerByCorrelationId(String correlationId) {
+        return triggerRepository.findByCorrelationId(correlationId);
+    }
 }

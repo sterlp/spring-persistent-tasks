@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.sterl.spring.persistent_tasks.api.PersistentTask;
+import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
 import org.sterl.spring.persistent_tasks.task.util.ReflectionUtil;
 
 import lombok.RequiredArgsConstructor;

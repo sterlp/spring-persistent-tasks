@@ -2,24 +2,23 @@ package org.sterl.spring.persistent_tasks;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
-import java.util.concurrent.Callable;
+import java.time.Duration;
 
 import org.junit.jupiter.api.Test;
-import org.sterl.spring.persistent_tasks.api.PersistentTask;
+import org.springframework.lang.Nullable;
 import org.sterl.spring.persistent_tasks.api.RetryStrategy;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
+import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
 
 class TaskSchedulerServiceTest extends AbstractSpringTest {
-
     @Test
     void testFailedTasksAreRetried() throws Exception {
         // GIVEN
         TaskId<String> task = taskService.<String>replace("foo",
                 new PersistentTask<String>() {
                     @Override
-                    public void accept(String state) {
+                    public void accept(@Nullable String state) {
                         asserts.info(state);
                         throw new RuntimeException("NOPE!");
                     }
@@ -32,8 +31,7 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
         var runTrigger = triggerService.queue(task.newTrigger().state("hallo").build());
 
         // WHEN
-        persistentTaskService.executeTriggersAndWait();
-        persistentTaskService.executeTriggersAndWait();
+        persistentTaskTestService.scheduleNextTriggersAndWait(Duration.ofSeconds(3));
 
         // THEN
         assertThat(asserts.getCount("hallo")).isEqualTo(4);
@@ -54,14 +52,10 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
         }
 
         // WHEN
-        ArrayList<Callable<?>> lockInvocations = new ArrayList<>();
-        for (int i = 1; i <= 100; ++i) {
-            lockInvocations.add(() -> runNextTrigger());
-        }
-
-        persistentTaskService.executeTriggersAndWait();
+        var executedKeys = persistentTaskTestService.scheduleNextTriggersAndWait(Duration.ofSeconds(3));
 
         // THEN
+        assertThat(executedKeys).hasSize(100);
         for (int i = 1; i <= 100; ++i) {
             asserts.awaitValueOnce("t" + i);
         }

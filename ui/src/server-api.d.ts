@@ -21,10 +21,7 @@ export interface AddTriggerRequest<T> {
     state: T;
     runtAt: string;
     priority: number;
-}
-
-export interface PersistentTask<T> {
-    transactional: boolean;
+    correlationId: string;
 }
 
 export interface RetryStrategy {
@@ -39,17 +36,11 @@ export interface LinearRetryStrategy extends RetryStrategy {
 export interface MultiplicativeRetryStrategy extends RetryStrategy {
 }
 
-/**
- * @deprecated
- */
-export interface SpringBeanTask<T> extends PersistentTask<T> {
-}
-
 export interface TaskId<T> extends Serializable {
     name: string;
 }
 
-export interface TaskTriggerBuilder<T> {
+export interface TriggerBuilder<T> {
 }
 
 export interface TaskStatusHistoryOverview {
@@ -64,13 +55,11 @@ export interface TaskStatusHistoryOverview {
     avgExecutionCount: number;
 }
 
-export interface TransactionalTask<T> extends PersistentTask<T> {
-}
-
 export interface Trigger {
     id: number;
     instanceId: number;
     key: TriggerKey;
+    correlationId: string;
     runningOn: string;
     createdTime: string;
     runAt: string;
@@ -93,8 +82,28 @@ export interface TriggerKey extends Serializable {
 export interface TriggerKeyBuilder {
 }
 
-export interface TriggerTaskCommand<T> {
+export interface PersistentTasksEvent {
+}
+
+export interface TriggerTaskCommand<T> extends PersistentTasksEvent {
     triggers: AddTriggerRequest<T>[];
+}
+
+export interface PersistentTask<T> {
+    transactional: boolean;
+}
+
+export interface RunningTrigger<T> {
+    key: TriggerKey;
+    correlationId: string;
+    executionCount: number;
+    data: T;
+}
+
+export interface RunningTriggerContextHolder {
+}
+
+export interface TransactionalTask<T> extends PersistentTask<T> {
 }
 
 export interface PageMetadata {

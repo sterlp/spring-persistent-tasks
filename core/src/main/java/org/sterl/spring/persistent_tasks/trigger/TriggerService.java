@@ -133,7 +133,14 @@ public class TriggerService {
      * If you changed your mind, cancel the persistentTask
      */
     public Optional<TriggerEntity> cancel(TriggerKey key) {
-        return editTrigger.cancelTask(key);
+        return editTrigger.cancelTask(key, null);
+    }
+
+    public List<TriggerEntity> cancel(Collection<TriggerKey> key) {
+        return key.stream().map(t -> editTrigger.cancelTask(t, null))
+           .filter(Optional::isPresent)
+           .map(Optional::get)
+           .toList();
     }
 
     /**
@@ -184,5 +191,10 @@ public class TriggerService {
             t.getData().setRunAt(time);
             return t;
         });
+    }
+
+    public List<TriggerEntity> findTriggerByCorrelationId(String correlationId) {
+        return readTrigger.findTriggerByCorrelationId(correlationId);
+        
     }
 }

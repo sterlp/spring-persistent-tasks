@@ -1,4 +1,4 @@
-package org.sterl.test;
+package org.sterl.spring.persistent_tasks.test;
 
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;

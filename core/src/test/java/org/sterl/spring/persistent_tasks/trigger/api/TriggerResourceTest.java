@@ -16,7 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.client.RestTemplate;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
-import org.sterl.spring.persistent_tasks.api.TaskId.TaskTriggerBuilder;
+import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
@@ -65,12 +65,12 @@ class TriggerResourceTest extends AbstractSpringTest {
     void testSearchById() {
         // GIVEN
         var uuid = UUID.randomUUID().toString();
-        var key1 = triggerService.queue(TaskTriggerBuilder
+        var key1 = triggerService.queue(TriggerBuilder
                 .newTrigger("task1")
                     .id("[@foo:bar@hallo.de:" + uuid + "]")
                     .build())
                 .getKey();
-        var key2 = triggerService.queue(TaskTriggerBuilder
+        var key2 = triggerService.queue(TriggerBuilder
                 .newTrigger("task1").build()).getKey();
         
         // WHEN
@@ -95,6 +95,25 @@ class TriggerResourceTest extends AbstractSpringTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody()).contains(key1.getId());
         assertThat(response.getBody()).doesNotContain(key2.getId());
+    }
+    
+    @Test
+    void testSearchByCorrelationId() {
+        // GIVEN
+        var t1 = triggerService.queue(TriggerBuilder.newTrigger("task1").build());
+        var t2 = triggerService.queue(TriggerBuilder.newTrigger("task1").build());
+        var t3 = triggerService.queue(TriggerBuilder.newTrigger("task2").build());
+        
+        // WHEN
+        var response = template.exchange(
+                baseUrl + "?id=" + t3.getData().getCorrelationId().substring(0, 28) + "*",
+                HttpMethod.GET,
+                null,
+                String.class);
+        // THEN
+        assertThat(response.getBody()).contains(t3.getData().getCorrelationId());
+        assertThat(response.getBody()).doesNotContain(t2.getData().getCorrelationId());
+        assertThat(response.getBody()).doesNotContain(t1.getData().getCorrelationId());
     }
 
     @Test
@@ -122,7 +141,7 @@ class TriggerResourceTest extends AbstractSpringTest {
         // GIVEN
         var template = new RestTemplate();
         
-        var triggerKey = triggerService.queue(TaskTriggerBuilder.newTrigger("task1").build()).getKey();
+        var triggerKey = triggerService.queue(TriggerBuilder.newTrigger("task1").build()).getKey();
         
         // WHEN
         var canceled = template.exchange(baseUrl + "/" +
@@ -155,13 +174,13 @@ class TriggerResourceTest extends AbstractSpringTest {
                 HttpMethod.POST, new HttpEntity<>(OffsetDateTime.now()), Trigger.class);
         
         // THEN
-        persistentTaskService.executeTriggersAndWait();
+        persistentTaskTestService.runAllDueTrigger(OffsetDateTime.now());
+        
         asserts.assertValue(Task3.NAME + "::Hallo");
         asserts.assertMissing(Task3.NAME + "::Hallo2");
         assertThat(triggerService.countTriggers(TriggerStatus.WAITING)).isOne();
         assertThat(response.getBody().getKey()).isEqualTo(triggerKey);
     }
-    
     
     private TriggerEntity createStatus(TriggerKey key, TriggerStatus status) {
         final var now = OffsetDateTime.now();
@@ -170,6 +189,7 @@ class TriggerResourceTest extends AbstractSpringTest {
         TriggerEntity result = new TriggerEntity();
         result.setData(TriggerData
                 .builder()
+                .correlationId(UUID.randomUUID().toString())
                 .start(isCancel ? null : now.minusMinutes(1))
                 .end(isCancel ? null : now)
                 .createdTime(now)

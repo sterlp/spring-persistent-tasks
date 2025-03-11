@@ -7,6 +7,9 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.sterl.spring.persistent_tasks.api.task.RunningTriggerContextHolder;
+import org.sterl.spring.persistent_tasks.api.task.exception.CancelTaskException;
+import org.sterl.spring.persistent_tasks.api.task.exception.FailTaskNoRetryException;
 import org.sterl.spring.persistent_tasks.task.TaskService;
 import org.sterl.spring.persistent_tasks.trigger.model.RunTaskWithStateCommand;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
@@ -37,9 +40,12 @@ public class RunTriggerComponent {
         if (runTaskWithState == null) return Optional.of(trigger);
 
         try {
+            RunningTriggerContextHolder.setContext(runTaskWithState.runningTrigger());
             return runTaskWithState.execute(editTrigger);
         } catch (Exception e) {
             return failTaskAndState(runTaskWithState, e);
+        } finally {
+            RunningTriggerContextHolder.clearContext();
         }
     }
 
@@ -62,18 +68,21 @@ public class RunTriggerComponent {
         var task = runTaskWithStateCommand.task();
         Optional<TriggerEntity> result;
 
-        if (task != null 
-                && task.retryStrategy().shouldRetry(trigger.getData().getExecutionCount(), e)) {
-
-            final OffsetDateTime retryAt = task.retryStrategy().retryAt(trigger.getData().getExecutionCount(), e);
-
-            result = editTrigger.failTrigger(trigger.getKey(), runTaskWithStateCommand.state(), e, retryAt);
-
-        } else {
-            log.error("{} failed, no more retries! {}", trigger.getKey(), 
-                    e == null ? "No exception given." : e.getMessage(), e);
-            
+        if (e instanceof CancelTaskException) {
+            log.info("Cancel of a running trigger={} requested", trigger.getKey());
+            result = editTrigger.cancelTask(trigger.getKey(), e);
+        } else if (e instanceof FailTaskNoRetryException) {
+            log.warn("Fail no retry of a running trigger={} requested", trigger.getKey(), e);
             result = editTrigger.failTrigger(trigger.getKey(), runTaskWithStateCommand.state(), e, null);
+        } else if (task == null 
+                || !task.retryStrategy().shouldRetry(trigger.getData().getExecutionCount(), e)) {
+
+            log.error("Failed trigger={}, no further retries!", trigger.getKey(), e);
+            result = editTrigger.failTrigger(trigger.getKey(), runTaskWithStateCommand.state(), e, null);
+        } else {
+            final OffsetDateTime retryAt = task.retryStrategy().retryAt(trigger.getData().getExecutionCount(), e);
+            log.warn("Failed trigger={} with retryAt={}", trigger.getKey(), retryAt, e);
+            result = editTrigger.failTrigger(trigger.getKey(), runTaskWithStateCommand.state(), e, retryAt);
         }
         return result;
     }

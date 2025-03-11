@@ -1,0 +1,51 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet author="sterlp" id="2025-03-09-initial-test-db">
+
+        <createTable tableName="vehicle">
+            <column computed="false" name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true"
+                    primaryKeyName="pk_vehicle_id" />
+            </column>
+            <column computed="false" name="type" type="varchar(50)" />
+            <column computed="false" name="name" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="engine_id" type="bigint" />
+        </createTable>
+
+        <createSequence cycle="false" incrementBy="50" sequenceName="vehicle_seq" startValue="1" />
+
+    </changeSet>
+
+    <include file="spring-persistent-tasks/db.changelog-master.xml" />
+
+    <changeSet author="sterlp" id="2025-03-09-add-engine">
+
+        <createTable tableName="engine">
+            <column computed="false" name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true"
+                    primaryKeyName="pk_engine_id" />
+            </column>
+            <column computed="false" name="type" type="varchar(50)" />
+            <column computed="false" name="power" type="bigint" />
+        </createTable>
+
+        <createSequence cycle="false" incrementBy="50" sequenceName="engine_seq" startValue="1" />
+
+    </changeSet>
+
+    <changeSet author="sterlp" id="2025-03-09-add-engine-fk">
+        <addForeignKeyConstraint constraintName="fk_" onDelete="CASCADE"
+            baseTableName="vehicle" baseColumnNames="engine_id"
+            referencedTableName="engine" referencedColumnNames="id" />
+    </changeSet>
+
+</databaseChangeLog>
