@@ -1,6 +1,9 @@
 # Changelog
 
-## v1.6
+## v1.6.1
+-   simpler RetryStrategy - as function
+
+## v1.6.0 - (2025-03-11)
 
 -   Running triggers can be canceled now
 -   Running triggers can be failed now
