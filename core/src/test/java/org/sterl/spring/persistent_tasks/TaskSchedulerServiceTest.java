@@ -31,8 +31,7 @@ class TaskSchedulerServiceTest extends AbstractSpringTest {
         var runTrigger = triggerService.queue(task.newTrigger().state("hallo").build());
 
         // WHEN
-        persistentTaskTestService.assertHasNextTask();
-        persistentTaskTestService.assertHasNextTask();
+        persistentTaskTestService.scheduleNextTriggersAndWait(Duration.ofSeconds(3));
 
         // THEN
         assertThat(asserts.getCount("hallo")).isEqualTo(4);
