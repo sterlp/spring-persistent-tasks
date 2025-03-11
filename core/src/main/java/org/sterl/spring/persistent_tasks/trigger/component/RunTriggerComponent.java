@@ -8,9 +8,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.task.RunningTriggerContextHolder;
+import org.sterl.spring.persistent_tasks.api.task.exception.CancelTaskException;
+import org.sterl.spring.persistent_tasks.api.task.exception.FailTaskNoRetryException;
 import org.sterl.spring.persistent_tasks.task.TaskService;
-import org.sterl.spring.persistent_tasks.task.exception.CancelTaskException;
-import org.sterl.spring.persistent_tasks.task.exception.FailTaskNoRetryException;
 import org.sterl.spring.persistent_tasks.trigger.model.RunTaskWithStateCommand;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
