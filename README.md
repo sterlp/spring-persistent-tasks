@@ -29,6 +29,15 @@ The README contains a shorter how to use.
 
 - spring-boot-devtools: cause java.lang.ClassCastException exceptions during the state serialization - this is a java/spring issue
 
+# Known limitations
+
+## DBMS have missing bad row lock implementation
+
+The framework briefly locks a row or trigger to ensure that each trigger is started only on a single node when a cluster is in use. However, some databases still do not support proper row locking and instead lock the entire table. This is not a critical issue but can slow down task selection in very large clusters.
+
+- mySQL
+- Azure SQL Edge (maybe also MSSQL)
+
 # DBs for storage
 
 ## Tested in the pipeline
