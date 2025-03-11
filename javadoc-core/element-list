@@ -1,14 +1,9 @@
-org.sterl.spring.example_app
-org.sterl.spring.example_app.shared.model
-org.sterl.spring.example_app.vehicle
-org.sterl.spring.example_app.vehicle.api
-org.sterl.spring.example_app.vehicle.model
-org.sterl.spring.example_app.vehicle.repository
-org.sterl.spring.example_app.vehicle.task
 org.sterl.spring.persistent_tasks
 org.sterl.spring.persistent_tasks_ui
 org.sterl.spring.persistent_tasks.api
 org.sterl.spring.persistent_tasks.api.event
+org.sterl.spring.persistent_tasks.api.task
+org.sterl.spring.persistent_tasks.api.task.exception
 org.sterl.spring.persistent_tasks.exception
 org.sterl.spring.persistent_tasks.history
 org.sterl.spring.persistent_tasks.history.api
@@ -32,6 +27,7 @@ org.sterl.spring.persistent_tasks.task.component
 org.sterl.spring.persistent_tasks.task.config
 org.sterl.spring.persistent_tasks.task.repository
 org.sterl.spring.persistent_tasks.task.util
+org.sterl.spring.persistent_tasks.test
 org.sterl.spring.persistent_tasks.trigger
 org.sterl.spring.persistent_tasks.trigger.api
 org.sterl.spring.persistent_tasks.trigger.component
