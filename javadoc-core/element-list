@@ -3,7 +3,6 @@ org.sterl.spring.persistent_tasks_ui
 org.sterl.spring.persistent_tasks.api
 org.sterl.spring.persistent_tasks.api.event
 org.sterl.spring.persistent_tasks.api.task
-org.sterl.spring.persistent_tasks.api.task.exception
 org.sterl.spring.persistent_tasks.exception
 org.sterl.spring.persistent_tasks.history
 org.sterl.spring.persistent_tasks.history.api
@@ -25,6 +24,7 @@ org.sterl.spring.persistent_tasks.task
 org.sterl.spring.persistent_tasks.task.api
 org.sterl.spring.persistent_tasks.task.component
 org.sterl.spring.persistent_tasks.task.config
+org.sterl.spring.persistent_tasks.task.exception
 org.sterl.spring.persistent_tasks.task.repository
 org.sterl.spring.persistent_tasks.task.util
 org.sterl.spring.persistent_tasks.test
