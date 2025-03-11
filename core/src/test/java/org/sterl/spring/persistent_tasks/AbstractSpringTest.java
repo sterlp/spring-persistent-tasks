@@ -3,7 +3,6 @@ package org.sterl.spring.persistent_tasks;
 import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.Optional;
-import java.util.concurrent.TimeoutException;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +19,6 @@ import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.api.TaskId;
-import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
 import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
 import org.sterl.spring.persistent_tasks.history.HistoryService;
@@ -28,10 +26,11 @@ import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
 import org.sterl.spring.persistent_tasks.scheduler.component.TaskExecutorComponent;
 import org.sterl.spring.persistent_tasks.task.TaskService;
+import org.sterl.spring.persistent_tasks.test.AsyncAsserts;
+import org.sterl.spring.persistent_tasks.test.PersistentTaskTestService;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 import org.sterl.spring.sample_app.SampleApp;
-import org.sterl.test.AsyncAsserts;
 import org.sterl.test.hibernate_asserts.HibernateAsserts;
 
 import jakarta.persistence.EntityManager;
@@ -43,7 +42,7 @@ import lombok.RequiredArgsConstructor;
 public class AbstractSpringTest {
 
     @Autowired
-    protected PersistentTaskService persistentTaskService;
+    protected PersistentTaskTestService persistentTaskTestService;
 
     @Autowired
     @Qualifier("schedulerA")
@@ -162,18 +161,9 @@ public class AbstractSpringTest {
         }
     }
 
+    @Deprecated
     protected Optional<TriggerEntity> runNextTrigger() {
-        return triggerService.run(triggerService.lockNextTrigger("test"));
-    }
-    
-    protected void awaitRunningTasks() throws TimeoutException, InterruptedException {
-        final long start = System.currentTimeMillis();
-        while (triggerService.countTriggers(TriggerStatus.RUNNING) > 0) {
-            if (System.currentTimeMillis() - start > 2000) {
-                throw new TimeoutException("Still running after 2s");
-            }
-            Thread.sleep(100);
-        }
+        return persistentTaskTestService.runNextTrigger();
     }
 
     @BeforeEach

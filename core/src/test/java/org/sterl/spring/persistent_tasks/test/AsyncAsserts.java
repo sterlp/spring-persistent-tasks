@@ -1,4 +1,4 @@
-package org.sterl.test;
+package org.sterl.spring.persistent_tasks.test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;

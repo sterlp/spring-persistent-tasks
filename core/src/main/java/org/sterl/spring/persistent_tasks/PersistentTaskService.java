@@ -37,7 +37,6 @@ import lombok.SneakyThrows;
 public class PersistentTaskService {
 
     private final Optional<SchedulerService> schedulerService;
-    private final List<SchedulerService> schedulers;
     private final TriggerService triggerService;
     private final HistoryService historyService;
 
@@ -123,63 +122,6 @@ public class PersistentTaskService {
             triggerService.queue(triggerRequest);
         }
         return triggerRequest.key();
-    }
-
-    /**
-     * Triggers the execution of all pending triggers.
-     *
-     * @return the reference to the {@link TriggerKey} of the running tasks
-     */
-    public List<Future<TriggerKey>> executeTriggers() {
-        var result = new ArrayList<Future<TriggerKey>>();
-        for (SchedulerService s : schedulers) {
-            result.addAll(s.triggerNextTasks());
-        }
-        return result;
-    }
-
-    /**
-     * Triggers the execution of all pending triggers and wait for the result.
-     */
-    @SneakyThrows
-    public List<TriggerKey> executeTriggersAndWait(Duration maxWaitTime) {
-        final var result = new ArrayList<TriggerKey>();
-        final var timeOut = System.currentTimeMillis() + maxWaitTime.toMillis();
-
-        List<Future<TriggerKey>> triggers;
-        var isSomethingRunning = false;
-        do {
-            triggers = executeTriggers();
-            for (Future<TriggerKey> future : triggers) {
-                try {
-                    result.add(future.get());
-                } catch (InterruptedException | ExecutionException e) {
-                    final Throwable cause = e.getCause();
-                    throw cause == null ? e : cause;
-                }
-            }
-
-            isSomethingRunning = hasRunningTriggers();
-            if (isSomethingRunning) {
-                Thread.sleep(Duration.ofMillis(100));
-            }
-            
-            if (System.currentTimeMillis() > timeOut) {
-                throw new RuntimeException("Timeout waiting for triggers after " + maxWaitTime);
-            }
-
-        } while (!triggers.isEmpty() || isSomethingRunning);
-
-        return result;
-    }
-
-    private boolean hasRunningTriggers() {
-        var running = this.schedulers.stream()
-                .map(s -> s.hasRunningTriggers())
-                .filter(r -> r)
-                .findAny();
-
-        return running.isPresent() && running.get() == true;
     }
 
     /**

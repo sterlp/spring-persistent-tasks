@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -13,22 +14,27 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
+import org.sterl.spring.persistent_tasks.PersistentTaskService;
 import org.sterl.spring.persistent_tasks.api.RetryStrategy;
 import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
 import org.sterl.spring.persistent_tasks.api.task.TransactionalTask;
+import org.sterl.spring.persistent_tasks.test.Countdown;
 import org.sterl.spring.sample_app.person.PersonEntity;
 import org.sterl.spring.sample_app.person.PersonRepository;
-import org.sterl.test.Countdown;
 
 class SchedulerServiceTransactionTest extends AbstractSpringTest {
 
     private SchedulerService subject;
     private static final AtomicBoolean sendError = new AtomicBoolean(false);
     private static final Countdown COUNTDOWN = new Countdown();
-    @Autowired private PersonRepository personRepository;
+    
+    @Autowired 
+    private PersonRepository personRepository;
+    @Autowired
+    private PersistentTaskService persistentTaskService;
 
     @Configuration
     static class Config {
@@ -223,7 +229,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
 
         // WHEN
         sendError.set(false);
-        var executed = persistentTaskService.executeTriggersAndWait(Duration.ofSeconds(2));
+        var executed = persistentTaskTestService.scheduleNextTriggersAndWait(Duration.ofSeconds(3));
 
         // THEN
         assertThat(executed).hasSize(1);
@@ -235,5 +241,15 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         var data = persistentTaskService.getLastTriggerData(triggerKey);
         assertThat(data).isPresent();
         assertThat(data.get().getExecutionCount()).isEqualTo(count);
+    }
+    
+    protected void awaitRunningTasks() throws TimeoutException, InterruptedException {
+        final long start = System.currentTimeMillis();
+        while (triggerService.countTriggers(TriggerStatus.RUNNING) > 0) {
+            if (System.currentTimeMillis() - start > 2000) {
+                throw new TimeoutException("Still running after 2s");
+            }
+            Thread.sleep(100);
+        }
     }
 }

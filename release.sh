@@ -12,6 +12,11 @@ echo "Releasing version: $RELEASE_VERSION"
 mvn versions:set -DnewVersion="$RELEASE_VERSION" -DgenerateBackupPoms=false
 # Deploy the project
 mvn clean source:jar javadoc:jar deploy -Prelease
+
+# update test project
+cp core/src/test/java/org/sterl/spring/persistent_tasks/test/* test/src/main/java/org/sterl/spring/persistent_tasks/test/
+git add test
+
 # update git
 git add '**/pom.xml'
 git commit -am "$RELEASE_VERSION release"

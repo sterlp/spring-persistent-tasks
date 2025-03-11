@@ -174,7 +174,7 @@ class TriggerResourceTest extends AbstractSpringTest {
                 HttpMethod.POST, new HttpEntity<>(OffsetDateTime.now()), Trigger.class);
         
         // THEN
-        persistentTaskService.executeTriggersAndWait(Duration.ofSeconds(2));
+        persistentTaskTestService.runAllDueTrigger(OffsetDateTime.now());
         
         asserts.assertValue(Task3.NAME + "::Hallo");
         asserts.assertMissing(Task3.NAME + "::Hallo2");

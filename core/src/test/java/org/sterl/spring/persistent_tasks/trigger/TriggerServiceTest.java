@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
+import org.sterl.spring.persistent_tasks.PersistentTaskService;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
@@ -35,6 +36,9 @@ import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
 
 class TriggerServiceTest extends AbstractSpringTest {
 
+    @Autowired
+    private PersistentTaskService persistentTaskService;
+    
     @Autowired
     private TriggerService subject;
     @Autowired
@@ -265,9 +269,9 @@ class TriggerServiceTest extends AbstractSpringTest {
             .toList();
 
         // WHEN
-        runNextTrigger();
-        runNextTrigger();
-        runNextTrigger();
+        persistentTaskTestService.runNextTrigger();
+        persistentTaskTestService.runNextTrigger();
+        persistentTaskTestService.runNextTrigger();
 
         // THEN
         assertThat(historyService.findLastKnownStatus(keys.get(0)).get().getData().getPriority()).isEqualTo(5);
@@ -310,8 +314,8 @@ class TriggerServiceTest extends AbstractSpringTest {
                 .state("paul@sterl.org") // fixed state
                 .build());
 
-        var e1 = runNextTrigger();
-        var e2 = runNextTrigger();
+        var e1 = persistentTaskTestService.runNextTrigger();
+        var e2 = persistentTaskTestService.runNextTrigger();
 
         // THEN
         asserts.awaitValueOnce("paul@sterl.org");
@@ -334,11 +338,10 @@ class TriggerServiceTest extends AbstractSpringTest {
             // WHEN
             ArrayList<Callable<Optional<TriggerEntity> >> lockInvocations = new ArrayList<>();
             for (int i = 1; i <= 100; ++i) {
-                lockInvocations.add(() -> runNextTrigger());
+                lockInvocations.add(() -> triggerService.run(triggerService.lockNextTrigger("test")));
             }
             
             executor.invokeAll(lockInvocations);
-            persistentTaskService.executeTriggersAndWait(Duration.ofSeconds(2));
 
             // THEN
             for (int i = 1; i <= 100; ++i) {
@@ -356,14 +359,19 @@ class TriggerServiceTest extends AbstractSpringTest {
                 .newTrigger("Hallo")
                 .runAfter(Duration.ofMinutes(5))
                 .build();
-        subject.queue(triggerRequest);
+        var triggerQueued = subject.queue(triggerRequest);
         
         // WHEN
-        persistentTaskService.executeTriggersAndWait(Duration.ofSeconds(2));
+        var executed = persistentTaskTestService.runAllDueTrigger(OffsetDateTime.now());
         
         // THEN
+        assertThat(executed).isEmpty();
         asserts.assertMissing(Task3.NAME + "::Hallo");
         assertThat(triggerService.countTriggers(TriggerStatus.WAITING)).isOne();
+        
+        // WHEN
+        executed = persistentTaskTestService.runAllDueTrigger(OffsetDateTime.now().plusMinutes(5));
+        assertThat(executed).contains(triggerQueued);
     }
 
     @Test
@@ -396,7 +404,7 @@ class TriggerServiceTest extends AbstractSpringTest {
                     new TriggerKey("fooTask-unknown"), UUID.randomUUID().toString()));
         
         // WHEN
-        runNextTrigger();
+        persistentTaskTestService.runNextTrigger();
         
         // WHEN
         var triggerData = persistentTaskService.getLastTriggerData(t.getKey()).get();
@@ -412,7 +420,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         );
         
         // WHEN
-        runNextTrigger();
+        persistentTaskTestService.runNextTrigger();
         
         // WHEN
         var triggerData = persistentTaskService.getLastTriggerData(t.getKey()).get();
@@ -432,8 +440,8 @@ class TriggerServiceTest extends AbstractSpringTest {
         var key1 = subject.queue(taskId.newTrigger().build()).getKey();
 
         // WHEN
-        assertThat(runNextTrigger()).isPresent();
-        assertThat(runNextTrigger()).isEmpty();
+        assertThat(persistentTaskTestService.runNextTrigger()).isPresent();
+        assertThat(persistentTaskTestService.runNextTrigger()).isEmpty();
 
         // THEN
         assertThat(historyService.findLastKnownStatus(key1).get().status()).isEqualTo(TriggerStatus.CANCELED);
@@ -453,8 +461,8 @@ class TriggerServiceTest extends AbstractSpringTest {
         var key1 = subject.queue(taskId.newTrigger().build()).getKey();
 
         // WHEN
-        assertThat(runNextTrigger()).isPresent();
-        assertThat(runNextTrigger()).isEmpty();
+        assertThat(persistentTaskTestService.runNextTrigger()).isPresent();
+        assertThat(persistentTaskTestService.runNextTrigger()).isEmpty();
 
         // THEN
         assertThat(historyService.findLastKnownStatus(key1).get().status()).isEqualTo(TriggerStatus.FAILED);
