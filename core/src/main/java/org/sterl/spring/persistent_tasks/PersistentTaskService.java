@@ -1,14 +1,11 @@
 package org.sterl.spring.persistent_tasks;
 
 import java.io.Serializable;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +23,6 @@ import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 
 /**
  * Abstraction to {@link SchedulerService} or {@link TriggerService}
