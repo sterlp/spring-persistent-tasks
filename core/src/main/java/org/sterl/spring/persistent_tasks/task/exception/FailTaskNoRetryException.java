@@ -1,4 +1,4 @@
-package org.sterl.spring.persistent_tasks.api.task.exception;
+package org.sterl.spring.persistent_tasks.task.exception;
 
 /**
  * Set the task to failed and finish the execution.

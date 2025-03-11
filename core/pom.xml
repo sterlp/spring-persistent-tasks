@@ -160,8 +160,7 @@
                     </customTypeMappings>
                     <classes>
                         <class>org.springframework.data.web.PagedModel</class>
-                        <class>
-                            org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity</class>
+                        <class>org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity</class>
                     </classes>
                     <classPatterns>
                         <pattern>org.sterl.spring.persistent_tasks.api.**</pattern>
