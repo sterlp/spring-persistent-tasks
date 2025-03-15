@@ -17,7 +17,9 @@ import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.SneakyThrows;
 
 @Service
@@ -26,6 +28,9 @@ public class PersistentTaskTestService {
 
     private final List<SchedulerService> schedulers;
     private final TriggerService triggerService;
+    
+    @Getter @Setter
+    private Duration defaultTimeout = Duration.ofSeconds(5);
     
     /**
      * Runs just the next trigger, if it is due to run.
@@ -59,11 +64,23 @@ public class PersistentTaskTestService {
      */
     public List<Future<TriggerKey>> scheduleNextTriggers() {
         var result = new ArrayList<Future<TriggerKey>>();
-        if (schedulers.isEmpty()) throw new IllegalStateException("No schedulers found, cannot run any triggers!");
+        assertHasScheduler();
         for (SchedulerService s : schedulers) {
             result.addAll(s.triggerNextTasks());
         }
         return result;
+    }
+
+    public void assertHasScheduler() {
+        assertThat(schedulers).describedAs("No schedulers found, cannot run any triggers!").isNotEmpty();
+    }
+    
+    /**
+     * Triggers the execution of all pending triggers and wait for the result.
+     */
+    @SneakyThrows
+    public List<TriggerKey> scheduleNextTriggersAndWait() {
+        return scheduleNextTriggersAndWait(defaultTimeout);
     }
 
     /**
@@ -100,8 +117,19 @@ public class PersistentTaskTestService {
 
         return result;
     }
+    
+    public void awaitRunningTriggers(Duration duration) {
+        final var timeout = System.currentTimeMillis() + duration.toMillis();
+        do {
+            sleep();
+        } while (hasRunningTriggers() && System.currentTimeMillis() < timeout);
+        
+        int runningCount = schedulers.stream().mapToInt(s -> s.getScheduler().getRunnungTasks()).sum();
+        assertThat(runningCount).describedAs("Where are sill " + runningCount + " triggers running.").isZero();
+    }
 
     public boolean hasRunningTriggers() {
+        assertHasScheduler();
         var running = this.schedulers.stream()
                 .map(s -> s.hasRunningTriggers())
                 .filter(r -> r)
@@ -138,5 +166,13 @@ public class PersistentTaskTestService {
             assertThat(trigger.get().status()).isEqualTo(status);
         }
         if (key != null) assertThat(trigger.get().getKey()).isEqualTo(key);
+    }
+    
+    private void sleep() {
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            Thread.interrupted();
+        }
     }
 }

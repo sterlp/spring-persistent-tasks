@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeoutException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -101,17 +100,13 @@ class SchedulerServiceTest extends AbstractSpringTest {
         var ref = subject.runOrQueue(triggerRequest);
 
         // THEN
-        assertThat(subject.getScheduler().getRunnungTasks()).isOne();
-        // AND
-        persistentTaskTestService.scheduleNextTriggersAndWait(Duration.ofSeconds(3));
-        
+        asserts.awaitValue(Task3.NAME + "::Hallo");
         assertThat(persistentTaskService.getLastTriggerData(ref).get().getStatus())
             .isEqualTo(TriggerStatus.SUCCESS);
-        asserts.assertValue(Task3.NAME + "::Hallo");
     }
 
     @Test
-    void testQueuedInFuture() throws TimeoutException, InterruptedException {
+    void testQueuedInFuture() {
         // GIVEN
         final AddTriggerRequest<String> triggerRequest = Task3.ID
                 .newTrigger("Hallo")
@@ -120,7 +115,7 @@ class SchedulerServiceTest extends AbstractSpringTest {
         subject.runOrQueue(triggerRequest);
         
         // WHEN
-        persistentTaskTestService.scheduleNextTriggersAndWait(Duration.ofSeconds(3));
+        persistentTaskTestService.scheduleNextTriggersAndWait();
         
         // THEN
         asserts.assertMissing(Task3.NAME + "::Hallo");

@@ -163,6 +163,6 @@ public class SchedulerService {
     }
     
     public boolean hasRunningTriggers() {
-        return !this.taskExecutor.getRunningTriggers().isEmpty();
+        return !taskExecutor.isStopped() && taskExecutor.getRunningTriggers().size() > 0;
     }
 }
