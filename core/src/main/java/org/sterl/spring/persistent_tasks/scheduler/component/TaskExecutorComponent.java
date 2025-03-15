@@ -26,9 +26,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The executor of a scheduler
+ */
 @Slf4j
 public class TaskExecutorComponent implements Closeable {
 
+    private final String schedulerName;
     private final TriggerService triggerService;
     private final AtomicInteger maxThreads = new AtomicInteger(0);
     @Getter
@@ -39,8 +43,9 @@ public class TaskExecutorComponent implements Closeable {
     private final ConcurrentHashMap<TriggerEntity, Future<TriggerKey>> runningTasks = new ConcurrentHashMap<>();
     private final AtomicBoolean stopped = new AtomicBoolean(true);
     
-    public TaskExecutorComponent(TriggerService triggerService, int maxThreads) {
+    public TaskExecutorComponent(String schedulerName, TriggerService triggerService, int maxThreads) {
         super();
+        this.schedulerName = schedulerName;
         this.triggerService = triggerService;
         this.maxThreads.set(maxThreads);
     }
@@ -61,8 +66,10 @@ public class TaskExecutorComponent implements Closeable {
         if (trigger == null) {
             return CompletableFuture.completedFuture(null);
         }
-        if (stopped.get()) throw new IllegalStateException("Executor is already stopped");
-
+        if (stopped.get() || executor == null) {
+            throw new IllegalStateException("Executor of " + schedulerName + " is already stopped");
+        }
+        
         final var result = executor.submit(() -> runTrigger(trigger));
         runningTasks.put(trigger, result);
         return result;
@@ -77,7 +84,6 @@ public class TaskExecutorComponent implements Closeable {
         }
     }
 
-    @SuppressWarnings("resource")
     @PostConstruct
     public void start() {
         if (stopped.compareAndExchange(true, false)) {
@@ -102,8 +108,8 @@ public class TaskExecutorComponent implements Closeable {
         if (executor != null) {
             executor.shutdown();
             if (runningTasks.size() > 0) {
-                log.info("Shutdown executor with {} running tasks, waiting for {}.",
-                        runningTasks.size(), maxShutdownWaitTime);
+                log.info("Shutdown executor {} with {} running tasks, waiting for {}.",
+                        schedulerName, runningTasks.size(), maxShutdownWaitTime);
 
                 try {
                     executor.awaitTermination(maxShutdownWaitTime.getSeconds(), TimeUnit.SECONDS);
@@ -121,9 +127,15 @@ public class TaskExecutorComponent implements Closeable {
     }
 
     public void shutdownNow() {
-        stopped.set(true);
-        if (executor != null) executor.shutdownNow();
-        executor = null;
+        if (stopped.compareAndExchange(true, false)) {
+            if (executor != null) {
+                synchronized (executor) {
+                    executor.shutdownNow();
+                    log.info("Force stop {} with {} running tasks", schedulerName, getRunningTasks());
+                    executor = null;
+                }
+            }
+        }
     }
 
     public int getFreeThreads() {

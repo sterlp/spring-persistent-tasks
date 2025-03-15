@@ -4,9 +4,7 @@ import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
 import org.springframework.lang.NonNull;
@@ -18,6 +16,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
+import org.sterl.spring.persistent_tasks.scheduler.component.PingRegistryComponent;
+import org.sterl.spring.persistent_tasks.scheduler.component.RunOrQueueComponent;
 import org.sterl.spring.persistent_tasks.scheduler.component.TaskExecutorComponent;
 import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
@@ -43,10 +43,14 @@ public class SchedulerService {
     @Getter
     private final String name;
     private final TriggerService triggerService;
+    
     private final TaskExecutorComponent taskExecutor;
     private final EditSchedulerStatusComponent editSchedulerStatus;
+
+    private final PingRegistryComponent pingRegistry;
+    private final RunOrQueueComponent runOrQueue;
+
     private final TransactionTemplate trx;
-    private final Map<Long, TriggerEntity> shouldRun = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void start() {
@@ -63,7 +67,6 @@ public class SchedulerService {
     public void stop() {
         taskExecutor.close();
         editSchedulerStatus.offline(name);
-        log.info("Stopped {}", name);
     }
 
     public void shutdownNow() {
@@ -71,15 +74,6 @@ public class SchedulerService {
         taskExecutor.shutdownNow();
         log.info("Force stop {} with {} running tasks", name, running);
         editSchedulerStatus.offline(name);
-    }
-
-    @Transactional
-    public SchedulerEntity pingRegistry() {
-        var result = editSchedulerStatus.checkinToRegistry(name);
-        result.setRunnungTasks(taskExecutor.getRunningTasks());
-        result.setTasksSlotCount(taskExecutor.getMaxThreads());
-        log.debug("Ping {}", result);
-        return result;
     }
 
     public SchedulerEntity getScheduler() {
@@ -111,8 +105,9 @@ public class SchedulerService {
     public List<Future<TriggerKey>> triggerNextTasks(OffsetDateTime timeDue) {
         if (taskExecutor.getFreeThreads() > 0) {
             final var result = trx.execute(t -> {
+                var status = pingRegistry.execute();
                 var triggers = triggerService.lockNextTrigger(name, taskExecutor.getFreeThreads(), timeDue);
-                pingRegistry().addRunning(triggers.size());
+                status.addRunning(triggers.size());
                 return triggers;
             });
 
@@ -122,7 +117,7 @@ public class SchedulerService {
                     taskExecutor.getFreeThreads(),
                     taskExecutor.getMaxThreads(),
                     timeDue);
-            pingRegistry();
+            pingRegistry.execute();
             return Collections.emptyList();
         }
     }
@@ -136,31 +131,14 @@ public class SchedulerService {
      */
     @Transactional(timeout = 10)
     public <T extends Serializable> TriggerKey runOrQueue(AddTriggerRequest<T> triggerRequest) {
-        var trigger = triggerService.queue(triggerRequest);
-
-        if (!trigger.shouldRunInFuture()) {
-            if (taskExecutor.getFreeThreads() > 0) {
-                trigger = triggerService.markTriggersAsRunning(trigger, name);
-                pingRegistry().addRunning(1);
-                shouldRun.put(trigger.getId(), trigger);
-                log.debug("{} added for immediate execution, waitng for commit on={}", trigger.getKey(), name);
-            } else {
-                log.debug("Currently not enough free thread available {} of {} in use. PersistentTask {} queued.",
-                        taskExecutor.getFreeThreads(), taskExecutor.getMaxThreads(), trigger.getKey());
-            }
-        }
-        // we will listen for the commit event to execute this trigger ...
-        return trigger.getKey();
+        return runOrQueue.execute(triggerRequest);
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    void checkIfTrigerIsRunning(TriggerAddedEvent addedTrigger) {
-        final var toRun = shouldRun.remove(addedTrigger.id());
-        if (toRun != null) {
-            taskExecutor.submit(toRun);
-            log.debug("{} immediately started on={}.", addedTrigger.key(), name);
+    void checkIfTrigerShouldRun(TriggerAddedEvent addedTrigger) {
+        if (runOrQueue.checkIfTrigerShouldRun(addedTrigger.id())) {
+            pingRegistry.execute();
         }
-        // TODO implement a cleanup for old pending triggers which may never been triggered!
     }
 
     public SchedulerEntity getStatus() {

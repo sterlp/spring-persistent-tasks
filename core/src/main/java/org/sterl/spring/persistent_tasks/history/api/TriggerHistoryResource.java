@@ -21,7 +21,6 @@ import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.history.HistoryService;
 import org.sterl.spring.persistent_tasks.history.api.HistoryConverter.FromLastTriggerStateEntity;
 import org.sterl.spring.persistent_tasks.history.api.HistoryConverter.FromTriggerStateDetailEntity;
-import org.sterl.spring.persistent_tasks.trigger.api.TriggerConverter.FromTriggerEntity;
 
 import lombok.RequiredArgsConstructor;
 
@@ -55,8 +54,8 @@ public class TriggerHistoryResource {
     }
     
     @PostMapping("history/{id}/re-run")
-    public ResponseEntity<Trigger> reRunTrigger(@PathVariable(name = "id", required = true) Long id) {
+    public ResponseEntity<TriggerKey> reRunTrigger(@PathVariable(name = "id", required = true) Long id) {
         var newTrigger = historyService.reQueue(id, OffsetDateTime.now());
-        return ResponseEntity.of(FromTriggerEntity.INSTANCE.convert(newTrigger));
+        return ResponseEntity.of(newTrigger);
     }
 }

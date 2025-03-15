@@ -13,8 +13,8 @@ import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
 import org.sterl.spring.persistent_tasks.PersistentTaskService;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
+import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 class HistoryServiceTest extends AbstractSpringTest {
 
@@ -32,10 +32,11 @@ class HistoryServiceTest extends AbstractSpringTest {
         
         // WHEN
         asserts.clear();
-        final Optional<TriggerEntity> t = subject.reQueue(trigger.getId(), OffsetDateTime.now());
+        final Optional<TriggerKey> newKey = subject.reQueue(trigger.getId(), OffsetDateTime.now());
         
         // THEN
-        assertThat(t).isPresent();
+        assertThat(newKey).isPresent();
+        assertThat(newKey.get()).isEqualTo(trigger.key());
         // AND
         persistentTaskTestService.runNextTrigger();
         asserts.assertValue(Task3.NAME + "::Hallo");

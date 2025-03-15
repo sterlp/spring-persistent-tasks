@@ -4,6 +4,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,14 +14,13 @@ import org.springframework.lang.Nullable;
 import org.sterl.spring.persistent_tasks.api.TaskStatusHistoryOverview;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
+import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryDetailEntity;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryLastStateEntity;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryDetailRepository;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryLastStateRepository;
 import org.sterl.spring.persistent_tasks.shared.StringHelper;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
-import org.sterl.spring.persistent_tasks.trigger.TriggerService;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 public class HistoryService {
     private final TriggerHistoryLastStateRepository triggerHistoryLastStateRepository;
     private final TriggerHistoryDetailRepository triggerHistoryDetailRepository;
-    private final TriggerService triggerService;
+    private final ApplicationEventPublisher applicationEventPublisher;
     
     public Optional<TriggerHistoryLastStateEntity> findStatus(long triggerId) {
         return triggerHistoryLastStateRepository.findById(triggerId);
@@ -70,7 +70,7 @@ public class HistoryService {
         return triggerHistoryDetailRepository.listKnownStatusFor(key, page);
     }
 
-    public Optional<TriggerEntity> reQueue(Long id, OffsetDateTime runAt) {
+    public Optional<TriggerKey> reQueue(Long id, OffsetDateTime runAt) {
         final var lastState = triggerHistoryLastStateRepository.findById(id);
         if (lastState.isEmpty()) return Optional.empty();
 
@@ -81,8 +81,9 @@ public class HistoryService {
             .priority(data.getPriority())
             .id(data.getKey().getId())
             .build();
-        
-        return Optional.of(triggerService.queue(trigger));
+
+        applicationEventPublisher.publishEvent(TriggerTaskCommand.of(trigger));
+        return Optional.of(trigger.key());
     }
 
     public long countTriggers(TriggerKey key) {
