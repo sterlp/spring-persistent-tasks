@@ -39,7 +39,6 @@ public class RunOrQueueComponent {
 
         trigger = offerToRun(trigger);
         // we will listen for the commit event to execute this trigger ...
-        System.err.println("execute->" + trigger.getKey());
         return trigger.getKey();
     }
 

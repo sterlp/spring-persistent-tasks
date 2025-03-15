@@ -71,10 +71,11 @@ public class AsyncAsserts {
      */
     public void awaitValue(Runnable fn, String value) {
         final var start = System.currentTimeMillis();
+        if (fn != null) fn.run(); // ensure we call the given function at least once
         while (!values.contains(value)
                 && (System.currentTimeMillis() - start <= defaultTimeout.toMillis())) {
             try {
-                Thread.sleep(50);
+                Thread.sleep(100);
                 if (fn != null) fn.run();
             } catch (InterruptedException e) {
                 if (Thread.interrupted()) break;

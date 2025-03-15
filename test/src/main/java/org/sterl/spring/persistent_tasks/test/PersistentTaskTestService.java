@@ -94,6 +94,10 @@ public class PersistentTaskTestService {
         List<Future<TriggerKey>> triggers;
         var isSomethingRunning = false;
         do {
+            if (System.currentTimeMillis() > timeOut) {
+                throw new RuntimeException("Timeout waiting for triggers after " + maxWaitTime);
+            }
+
             triggers = scheduleNextTriggers();
             for (Future<TriggerKey> future : triggers) {
                 try {
@@ -104,20 +108,17 @@ public class PersistentTaskTestService {
                 }
             }
 
-            isSomethingRunning = hasRunningTriggers();
-            if (isSomethingRunning) {
-                Thread.sleep(Duration.ofMillis(100));
-            }
-            
-            if (System.currentTimeMillis() > timeOut) {
-                throw new RuntimeException("Timeout waiting for triggers after " + maxWaitTime);
-            }
+            awaitRunningTriggers(maxWaitTime);
 
         } while (!triggers.isEmpty() || isSomethingRunning);
 
         return result;
     }
     
+    public void awaitRunningTriggers() {
+        awaitRunningTriggers(defaultTimeout);
+    }
+
     public void awaitRunningTriggers(Duration duration) {
         final var timeout = System.currentTimeMillis() + duration.toMillis();
         do {
@@ -125,7 +126,8 @@ public class PersistentTaskTestService {
         } while (hasRunningTriggers() && System.currentTimeMillis() < timeout);
         
         int runningCount = schedulers.stream().mapToInt(s -> s.getScheduler().getRunnungTasks()).sum();
-        assertThat(runningCount).describedAs("Where are sill " + runningCount + " triggers running.").isZero();
+        assertThat(runningCount).describedAs("Where are sill " 
+                + runningCount + " triggers running after " + duration).isZero();
     }
 
     public boolean hasRunningTriggers() {

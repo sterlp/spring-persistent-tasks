@@ -94,6 +94,10 @@ public class PersistentTaskTestService {
         List<Future<TriggerKey>> triggers;
         var isSomethingRunning = false;
         do {
+            if (System.currentTimeMillis() > timeOut) {
+                throw new RuntimeException("Timeout waiting for triggers after " + maxWaitTime);
+            }
+
             triggers = scheduleNextTriggers();
             for (Future<TriggerKey> future : triggers) {
                 try {
@@ -104,14 +108,7 @@ public class PersistentTaskTestService {
                 }
             }
 
-            isSomethingRunning = hasRunningTriggers();
-            if (isSomethingRunning) {
-                Thread.sleep(Duration.ofMillis(100));
-            }
-            
-            if (System.currentTimeMillis() > timeOut) {
-                throw new RuntimeException("Timeout waiting for triggers after " + maxWaitTime);
-            }
+            awaitRunningTriggers(maxWaitTime);
 
         } while (!triggers.isEmpty() || isSomethingRunning);
 
