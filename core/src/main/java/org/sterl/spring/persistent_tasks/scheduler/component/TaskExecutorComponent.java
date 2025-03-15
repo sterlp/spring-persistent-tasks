@@ -20,14 +20,15 @@ import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * The executor of a scheduler
+ * <p>
+ * Not a spring bean!
+ * </p>
  */
 @Slf4j
 public class TaskExecutorComponent implements Closeable {
@@ -84,18 +85,17 @@ public class TaskExecutorComponent implements Closeable {
         }
     }
 
-    @PostConstruct
     public void start() {
         if (stopped.compareAndExchange(true, false)) {
             synchronized (stopped) {
                 runningTasks.clear();
                 executor = Executors.newFixedThreadPool(maxThreads.get());
+                log.info("Started {} with {} threads.", schedulerName, maxThreads.get());
             }
         }
     }
 
     @Override
-    @PreDestroy
     public void close() {
         if (stopped.compareAndExchange(false, true)) {
             synchronized (stopped) {
@@ -108,7 +108,7 @@ public class TaskExecutorComponent implements Closeable {
         if (executor != null) {
             executor.shutdown();
             if (runningTasks.size() > 0) {
-                log.info("Shutdown executor {} with {} running tasks, waiting for {}.",
+                log.info("Shutdown {} with {} running tasks, waiting for {}.",
                         schedulerName, runningTasks.size(), maxShutdownWaitTime);
 
                 try {
@@ -127,7 +127,7 @@ public class TaskExecutorComponent implements Closeable {
     }
 
     public void shutdownNow() {
-        if (stopped.compareAndExchange(true, false)) {
+        if (stopped.compareAndExchange(false, true)) {
             if (executor != null) {
                 synchronized (executor) {
                     executor.shutdownNow();

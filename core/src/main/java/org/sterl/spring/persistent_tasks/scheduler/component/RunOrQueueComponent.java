@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
@@ -16,6 +14,11 @@ import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * <p>
+ * Not a spring bean!
+ * </p>
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class RunOrQueueComponent {
@@ -31,10 +34,16 @@ public class RunOrQueueComponent {
      * @return the reference to the {@link Future} with the key, if no threads are
      *         available it is resolved
      */
-    @Transactional(propagation = Propagation.MANDATORY)
     public <T extends Serializable> TriggerKey execute(AddTriggerRequest<T> triggerRequest) {
         var trigger = triggerService.queue(triggerRequest);
 
+        trigger = offerToRun(trigger);
+        // we will listen for the commit event to execute this trigger ...
+        System.err.println("execute->" + trigger.getKey());
+        return trigger.getKey();
+    }
+
+    private TriggerEntity offerToRun(TriggerEntity trigger) {
         if (!trigger.shouldRunInFuture()) {
             if (taskExecutor.getFreeThreads() > 0) {
                 trigger = triggerService.markTriggersAsRunning(trigger, schedulerName);
@@ -45,8 +54,7 @@ public class RunOrQueueComponent {
                         taskExecutor.getFreeThreads(), taskExecutor.getMaxThreads(), trigger.getKey());
             }
         }
-        // we will listen for the commit event to execute this trigger ...
-        return trigger.getKey();
+        return trigger;
     }
 
     public boolean checkIfTrigerShouldRun(long triggerId) {

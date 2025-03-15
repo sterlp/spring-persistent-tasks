@@ -16,7 +16,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
-import org.sterl.spring.persistent_tasks.scheduler.component.PingRegistryComponent;
 import org.sterl.spring.persistent_tasks.scheduler.component.RunOrQueueComponent;
 import org.sterl.spring.persistent_tasks.scheduler.component.TaskExecutorComponent;
 import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity;
@@ -47,7 +46,6 @@ public class SchedulerService {
     private final TaskExecutorComponent taskExecutor;
     private final EditSchedulerStatusComponent editSchedulerStatus;
 
-    private final PingRegistryComponent pingRegistry;
     private final RunOrQueueComponent runOrQueue;
 
     private final TransactionTemplate trx;
@@ -55,8 +53,7 @@ public class SchedulerService {
     @PostConstruct
     public void start() {
         taskExecutor.start();
-        final var s = editSchedulerStatus.checkinToRegistry(name);
-        log.info("Started {} on {} threads.", s, taskExecutor.getMaxThreads());
+        editSchedulerStatus.checkinToRegistry(name, 0, taskExecutor.getMaxThreads());
     }
 
     public void setMaxThreads(int value) {
@@ -105,7 +102,7 @@ public class SchedulerService {
     public List<Future<TriggerKey>> triggerNextTasks(OffsetDateTime timeDue) {
         if (taskExecutor.getFreeThreads() > 0) {
             final var result = trx.execute(t -> {
-                var status = pingRegistry.execute();
+                var status = editSchedulerStatus.checkinToRegistry(name, taskExecutor.getRunningTasks(), taskExecutor.getMaxThreads());
                 var triggers = triggerService.lockNextTrigger(name, taskExecutor.getFreeThreads(), timeDue);
                 status.addRunning(triggers.size());
                 return triggers;
@@ -117,7 +114,7 @@ public class SchedulerService {
                     taskExecutor.getFreeThreads(),
                     taskExecutor.getMaxThreads(),
                     timeDue);
-            pingRegistry.execute();
+            editSchedulerStatus.checkinToRegistry(name, taskExecutor.getRunningTasks(), taskExecutor.getMaxThreads());
             return Collections.emptyList();
         }
     }
@@ -135,9 +132,9 @@ public class SchedulerService {
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    void checkIfTrigerShouldRun(TriggerAddedEvent addedTrigger) {
+    public void checkIfTrigerShouldRun(TriggerAddedEvent addedTrigger) {
         if (runOrQueue.checkIfTrigerShouldRun(addedTrigger.id())) {
-            pingRegistry.execute();
+            editSchedulerStatus.checkinToRegistry(name, taskExecutor.getRunningTasks(), taskExecutor.getMaxThreads());
         }
     }
 

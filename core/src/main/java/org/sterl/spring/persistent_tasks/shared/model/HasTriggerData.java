@@ -29,6 +29,7 @@ public interface HasTriggerData {
     }
     
     default boolean shouldRunInFuture() {
-        return getData().getRunAt().isAfter(OffsetDateTime.now());
+        if (getData().getRunAt() == null) return true;
+        return getData().getRunAt().toEpochSecond() > OffsetDateTime.now().toEpochSecond();
     }
 }

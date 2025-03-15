@@ -118,6 +118,10 @@ public class PersistentTaskTestService {
         return result;
     }
     
+    public void awaitRunningTriggers() {
+        awaitRunningTriggers(defaultTimeout);
+    }
+
     public void awaitRunningTriggers(Duration duration) {
         final var timeout = System.currentTimeMillis() + duration.toMillis();
         do {
@@ -125,7 +129,8 @@ public class PersistentTaskTestService {
         } while (hasRunningTriggers() && System.currentTimeMillis() < timeout);
         
         int runningCount = schedulers.stream().mapToInt(s -> s.getScheduler().getRunnungTasks()).sum();
-        assertThat(runningCount).describedAs("Where are sill " + runningCount + " triggers running.").isZero();
+        assertThat(runningCount).describedAs("Where are sill " 
+                + runningCount + " triggers running after " + duration).isZero();
     }
 
     public boolean hasRunningTriggers() {
