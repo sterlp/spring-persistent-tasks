@@ -107,7 +107,9 @@ public interface RetryStrategy {
         }
         @Override
         public OffsetDateTime retryAt(int executionCount, @Nullable Exception error) {
-            return OffsetDateTime.now().plus(scalingFactor * executionCount, unit);
+            var next = OffsetDateTime.now();
+            if (scalingFactor > 0 && executionCount > 0) return OffsetDateTime.now().plus(scalingFactor * executionCount, unit);
+            return next;
         }
     }
     

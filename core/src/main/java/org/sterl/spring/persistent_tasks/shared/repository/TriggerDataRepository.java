@@ -5,7 +5,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -17,6 +20,16 @@ import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
 
 @NoRepositoryBean
 public interface TriggerDataRepository<T extends HasTriggerData> extends JpaRepository<T, Long> {
+    Sort DEFAULT_SORT = Sort.by(Direction.ASC, "data.createdTime");
+
+    default Pageable applyDefaultSortIfNeeded(Pageable page) {
+        var result = page;
+        if (page.getSort() == Sort.unsorted()) {
+            result = PageRequest.of(page.getPageNumber(), page.getPageSize(), DEFAULT_SORT);
+        }
+        return result;
+    }
+
     @Query("""
             SELECT e FROM #{#entityName} e
             WHERE ((:id IS NULL       OR e.data.key.id LIKE :id)
@@ -67,11 +80,10 @@ public interface TriggerDataRepository<T extends HasTriggerData> extends JpaRepo
            """)
     @Modifying
     long deleteOlderThan(@Param("age") OffsetDateTime age);
-    
+
     @Query("""
-            SELECT e FROM #{#entityName} e
-            WHERE  e.data.correlationId = :correlationId
-            ORDER BY e.data.createdTime ASC
+            SELECT   e FROM #{#entityName} e
+            WHERE    e.data.correlationId = :correlationId
             """)
-    List<T> findByCorrelationId(@Param("correlationId") String correlationId);
+    List<T> findByCorrelationId(@Param("correlationId") String correlationId, Pageable page);
 }

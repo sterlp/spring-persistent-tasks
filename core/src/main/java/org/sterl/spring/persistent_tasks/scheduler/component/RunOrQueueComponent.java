@@ -65,10 +65,15 @@ public class RunOrQueueComponent {
         clearNotCreatedTriggers();
         return toRun != null;
     }
+    
+    public boolean hasWaitingTriggers() {
+        clearNotCreatedTriggers();
+        return shouldRun.size() > 0;
+    }
 
     private void clearNotCreatedTriggers() {
         if (shouldRun.size() > 0) {
-            final var timeout = OffsetDateTime.now().minusSeconds(5);
+            final var timeout = OffsetDateTime.now().plusSeconds(15);
             final var triggers = shouldRun.entrySet().iterator();
             while (triggers.hasNext()) {
                 var entry = triggers.next();

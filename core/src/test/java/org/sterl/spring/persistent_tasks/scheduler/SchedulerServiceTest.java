@@ -62,7 +62,7 @@ class SchedulerServiceTest extends AbstractSpringTest {
 
         // AND
         final SchedulerEntity scheduler = subject.getScheduler();
-        assertThat(scheduler.getRunnungTasks()).isEqualTo(10);
+        assertThat(scheduler.getRunningTasks()).isEqualTo(10);
     }
     
     @Test

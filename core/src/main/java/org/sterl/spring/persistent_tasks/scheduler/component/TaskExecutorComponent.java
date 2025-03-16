@@ -3,6 +3,7 @@ package org.sterl.spring.persistent_tasks.scheduler.component;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -131,7 +132,8 @@ public class TaskExecutorComponent implements Closeable {
             if (executor != null) {
                 synchronized (executor) {
                     executor.shutdownNow();
-                    log.info("Force stop {} with {} running tasks", schedulerName, getRunningTasks());
+                    log.info("Force stop {} with {} running tasks", schedulerName, runningTasks.size());
+                    runningTasks.clear();
                     executor = null;
                 }
             }
@@ -144,9 +146,13 @@ public class TaskExecutorComponent implements Closeable {
         }
         return Math.max(maxThreads.get() - runningTasks.size(), 0);
     }
-
-    public int getRunningTasks() {
+    
+    public int countRunning() {
         return runningTasks.size();
+    }
+
+    public Collection<Future<TriggerKey>> getRunningTasks() {
+        return runningTasks.values();
     }
 
     public boolean isStopped() {
@@ -161,7 +167,7 @@ public class TaskExecutorComponent implements Closeable {
         this.maxThreads.set(value);
     }
     public int getMaxThreads() {
-        return this.maxThreads.get();
+        return isStopped() ? 0 : this.maxThreads.get();
     }
 
     public boolean isRunning(TriggerEntity trigger) {

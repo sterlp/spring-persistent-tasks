@@ -2,6 +2,7 @@ package org.sterl.spring.persistent_tasks.scheduler;
 
 import java.io.Serializable;
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -102,9 +103,9 @@ public class SchedulerService {
     public List<Future<TriggerKey>> triggerNextTasks(OffsetDateTime timeDue) {
         if (taskExecutor.getFreeThreads() > 0) {
             final var result = trx.execute(t -> {
-                var status = editSchedulerStatus.checkinToRegistry(name, taskExecutor.getRunningTasks(), taskExecutor.getMaxThreads());
                 var triggers = triggerService.lockNextTrigger(name, taskExecutor.getFreeThreads(), timeDue);
-                status.addRunning(triggers.size());
+                editSchedulerStatus.checkinToRegistry(name, 
+                        taskExecutor.countRunning() + triggers.size(), taskExecutor.getMaxThreads());
                 return triggers;
             });
 
@@ -114,7 +115,7 @@ public class SchedulerService {
                     taskExecutor.getFreeThreads(),
                     taskExecutor.getMaxThreads(),
                     timeDue);
-            editSchedulerStatus.checkinToRegistry(name, taskExecutor.getRunningTasks(), taskExecutor.getMaxThreads());
+            editSchedulerStatus.checkinToRegistry(name, taskExecutor.countRunning(), taskExecutor.getMaxThreads());
             return Collections.emptyList();
         }
     }
@@ -134,7 +135,7 @@ public class SchedulerService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void checkIfTrigerShouldRun(TriggerAddedEvent addedTrigger) {
         if (runOrQueue.checkIfTrigerShouldRun(addedTrigger.id())) {
-            editSchedulerStatus.checkinToRegistry(name, taskExecutor.getRunningTasks(), taskExecutor.getMaxThreads());
+            editSchedulerStatus.checkinToRegistry(name, taskExecutor.countRunning(), taskExecutor.getMaxThreads());
         }
     }
 
@@ -158,8 +159,11 @@ public class SchedulerService {
     public List<SchedulerEntity> listAll() {
         return editSchedulerStatus.listAll();
     }
-    
+    public Collection<Future<TriggerKey>> getRunning() {
+        return taskExecutor.getRunningTasks();
+    }
     public boolean hasRunningTriggers() {
-        return !taskExecutor.isStopped() && taskExecutor.getRunningTriggers().size() > 0;
+        return !taskExecutor.isStopped() 
+                && (taskExecutor.countRunning() > 0 || runOrQueue.hasWaitingTriggers());
     }
 }

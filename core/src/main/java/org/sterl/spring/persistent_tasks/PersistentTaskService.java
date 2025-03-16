@@ -8,7 +8,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.context.event.EventListener;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -122,24 +125,46 @@ public class PersistentTaskService {
 
     /**
      * Returns all triggers for a correlationId sorted by the creation time.
+     * Data is limited to overall 300 elements.
+     * 
      * @param correlationId the id to search for
      * @return the found {@link TriggerData} sorted by create time ASC
      */
     @Transactional(readOnly = true, timeout = 5)
     public List<TriggerData> findAllTriggerByCorrelationId(String correlationId) {
 
-        var running = triggerService.findTriggerByCorrelationId(correlationId)
+        var running = triggerService.findTriggerByCorrelationId(correlationId, Pageable.ofSize(100))
                 .stream().map(TriggerEntity::getData)
                 .toList();
 
-        var done = historyService.findTriggerByCorrelationId(correlationId)
+        var done = historyService.findTriggerByCorrelationId(correlationId, Pageable.ofSize(200))
             .stream().map(TriggerHistoryLastStateEntity::getData)
             .toList();
-
 
         var result = new ArrayList<TriggerData>(running.size() + done.size());
         result.addAll(done);
         result.addAll(running);
         return result;
+    }
+    
+    /**
+     * Returns the first info to a trigger based on the correlationId.
+     * 
+     * @param correlationId the id to search for
+     * @return the found {@link TriggerData}
+     */
+    @Transactional(readOnly = true, timeout = 5)
+    public Optional<TriggerData> findLastTriggerByCorrelationId(String correlationId) {
+        final var page = PageRequest.of(0, 1, Sort.by(Direction.DESC, "data.createdTime"));
+        var result = triggerService.findTriggerByCorrelationId(correlationId, page)
+                .stream().map(TriggerEntity::getData)
+                .toList();
+
+        if (result.isEmpty()) {
+            result = historyService.findTriggerByCorrelationId(correlationId, page)
+                    .stream().map(TriggerHistoryLastStateEntity::getData)
+                    .toList();
+        }
+        return result.isEmpty() ? Optional.empty() : Optional.of(result.getFirst());
     }
 }

@@ -15,7 +15,7 @@ import lombok.ToString;
 @Entity
 @Table(name = "pt_scheduler", indexes = @Index(name = "idx_task_scheduler_status", columnList = "last_ping"))
 @Data
-@ToString(of = { "id", "lastPing", "runnungTasks", "tasksSlotCount" })
+@ToString(of = { "id", "lastPing", "runningTasks", "tasksSlotCount" })
 @EqualsAndHashCode(of = "id")
 @NoArgsConstructor
 public class SchedulerEntity {
@@ -29,7 +29,7 @@ public class SchedulerEntity {
 
     private int tasksSlotCount;
 
-    private int runnungTasks;
+    private int runningTasks;
 
     private double systemLoadAverage = 0.0d;
 
@@ -45,7 +45,7 @@ public class SchedulerEntity {
     }
 
     public SchedulerEntity addRunning(int count) {
-        this.runnungTasks += count;
+        this.runningTasks += count;
         return this;
     }
 }

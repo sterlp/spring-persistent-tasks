@@ -121,7 +121,7 @@ public class HistoryService {
         return triggerHistoryLastStateRepository.listTriggerStatus();
     }
 
-    public List<TriggerHistoryLastStateEntity> findTriggerByCorrelationId(String correlationId) {
-        return triggerHistoryLastStateRepository.findByCorrelationId(correlationId);
+    public List<TriggerHistoryLastStateEntity> findTriggerByCorrelationId(String correlationId, Pageable page) {
+        return triggerHistoryLastStateRepository.findByCorrelationId(correlationId, page);
     }
 }
