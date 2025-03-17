@@ -117,6 +117,12 @@ const TriggerItemView = ({
 
 export default TriggerItemView;
 
+function runningSince(value?: string) {
+    if (!value) return "";
+    const msRuntime = new Date().getTime() - new Date(value).getTime();
+    return `since ${formatMs(msRuntime)}`;
+}
+
 const TriggerCompactView = ({ trigger }: { trigger: Trigger }) => (
     <Row className="align-items-center">
         <Col className="col-2">
@@ -138,7 +144,9 @@ const TriggerCompactView = ({ trigger }: { trigger: Trigger }) => (
             {trigger.runningOn ? (
                 <LabeledText
                     label={`Running on (${trigger.executionCount})`}
-                    value={trigger.runningOn}
+                    value={
+                        trigger.runningOn + " " + runningSince(trigger.start)
+                    }
                 />
             ) : (
                 <LabeledText
@@ -200,10 +208,24 @@ const TriggerDetailsView = ({
                 <Col md="6" xl="4">
                     <LabeledText
                         label="Duration MS"
-                        value={formatMs(trigger.runningDurationInMs)}
+                        value={
+                            trigger.runningDurationInMs
+                                ? formatMs(trigger.runningDurationInMs)
+                                : runningSince(trigger.start)
+                        }
                     />
                 </Col>
             </Row>
+            {trigger.lastPing ? (
+                <Row>
+                    <Col md="12">
+                        <LabeledText
+                            label="Last keep alive ping"
+                            value={formatShortDateTime(trigger.lastPing)}
+                        />
+                    </Col>
+                </Row>
+            ) : undefined}
             <Row className="mt-2">
                 <Col>
                     <TriggerHistoryListView triggers={history} />

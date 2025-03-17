@@ -14,23 +14,28 @@ import org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity;
 import org.sterl.spring.persistent_tasks.scheduler.repository.TaskSchedulerRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Transactional(timeout = 10)
 @RequiredArgsConstructor
+@Slf4j
 public class EditSchedulerStatusComponent {
     private final OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
     private final MemoryMXBean memory = ManagementFactory.getMemoryMXBean();
     private final TaskSchedulerRepository schedulerRepository;
 
-    public SchedulerEntity checkinToRegistry(String name) {
+    public SchedulerEntity checkinToRegistry(String name, int runningTasks, int maxTasks) {
         var result = get(name);
 
         result.setSystemLoadAverage(os.getSystemLoadAverage());
         result.setMaxHeap(memory.getHeapMemoryUsage().getMax());
         result.setUsedHeap(memory.getHeapMemoryUsage().getUsed());
+        result.setRunningTasks(runningTasks);
+        result.setTasksSlotCount(maxTasks);
 
         result.setLastPing(OffsetDateTime.now());
+        log.debug("Ping {}", result);
         return schedulerRepository.save(result);
     }
     

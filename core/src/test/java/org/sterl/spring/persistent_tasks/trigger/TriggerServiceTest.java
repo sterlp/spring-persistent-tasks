@@ -340,9 +340,11 @@ class TriggerServiceTest extends AbstractSpringTest {
             for (int i = 1; i <= 100; ++i) {
                 lockInvocations.add(() -> triggerService.run(triggerService.lockNextTrigger("test")));
             }
-            
+            Thread.sleep(500);
             executor.invokeAll(lockInvocations);
-            // start any others - as MSSQL and mySQL has now row lock, only table locks implemented
+            executor.invokeAll(lockInvocations);
+            executor.invokeAll(lockInvocations);
+            // start any others - as MSSQL and mySQL has no row lock, only table locks implemented
             var s = persistentTaskTestService.scheduleNextTriggersAndWait(Duration.ofSeconds(2));
             System.err.println("---------> " + s.size());
 

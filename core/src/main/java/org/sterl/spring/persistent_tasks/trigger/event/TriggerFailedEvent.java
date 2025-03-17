@@ -12,7 +12,8 @@ import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
  */
 public record TriggerFailedEvent(long id, 
         TriggerData data, Serializable state, 
-        Exception exception, OffsetDateTime retryAt) implements TriggerLifeCycleEvent {
+        Exception exception, 
+        OffsetDateTime retryAt) implements TriggerLifeCycleEvent {
 
     @Override
     public boolean isDone() {

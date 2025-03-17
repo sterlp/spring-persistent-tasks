@@ -16,6 +16,7 @@ public class TriggerConverter {
             result.setId(source.getId());
             result.setInstanceId(source.getId());
             result.setRunningOn(source.getRunningOn());
+            result.setLastPing(source.getLastPing());
             return result;
         }
     }

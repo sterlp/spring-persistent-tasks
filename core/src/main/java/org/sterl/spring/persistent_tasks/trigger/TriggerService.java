@@ -193,8 +193,8 @@ public class TriggerService {
         });
     }
 
-    public List<TriggerEntity> findTriggerByCorrelationId(String correlationId) {
-        return readTrigger.findTriggerByCorrelationId(correlationId);
+    public List<TriggerEntity> findTriggerByCorrelationId(String correlationId, Pageable page) {
+        return readTrigger.findTriggerByCorrelationId(correlationId, page);
         
     }
 }

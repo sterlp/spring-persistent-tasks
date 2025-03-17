@@ -20,26 +20,28 @@ const SchedulerStatusView = ({ scheduler }: Props) => {
                         Last Ping: {durationSince(new Date(scheduler.lastPing))}
                     </Col>
                     <Col>
-                        <Form.Label htmlFor={"slot-" + name}>
+                        <Form.Label htmlFor={"slot-" + scheduler.id}>
                             {"Running " +
-                                scheduler.runnungTasks +
+                                scheduler.runningTasks +
                                 " of " +
                                 scheduler.tasksSlotCount}
                         </Form.Label>
                         <ProgressBar
-                            id={"slot-" + name}
+                            id={"slot-" + scheduler.id}
                             animated={true}
                             min={0}
-                            now={scheduler.runnungTasks}
+                            now={scheduler.runningTasks}
                             max={scheduler.tasksSlotCount}
                         ></ProgressBar>
                     </Col>
                 </Row>
                 <Row>
                     <Col>
-                        <Form.Label htmlFor={"cpu-" + name}>CPU</Form.Label>
+                        <Form.Label htmlFor={"cpu-" + scheduler.id}>
+                            CPU
+                        </Form.Label>
                         <ProgressBar
-                            id={"cpu-" + name}
+                            id={"cpu-" + scheduler.id}
                             animated={true}
                             min={0}
                             now={scheduler.systemLoadAverage}
@@ -52,14 +54,14 @@ const SchedulerStatusView = ({ scheduler }: Props) => {
                         ></ProgressBar>
                     </Col>
                     <Col>
-                        <Form.Label htmlFor={"memory-" + name}>
+                        <Form.Label htmlFor={"memory-" + scheduler.id}>
                             Memory{" "}
                             {formatMemory(scheduler.usedHeap) +
                                 " of " +
                                 formatMemory(scheduler.maxHeap)}
                         </Form.Label>
                         <ProgressBar
-                            id={"memory-" + name}
+                            id={"memory-" + scheduler.id}
                             animated={true}
                             min={0}
                             now={scheduler.usedHeap}

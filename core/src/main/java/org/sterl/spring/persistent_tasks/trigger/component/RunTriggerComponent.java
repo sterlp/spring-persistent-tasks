@@ -81,7 +81,11 @@ public class RunTriggerComponent {
             result = editTrigger.failTrigger(trigger.getKey(), runTaskWithStateCommand.state(), e, null);
         } else {
             final OffsetDateTime retryAt = task.retryStrategy().retryAt(trigger.getData().getExecutionCount(), e);
-            log.warn("Failed trigger={} with retryAt={}", trigger.getKey(), retryAt, e);
+            if (retryAt == null) {
+                log.error("Failed trigger={}, no further retries!", trigger.getKey(), e);
+            } else {
+                log.warn("Failed trigger={} with retryAt={}", trigger.getKey(), retryAt, e);
+            }
             result = editTrigger.failTrigger(trigger.getKey(), runTaskWithStateCommand.state(), e, retryAt);
         }
         return result;

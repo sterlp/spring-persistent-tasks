@@ -9,7 +9,7 @@ export interface PagedModel<T> {
 export interface SchedulerEntity {
     id: string;
     tasksSlotCount: number;
-    runnungTasks: number;
+    runningTasks: number;
     systemLoadAverage: number;
     maxHeap: number;
     usedHeap: number;
@@ -63,6 +63,7 @@ export interface Trigger {
     runningOn: string;
     createdTime: string;
     runAt: string;
+    lastPing: string;
     start: string;
     end: string;
     executionCount: number;

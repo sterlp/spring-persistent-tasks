@@ -100,9 +100,9 @@ class TriggerResourceTest extends AbstractSpringTest {
     @Test
     void testSearchByCorrelationId() {
         // GIVEN
-        var t1 = triggerService.queue(TriggerBuilder.newTrigger("task1").build());
-        var t2 = triggerService.queue(TriggerBuilder.newTrigger("task1").build());
-        var t3 = triggerService.queue(TriggerBuilder.newTrigger("task2").build());
+        var t1 = triggerService.queue(TriggerBuilder.newTrigger("task1").correlationId(UUID.randomUUID().toString()).build());
+        var t2 = triggerService.queue(TriggerBuilder.newTrigger("task1").build()); // null
+        var t3 = triggerService.queue(TriggerBuilder.newTrigger("task2").correlationId(UUID.randomUUID().toString()).build());
         
         // WHEN
         var response = template.exchange(
@@ -112,8 +112,8 @@ class TriggerResourceTest extends AbstractSpringTest {
                 String.class);
         // THEN
         assertThat(response.getBody()).contains(t3.getData().getCorrelationId());
-        assertThat(response.getBody()).doesNotContain(t2.getData().getCorrelationId());
         assertThat(response.getBody()).doesNotContain(t1.getData().getCorrelationId());
+        assertThat(response.getBody()).doesNotContain(t2.getData().getKey().getId());
     }
 
     @Test

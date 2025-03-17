@@ -2,7 +2,6 @@ package org.sterl.spring.persistent_tasks.api.task;
 
 import java.io.Serializable;
 import java.util.Objects;
-import java.util.UUID;
 
 /**
  * The {@link RunningTrigger} state will be provided by this context holder to any thread.
@@ -38,7 +37,11 @@ public class RunningTriggerContextHolder {
     public static String buildOrGetCorrelationId(String newCorrelationId) {
         var correlationId = getCorrelationId();
         if (correlationId == null) correlationId = newCorrelationId;
-        if (correlationId == null) correlationId = UUID.randomUUID().toString();
+        // take over any key from the trigger before ...
+        if (correlationId == null) {
+            var c = getContext();
+            if (c != null) correlationId = c.getKey().getId();
+        }
         return correlationId;
     }
 }

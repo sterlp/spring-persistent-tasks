@@ -41,10 +41,11 @@ class PersistentTaskServiceTest extends AbstractSpringTest {
         final var correlationId = UUID.randomUUID().toString();
 
         // WHEN
+        System.err.println("-----");
         subject.runOrQueue(task1.newTrigger(234).correlationId(correlationId).build());
 
         // THEN
-        asserts.awaitOrdered("234::chainTask1", "chainTask1::234::chainTask1");
+        asserts.awaitOrdered(persistentTaskTestService::awaitRunningTriggers, "234::chainTask1", "chainTask1::234::chainTask1");
         assertThat(correlationId).isEqualTo(correlationFound.get());
         // AND
         var trigger= subject.findAllTriggerByCorrelationId(correlationId);

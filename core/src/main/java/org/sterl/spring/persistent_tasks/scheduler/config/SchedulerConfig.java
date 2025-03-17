@@ -2,6 +2,7 @@ package org.sterl.spring.persistent_tasks.scheduler.config;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Duration;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
+import org.sterl.spring.persistent_tasks.scheduler.component.RunOrQueueComponent;
 import org.sterl.spring.persistent_tasks.scheduler.component.TaskExecutorComponent;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 
@@ -52,9 +54,26 @@ public class SchedulerConfig {
             TransactionTemplate trx) throws UnknownHostException {
         
         customizer = customizer.isEmpty() ? Optional.of(new SchedulerCustomizer() {}) : customizer;
+        final var name = customizer.get().name();
+        final var maxShutdownWaitTime = Duration.ofSeconds(10);
 
-        return new SchedulerService(customizer.get().name(), triggerService, 
-                new TaskExecutorComponent(triggerService, maxThreads), 
-                editSchedulerStatus, trx);
+        return newSchedulerService(name, triggerService, editSchedulerStatus, maxThreads, maxShutdownWaitTime, trx);
+    }
+
+    public static SchedulerService newSchedulerService(final String name, TriggerService triggerService,
+            EditSchedulerStatusComponent editSchedulerStatus, int maxThreads, final Duration maxShutdownWaitTime,
+            TransactionTemplate trx) {
+        
+        final var taskExecutor = new TaskExecutorComponent(name, triggerService, maxThreads);
+        if (maxShutdownWaitTime != null) taskExecutor.setMaxShutdownWaitTime(maxShutdownWaitTime);
+
+        final var runOrQueue = new RunOrQueueComponent(name, triggerService, taskExecutor);
+
+        return new SchedulerService(name, 
+                triggerService,
+                taskExecutor, 
+                editSchedulerStatus,
+                runOrQueue,
+                trx);
     }
 }

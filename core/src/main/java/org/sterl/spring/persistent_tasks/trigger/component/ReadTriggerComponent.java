@@ -64,7 +64,7 @@ public class ReadTriggerComponent {
         return triggerRepository.findAll(task.name(), page);
     }
 
-    public List<TriggerEntity> findTriggerByCorrelationId(String correlationId) {
-        return triggerRepository.findByCorrelationId(correlationId);
+    public List<TriggerEntity> findTriggerByCorrelationId(String correlationId, Pageable page) {
+        return triggerRepository.findByCorrelationId(correlationId, triggerRepository.applyDefaultSortIfNeeded(page));
     }
 }

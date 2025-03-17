@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 
 @FunctionalInterface
 public interface RetryStrategy {
-    RetryStrategy NO_RETRY = (c, e) -> false;
+    RetryStrategy NO_RETRY = (c, e) -> null;
     /**
      * One initial execution and after that we will try it 3 more times. Overall 4 executions.
      */
@@ -23,14 +23,16 @@ public interface RetryStrategy {
 
     /**
      * Determines whether a retry should be attempted based on the current
-     * execution count and the provided exception.
+     * execution count and the provided exception. (optional)
      *
      * @param executionCount The number of attempts already made.
      * @param error The exception that triggered the retry.
      * @return {@code true} if the current execution count is less than
      *         the maximum execution count; {@code false} otherwise.
      */
-    boolean shouldRetry(int executionCount, @Nullable Exception error);
+    default boolean shouldRetry(int executionCount, @Nullable Exception error) {
+        return true;
+    }
 
     /**
      * Calculates the time of the next retry attempt based on the current
@@ -38,12 +40,9 @@ public interface RetryStrategy {
      *
      * @param executionCount The number of attempts already made.
      * @param exception The exception that triggered the retry.
-     * @return The {@link OffsetDateTime} representing the time of the next retry attempt.
+     * @return {@link OffsetDateTime} of the next execution, <code>null</code> for no retry.
      */
-    default OffsetDateTime retryAt(int executionCount, @Nullable Exception exception) {
-        return OffsetDateTime.now().plusMinutes(executionCount);
-    }
-
+    OffsetDateTime retryAt(int executionCount, @Nullable Exception exception);
 
     // Default implementations
     /**
@@ -70,11 +69,11 @@ public interface RetryStrategy {
         private final int offset;
 
         @Override
-        public boolean shouldRetry(int executionCount, Exception error) {
+        public boolean shouldRetry(int executionCount, @Nullable Exception error) {
             return maxExecutionCount > executionCount;
         }
         @Override
-        public OffsetDateTime retryAt(int executionCount, Exception error) {
+        public OffsetDateTime retryAt(int executionCount, @Nullable Exception error) {
             return OffsetDateTime.now().plus(offset + executionCount, unit);
         }
     }
@@ -103,12 +102,14 @@ public interface RetryStrategy {
         private final int scalingFactor;
 
         @Override
-        public boolean shouldRetry(int executionCount, Exception error) {
+        public boolean shouldRetry(int executionCount, @Nullable Exception error) {
             return maxExecutionCount > executionCount;
         }
         @Override
-        public OffsetDateTime retryAt(int executionCount, Exception error) {
-            return OffsetDateTime.now().plus(scalingFactor * executionCount, unit);
+        public OffsetDateTime retryAt(int executionCount, @Nullable Exception error) {
+            var next = OffsetDateTime.now();
+            if (scalingFactor > 0 && executionCount > 0) return OffsetDateTime.now().plus(scalingFactor * executionCount, unit);
+            return next;
         }
     }
     
@@ -133,11 +134,11 @@ public interface RetryStrategy {
         private final int interval;
 
         @Override
-        public boolean shouldRetry(int executionCount, Exception error) {
+        public boolean shouldRetry(int executionCount, @Nullable Exception error) {
             return maxExecutionCount > executionCount;
         }
         @Override
-        public OffsetDateTime retryAt(int executionCount, Exception error) {
+        public OffsetDateTime retryAt(int executionCount, @Nullable Exception error) {
             return OffsetDateTime.now().plus(interval, unit);
         }
     }

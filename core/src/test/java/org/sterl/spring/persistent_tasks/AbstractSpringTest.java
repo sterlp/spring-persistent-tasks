@@ -24,7 +24,7 @@ import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
 import org.sterl.spring.persistent_tasks.history.HistoryService;
 import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
-import org.sterl.spring.persistent_tasks.scheduler.component.TaskExecutorComponent;
+import org.sterl.spring.persistent_tasks.scheduler.config.SchedulerConfig;
 import org.sterl.spring.persistent_tasks.task.TaskService;
 import org.sterl.spring.persistent_tasks.test.AsyncAsserts;
 import org.sterl.spring.persistent_tasks.test.PersistentTaskTestService;
@@ -36,7 +36,7 @@ import org.sterl.test.hibernate_asserts.HibernateAsserts;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
-// @ActiveProfiles("mssql") // postgres mssql mariadb mysql
+//@ActiveProfiles("mssql") // postgres mssql mariadb mysql
 @SpringBootTest(classes = SampleApp.class, webEnvironment = WebEnvironment.RANDOM_PORT)
 @RecordApplicationEvents
 public class AbstractSpringTest {
@@ -94,9 +94,8 @@ public class AbstractSpringTest {
         SchedulerService schedulerA(TriggerService triggerService, EditSchedulerStatusComponent editSchedulerStatus,
                 TransactionTemplate trx) throws UnknownHostException {
 
-            final var taskExecutor = new TaskExecutorComponent(triggerService, 10);
-            taskExecutor.setMaxShutdownWaitTime(Duration.ofSeconds(0));
-            return new SchedulerService("schedulerA", triggerService, taskExecutor, editSchedulerStatus, trx);
+            final var name = "schedulerA";
+            return SchedulerConfig.newSchedulerService(name, triggerService, editSchedulerStatus, 10, Duration.ZERO, trx);
         }
 
         @Bean
@@ -104,9 +103,8 @@ public class AbstractSpringTest {
         SchedulerService schedulerB(TriggerService triggerService, EditSchedulerStatusComponent editSchedulerStatus,
                 TransactionTemplate trx) throws UnknownHostException {
 
-            final var taskExecutor = new TaskExecutorComponent(triggerService, 20);
-            taskExecutor.setMaxShutdownWaitTime(Duration.ofSeconds(0));
-            return new SchedulerService("schedulerB", triggerService, taskExecutor, editSchedulerStatus, trx);
+            final var name = "schedulerB";
+            return SchedulerConfig.newSchedulerService(name, triggerService, editSchedulerStatus, 20, Duration.ZERO, trx);
         }
 
         /**

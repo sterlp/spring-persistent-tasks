@@ -1,7 +1,6 @@
 package org.sterl.spring.persistent_tasks.test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -72,10 +71,11 @@ public class AsyncAsserts {
      */
     public void awaitValue(Runnable fn, String value) {
         final var start = System.currentTimeMillis();
+        if (fn != null) fn.run(); // ensure we call the given function at least once
         while (!values.contains(value)
                 && (System.currentTimeMillis() - start <= defaultTimeout.toMillis())) {
             try {
-                Thread.sleep(50);
+                Thread.sleep(100);
                 if (fn != null) fn.run();
             } catch (InterruptedException e) {
                 if (Thread.interrupted()) break;
@@ -129,10 +129,6 @@ public class AsyncAsserts {
     
     public void awaitValueOnce(String value) {
         awaitValue(null, value);
-        assertThat(values).contains(value);
-        var occurrences = values.stream().filter(e -> value.equals(e)).count();
-        if (occurrences > 1) {
-            fail("Expected " + value + " to be present once but was present " + occurrences + " times.");
-        }
+        assertThat(values).containsOnlyOnce(value);
     }
 }

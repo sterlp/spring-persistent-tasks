@@ -1,6 +1,7 @@
 package org.sterl.spring.example_app;
 
 import java.net.UnknownHostException;
+import java.time.Duration;
 
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.boot.SpringApplication;
@@ -22,6 +23,7 @@ import org.sterl.spring.persistent_tasks.EnableSpringPersistentTasks;
 import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
 import org.sterl.spring.persistent_tasks.scheduler.component.TaskExecutorComponent;
+import org.sterl.spring.persistent_tasks.scheduler.config.SchedulerConfig;
 import org.sterl.spring.persistent_tasks.scheduler.config.SchedulerConfig.SchedulerCustomizer;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks_ui.EnableSpringPersistentTasksUI;
@@ -65,14 +67,14 @@ public class ExampleApplication {
 
     // just one more for demonstration
     @Bean(name = "schedulerB", initMethod = "start", destroyMethod = "stop")
-    @SuppressWarnings("resource")
     SchedulerService schedulerB(
             TriggerService triggerService, 
             EditSchedulerStatusComponent editSchedulerStatus,
             TransactionTemplate trx) throws UnknownHostException {
 
-        return new SchedulerService("schedulerB", triggerService, 
-                new TaskExecutorComponent(triggerService, 7), editSchedulerStatus, trx);
+        return SchedulerConfig.newSchedulerService("schedulerB", 
+                triggerService, 
+                editSchedulerStatus, 7, Duration.ofSeconds(1), trx);
     }
     
     @Bean
