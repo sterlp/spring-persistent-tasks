@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Future;
 
+import org.slf4j.event.Level;
 import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,7 +81,9 @@ public class SchedulerService {
     }
 
     public Optional<SchedulerEntity> findStatus(String name) {
-        return editSchedulerStatus.find(name);
+        if (name == null) return Optional.empty();
+        else if (name.equals(this.name)) return Optional.of(getScheduler());
+        else return editSchedulerStatus.find(name);
     }
 
     /**
@@ -111,7 +114,7 @@ public class SchedulerService {
 
             return taskExecutor.submit(result);
         } else {
-            log.debug("No free threads {}/{} right now to run jobs due for: {}",
+            log.info("No free threads {}/{} right now to run jobs due for: {}",
                     taskExecutor.getFreeThreads(),
                     taskExecutor.getMaxThreads(),
                     timeDue);
@@ -151,7 +154,7 @@ public class SchedulerService {
                 .toList();
 
         int running = triggerService.markTriggersAsRunning(runningKeys, name);
-        log.debug("({}) - {} trigger(s) are running on {} schedulers", 
+        log.atLevel(running > 0 ? Level.INFO : Level.DEBUG).log("({}) - {} trigger(s) are running on {} schedulers", 
                 running, runningKeys, schedulers);
         return triggerService.rescheduleAbandonedTasks(timeout);
     }

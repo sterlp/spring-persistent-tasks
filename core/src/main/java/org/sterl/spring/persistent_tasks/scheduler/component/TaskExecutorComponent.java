@@ -42,9 +42,10 @@ public class TaskExecutorComponent implements Closeable {
     private Duration maxShutdownWaitTime = Duration.ofSeconds(10);
     @Nullable
     private ExecutorService executor;
+    // also the LOCK object ...
     private final ConcurrentHashMap<TriggerEntity, Future<TriggerKey>> runningTasks = new ConcurrentHashMap<>();
     private final AtomicBoolean stopped = new AtomicBoolean(true);
-    
+
     public TaskExecutorComponent(String schedulerName, TriggerService triggerService, int maxThreads) {
         super();
         this.schedulerName = schedulerName;
@@ -54,7 +55,8 @@ public class TaskExecutorComponent implements Closeable {
 
     @NonNull
     public List<Future<TriggerKey>> submit(List<TriggerEntity> trigger) {
-        if (trigger == null || trigger.isEmpty()) return Collections.emptyList();
+        if (trigger == null || trigger.isEmpty())
+            return Collections.emptyList();
 
         final List<Future<TriggerKey>> result = new ArrayList<>(trigger.size());
         for (TriggerEntity triggerEntity : trigger) {
@@ -71,9 +73,13 @@ public class TaskExecutorComponent implements Closeable {
         if (stopped.get() || executor == null) {
             throw new IllegalStateException("Executor of " + schedulerName + " is already stopped");
         }
-        
-        final var result = executor.submit(() -> runTrigger(trigger));
-        runningTasks.put(trigger, result);
+
+        Future<TriggerKey> result;
+        synchronized (runningTasks) {
+            result = executor.submit(() -> runTrigger(trigger));
+            runningTasks.put(trigger, result);
+        }
+
         return result;
     }
 
@@ -88,7 +94,7 @@ public class TaskExecutorComponent implements Closeable {
 
     public void start() {
         if (stopped.compareAndExchange(true, false)) {
-            synchronized (stopped) {
+            synchronized (runningTasks) {
                 runningTasks.clear();
                 executor = Executors.newFixedThreadPool(maxThreads.get());
                 log.info("Started {} with {} threads.", schedulerName, maxThreads.get());
@@ -99,7 +105,7 @@ public class TaskExecutorComponent implements Closeable {
     @Override
     public void close() {
         if (stopped.compareAndExchange(false, true)) {
-            synchronized (stopped) {
+            synchronized (runningTasks) {
                 doShutdown();
             }
         }
@@ -109,8 +115,8 @@ public class TaskExecutorComponent implements Closeable {
         if (executor != null) {
             executor.shutdown();
             if (runningTasks.size() > 0) {
-                log.info("Shutdown {} with {} running tasks, waiting for {}.",
-                        schedulerName, runningTasks.size(), maxShutdownWaitTime);
+                log.info("Shutdown {} with {} running tasks, waiting for {}.", schedulerName, runningTasks.size(),
+                        maxShutdownWaitTime);
 
                 try {
                     executor.awaitTermination(maxShutdownWaitTime.getSeconds(), TimeUnit.SECONDS);
@@ -129,8 +135,8 @@ public class TaskExecutorComponent implements Closeable {
 
     public void shutdownNow() {
         if (stopped.compareAndExchange(false, true)) {
-            if (executor != null) {
-                synchronized (executor) {
+            synchronized (runningTasks) {
+                if (executor != null) {
                     executor.shutdownNow();
                     log.info("Force stop {} with {} running tasks", schedulerName, runningTasks.size());
                     runningTasks.clear();
@@ -146,7 +152,7 @@ public class TaskExecutorComponent implements Closeable {
         }
         return Math.max(maxThreads.get() - runningTasks.size(), 0);
     }
-    
+
     public int countRunning() {
         return runningTasks.size();
     }
@@ -158,7 +164,7 @@ public class TaskExecutorComponent implements Closeable {
     public boolean isStopped() {
         return stopped.get() || maxThreads.get() <= 0;
     }
-    
+
     public List<TriggerEntity> getRunningTriggers() {
         return Collections.list(this.runningTasks.keys());
     }
@@ -166,6 +172,7 @@ public class TaskExecutorComponent implements Closeable {
     public void setMaxThreads(int value) {
         this.maxThreads.set(value);
     }
+
     public int getMaxThreads() {
         return isStopped() ? 0 : this.maxThreads.get();
     }

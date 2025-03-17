@@ -23,6 +23,8 @@ public class Trigger {
 
     private OffsetDateTime runAt = OffsetDateTime.now();
 
+    private OffsetDateTime lastPing;
+
     private OffsetDateTime start;
 
     private OffsetDateTime end;

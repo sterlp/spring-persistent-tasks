@@ -63,6 +63,7 @@ export interface Trigger {
     runningOn: string;
     createdTime: string;
     runAt: string;
+    lastPing: string;
     start: string;
     end: string;
     executionCount: number;

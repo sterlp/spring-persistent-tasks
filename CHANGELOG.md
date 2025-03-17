@@ -2,6 +2,9 @@
 
 ## v1.6.1
 -   simpler RetryStrategy - as function
+-   showing last ping
+-   showing execution time or still running triggers
+-   saver way to keep track of running triggers
 
 ## v1.6.0 - (2025-03-11)
 
