@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +42,31 @@ class SchedulerServiceTest extends AbstractSpringTest {
 
         // THEN
         assertThat(status.getLastPing()).isBeforeOrEqualTo(time);
+    }
+    
+    @Test
+    void testFastTaskFreeThreadChound() throws Exception {
+        // GIVEN
+        var t = taskService.<String>replace("fastTask", s -> {});
+        for (int i = 0; i < 50; ++i) triggerService.queue(t.newUniqueTrigger(null));
+        // WHEN
+        List<Future<TriggerKey>> trigger;
+        while ( (trigger = subject.triggerNextTasks()).size() > 0) {
+            trigger.forEach(t1 -> {
+                try {
+                    t1.get();
+                } catch (Exception e) {
+                    throw new RuntimeException(e.getCause());
+                }
+            });
+        }
+        // THEN
+        assertThat(subject.getRunning().size()).isZero();
+        assertThat(subject.hasRunningTriggers()).isFalse();
+        // AND
+        subject.triggerNextTasks();
+        final SchedulerEntity scheduler = subject.getScheduler();
+        assertThat(scheduler.getRunningTasks()).isEqualTo(0);
     }
     
     @Test

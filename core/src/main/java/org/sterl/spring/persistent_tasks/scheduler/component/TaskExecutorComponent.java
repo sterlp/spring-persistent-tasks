@@ -74,13 +74,14 @@ public class TaskExecutorComponent implements Closeable {
             throw new IllegalStateException("Executor of " + schedulerName + " is already stopped");
         }
 
-        Future<TriggerKey> result;
-        synchronized (runningTasks) {
-            result = executor.submit(() -> runTrigger(trigger));
-            runningTasks.put(trigger, result);
+        try {
+            runningTasks.put(trigger, executor.submit(() -> runTrigger(trigger)));
+            return runningTasks.get(trigger);
+        } catch (Exception e) {
+            runningTasks.remove(trigger);
+            throw new RuntimeException("Failed to run " + trigger.getKey(), e);
         }
 
-        return result;
     }
 
     private TriggerKey runTrigger(TriggerEntity trigger) {
@@ -88,13 +89,15 @@ public class TaskExecutorComponent implements Closeable {
             triggerService.run(trigger);
             return trigger.getKey();
         } finally {
-            runningTasks.remove(trigger);
+            if (runningTasks.remove(trigger) == null) {
+                log.error("Failed to remove trigger with {}", trigger.key());
+            }
         }
     }
 
     public void start() {
-        if (stopped.compareAndExchange(true, false)) {
-            synchronized (runningTasks) {
+        synchronized (runningTasks) {
+            if (stopped.compareAndExchange(true, false)) {
                 runningTasks.clear();
                 executor = Executors.newFixedThreadPool(maxThreads.get());
                 log.info("Started {} with {} threads.", schedulerName, maxThreads.get());
@@ -105,43 +108,41 @@ public class TaskExecutorComponent implements Closeable {
     @Override
     public void close() {
         if (stopped.compareAndExchange(false, true)) {
+            ExecutorService executorRef;
             synchronized (runningTasks) {
-                doShutdown();
-            }
-        }
-    }
-
-    private void doShutdown() {
-        if (executor != null) {
-            executor.shutdown();
-            if (runningTasks.size() > 0) {
-                log.info("Shutdown {} with {} running tasks, waiting for {}.", schedulerName, runningTasks.size(),
-                        maxShutdownWaitTime);
-
-                try {
-                    executor.awaitTermination(maxShutdownWaitTime.getSeconds(), TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                    log.warn("Failed to complete runnings tasks.", e.getCause());
-                    shutdownNow();
-                } finally {
-                    executor = null;
-                    runningTasks.clear();
-                }
-            } else {
+                executorRef = executor;
                 executor = null;
+            }
+            
+            if (executorRef != null) {
+                executorRef.shutdown();
+                if (runningTasks.size() > 0) {
+                    log.info("Shutdown {} with {} running tasks, waiting for {}.", schedulerName, runningTasks.size(),
+                            maxShutdownWaitTime);
+
+                    try {
+                        executorRef.awaitTermination(maxShutdownWaitTime.getSeconds(), TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        log.warn("Failed to complete runnings tasks.", e.getCause() == null ? e : e.getCause());
+                        shutdownNow();
+                    } finally {
+                        executorRef = null;
+                        runningTasks.clear();
+                    }
+                }
             }
         }
     }
 
     public void shutdownNow() {
-        if (stopped.compareAndExchange(false, true)) {
-            synchronized (runningTasks) {
-                if (executor != null) {
-                    executor.shutdownNow();
-                    log.info("Force stop {} with {} running tasks", schedulerName, runningTasks.size());
-                    runningTasks.clear();
-                    executor = null;
-                }
+        synchronized (runningTasks) {
+            if (executor != null) {
+                executor.shutdownNow();
+                log.info("Force stop {} with {} running tasks", schedulerName, runningTasks.size());
+                runningTasks.clear();
+                executor = null;
+                stopped.set(true);
             }
         }
     }
@@ -178,6 +179,6 @@ public class TaskExecutorComponent implements Closeable {
     }
 
     public boolean isRunning(TriggerEntity trigger) {
-        return runningTasks.contains(trigger);
+        return runningTasks.containsKey(trigger);
     }
 }

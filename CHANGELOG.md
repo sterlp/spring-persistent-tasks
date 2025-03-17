@@ -1,6 +1,10 @@
 # Changelog
 
-## v1.6.1
+## v1.6.2  - (2025-03-18)
+
+-   removed synchronized from TaskExecutorComponent
+
+## v1.6.1  - (2025-03-18)
 -   simpler RetryStrategy - as function
 -   showing last ping
 -   showing execution time or still running triggers
