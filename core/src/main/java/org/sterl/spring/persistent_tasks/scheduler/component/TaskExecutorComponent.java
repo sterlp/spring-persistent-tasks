@@ -75,7 +75,9 @@ public class TaskExecutorComponent implements Closeable {
         }
 
         try {
-            runningTasks.put(trigger, executor.submit(() -> runTrigger(trigger)));
+            synchronized (runningTasks) {
+                runningTasks.put(trigger, executor.submit(() -> runTrigger(trigger)));
+            }
             return runningTasks.get(trigger);
         } catch (Exception e) {
             runningTasks.remove(trigger);
@@ -89,8 +91,11 @@ public class TaskExecutorComponent implements Closeable {
             triggerService.run(trigger);
             return trigger.getKey();
         } finally {
-            if (runningTasks.remove(trigger) == null) {
-                log.error("Failed to remove trigger with {}", trigger.key());
+            synchronized (runningTasks) {
+                if (runningTasks.remove(trigger) == null && runningTasks.size() > 0) {
+                    var runningKeys = runningTasks.keySet().stream().map(TriggerEntity::key);
+                    log.error("Failed to remove trigger with {} - {}", trigger.key(), runningKeys);
+                }
             }
         }
     }
