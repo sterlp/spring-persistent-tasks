@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.6.4  - (2025-03-19)
+
+-   in tests the task executor may finish a task before it returns it reference
+
 ## v1.6.3  - (2025-03-19)
 
 -   ensure the remove of a running trigger happens after it is added
