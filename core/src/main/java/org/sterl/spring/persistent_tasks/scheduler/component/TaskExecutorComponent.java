@@ -74,11 +74,14 @@ public class TaskExecutorComponent implements Closeable {
             throw new IllegalStateException("Executor of " + schedulerName + " is already stopped");
         }
 
+        
         try {
+            Future<TriggerKey> result;
             synchronized (runningTasks) {
-                runningTasks.put(trigger, executor.submit(() -> runTrigger(trigger)));
+                result = executor.submit(() -> runTrigger(trigger));
+                runningTasks.put(trigger, result);
             }
-            return runningTasks.get(trigger);
+            return result;
         } catch (Exception e) {
             runningTasks.remove(trigger);
             throw new RuntimeException("Failed to run " + trigger.getKey(), e);
