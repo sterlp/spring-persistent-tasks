@@ -1,7 +1,6 @@
 package org.sterl.spring.persistent_tasks.shared.model;
 
 import java.io.Serializable;
-import java.time.OffsetDateTime;
 
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
@@ -30,6 +29,6 @@ public interface HasTriggerData {
     
     default boolean shouldRunInFuture() {
         if (getData().getRunAt() == null) return true;
-        return getData().getRunAt().toEpochSecond() > OffsetDateTime.now().toEpochSecond();
+        return getData().getRunAt().toInstant().toEpochMilli() > System.currentTimeMillis();
     }
 }

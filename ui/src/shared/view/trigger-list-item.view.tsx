@@ -2,7 +2,15 @@ import TriggerHistoryListView from "@src/history/view/trigger-history.view";
 import { Trigger } from "@src/server-api";
 import LabeledText from "@src/shared/view/labled-text.view";
 import JsonView from "@uiw/react-json-view";
-import { Accordion, Button, Col, Container, Form, Row } from "react-bootstrap";
+import {
+    Accordion,
+    Badge,
+    Button,
+    Col,
+    Container,
+    Form,
+    Row,
+} from "react-bootstrap";
 import TriggerStatusView from "../../trigger/views/trigger-staus.view";
 import { formatMs, formatShortDateTime } from "../date.util";
 import { useServerObject } from "../http-request";
@@ -141,22 +149,48 @@ const TriggerCompactView = ({ trigger }: { trigger: Trigger }) => (
             />
         </Col>
         <Col className="col-3">
-            {trigger.runningOn ? (
-                <LabeledText
-                    label={`Running on (${trigger.executionCount})`}
-                    value={
-                        trigger.runningOn + " " + runningSince(trigger.start)
-                    }
-                />
-            ) : (
-                <LabeledText
-                    label="Executions"
-                    value={trigger.executionCount}
-                />
-            )}
+            <TriggerExecutiomView trigger={trigger} />
         </Col>
     </Row>
 );
+
+const TriggerExecutiomView = ({ trigger }: { trigger: Trigger }) => {
+    if (trigger.runningOn) {
+        return (
+            <LabeledText
+                label={`Running on (${trigger.executionCount})`}
+                value={trigger.runningOn + " " + runningSince(trigger.start)}
+            />
+        );
+    }
+    if (trigger.status == "WAITING" && trigger.runAt) {
+        return (
+            <LabeledText
+                label={`Should start in`}
+                value={formatMs(
+                    new Date(trigger.runAt).getTime() - new Date().getTime()
+                )}
+            />
+        );
+    }
+    return (
+        <LabeledText
+            label="Executions"
+            value={
+                <div className="d-flex justify-content-start align-items-center">
+                    <Badge
+                        bg={trigger.executionCount > 1 ? "warning" : "success"}
+                    >
+                        {trigger.executionCount}
+                    </Badge>
+                    <span className="ms-2">
+                        {formatMs(trigger.runningDurationInMs)}
+                    </span>
+                </div>
+            }
+        />
+    );
+};
 
 const TriggerDetailsView = ({
     trigger,

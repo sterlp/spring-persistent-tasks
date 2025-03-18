@@ -1,9 +1,9 @@
 import { Form } from "react-bootstrap";
-import React from "react";
+import React, { ReactNode } from "react";
 
 interface Props {
     label: string;
-    value?: string | number;
+    value?: string | number | ReactNode;
     className?: string;
 }
 const LabeledText: React.FC<Props> = ({ label, value, className }) => {

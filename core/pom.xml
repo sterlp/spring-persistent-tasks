@@ -109,6 +109,31 @@
     <build>
         <plugins>
             <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-test-resources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>
+                                ${project.basedir}/test/src/main/java/org/sterl/spring/persistent_tasks/test/</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>
+                                        ${project.basedir}/core/src/test/java/org/sterl/spring/persistent_tasks/test/</directory>
+                                    <includes>
+                                        <include>**/*</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
                 <version>3.23.0</version>
@@ -160,7 +185,8 @@
                     </customTypeMappings>
                     <classes>
                         <class>org.springframework.data.web.PagedModel</class>
-                        <class>org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity</class>
+                        <class>
+                            org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity</class>
                     </classes>
                     <classPatterns>
                         <pattern>org.sterl.spring.persistent_tasks.api.**</pattern>

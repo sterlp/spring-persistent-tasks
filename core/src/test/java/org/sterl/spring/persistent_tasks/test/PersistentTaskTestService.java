@@ -97,19 +97,19 @@ public class PersistentTaskTestService {
         final var timeOut = System.currentTimeMillis() + maxWaitTime.toMillis();
 
         result.addAll(awaitRunningTriggers(maxWaitTime));
-        List<Future<TriggerKey>> newTriggers;
+        List<TriggerKey> newTriggers;
         do {
 
             if (System.currentTimeMillis() > timeOut) {
                 throw new RuntimeException("Timeout waiting for triggers after " + maxWaitTime);
             }
 
-            newTriggers = scheduleNextTriggers();
+            newTriggers = awaitTriggers(maxWaitTime, scheduleNextTriggers());
             if (newTriggers.isEmpty()) {
-                Thread.sleep(200);
-                newTriggers = scheduleNextTriggers();
+                newTriggers = awaitRunningTriggers(maxWaitTime);
             }
-            result.addAll(awaitTriggers(maxWaitTime, newTriggers));
+            result.addAll(newTriggers);
+
         } while (newTriggers.size() > 0);
 
         return result;

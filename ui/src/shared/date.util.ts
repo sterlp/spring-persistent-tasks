@@ -47,13 +47,24 @@ export function formatDateTime(inputDate?: string | Date): string {
 export function formatMs(ms?: number) {
     if (ms === undefined || ms === null) return "-";
     if (ms === 0) return "0ms";
+    const sign = ms < 0 ? "-" : "";
+    ms = Math.abs(ms);
 
-    if (ms < 9999) return Math.floor(ms) + "ms";
+    if (ms < 9999) return sign + Math.floor(ms) + "ms";
 
     const inS = Math.floor(ms / 1000);
-    if (ms < 99999) {
-        return inS + "s " + (ms - inS * 1000) + "ms";
+    if (inS < 181) {
+        return sign + inS + "s " + (ms - inS * 1000) + "ms";
     }
+    
     const inMin = Math.floor(inS / 60);
-    return inMin + "min " + (inS - inMin * 60) + "s";
+    if (inMin < 181) {
+        return sign + inMin + "min " + (inS - inMin * 60) + "s";
+    }
+
+    const inHours = Math.floor(inMin / 60);
+    if (inHours < 48) return sign + inHours + "h " + (inMin % 60) + "min";
+
+    const inDays = Math.floor(inHours / 24);
+    return sign + inDays + "d " + (inHours % 24) + "h";
 }
