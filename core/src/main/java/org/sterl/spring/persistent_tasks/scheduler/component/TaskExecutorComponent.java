@@ -74,7 +74,6 @@ public class TaskExecutorComponent implements Closeable {
             throw new IllegalStateException("Executor of " + schedulerName + " is already stopped");
         }
 
-        
         try {
             Future<TriggerKey> result;
             synchronized (runningTasks) {
