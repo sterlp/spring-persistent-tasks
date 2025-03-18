@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.6.3  - (2025-03-19)
+
+-   ensure the remove of a running trigger happens after it is added
+
 ## v1.6.2  - (2025-03-18)
 
 -   removed synchronized from TaskExecutorComponent
