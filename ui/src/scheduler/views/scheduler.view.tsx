@@ -1,13 +1,47 @@
 import { SchedulerEntity } from "@src/server-api";
 import { DateTime } from "luxon";
+import { useEffect, useState } from "react";
 import { Card, Col, Form, ProgressBar, Row } from "react-bootstrap";
 
 interface Props {
     scheduler: SchedulerEntity;
 }
 import { Tooltip, OverlayTrigger } from "react-bootstrap";
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
+    ResponsiveContainer,
+    XAxis,
+    YAxis,
+} from "recharts";
 
 const SchedulerStatusView = ({ scheduler }: Props) => {
+    const [historyData, setHistoryData] = useState<
+        { time: string; tasks: number; ping: string }[]
+    >([]);
+
+    useEffect(() => {
+        setHistoryData((prev) => {
+            // Prevent duplicate entries if lastPing hasn't changed
+            const lastEntry = prev[prev.length - 1];
+            const lastPingChanged =
+                !lastEntry || scheduler.lastPing !== lastEntry.ping;
+
+            if (lastPingChanged) {
+                return [
+                    ...prev.slice(-10), // Keep only the last 14 entries
+                    {
+                        time: new Date().toLocaleTimeString(), // Format timestamp
+                        tasks: scheduler.runningTasks ?? 0, // Running tasks
+                        ping: scheduler.lastPing,
+                    },
+                ];
+            }
+            return prev; // No update if lastPing hasn't changed
+        });
+    }, [scheduler.lastPing]); // Depend only on lastPing
+
     const renderTooltip = (props: any, label: string) => (
         <Tooltip id="button-tooltip" {...props}>
             {label}
@@ -30,11 +64,12 @@ const SchedulerStatusView = ({ scheduler }: Props) => {
             </Card.Header>
             <Card.Body>
                 <Row>
+                    {/* Left Column: ProgressBars */}
                     <Col>
-                        <strong>Last Ping:</strong>{" "}
-                        {durationSince(new Date(scheduler.lastPing))}
-                    </Col>
-                    <Col>
+                        <p>
+                            <strong>Last Ping:</strong>{" "}
+                            {durationSince(new Date(scheduler.lastPing))}
+                        </p>
                         <Form.Label htmlFor={"slot-" + scheduler.id}>
                             {"Running " +
                                 scheduler.runningTasks +
@@ -62,10 +97,6 @@ const SchedulerStatusView = ({ scheduler }: Props) => {
                                 max={scheduler.tasksSlotCount}
                             />
                         </OverlayTrigger>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
                         <Form.Label htmlFor={"cpu-" + scheduler.id}>
                             CPU
                         </Form.Label>
@@ -95,8 +126,6 @@ const SchedulerStatusView = ({ scheduler }: Props) => {
                                 }%`}
                             />
                         </OverlayTrigger>
-                    </Col>
-                    <Col>
                         <Form.Label htmlFor={"memory-" + scheduler.id}>
                             Memory{" "}
                             {formatMemory(scheduler.usedHeap) +
@@ -125,6 +154,33 @@ const SchedulerStatusView = ({ scheduler }: Props) => {
                                 label={formatMemory(scheduler.usedHeap)}
                             />
                         </OverlayTrigger>
+                    </Col>
+
+                    {/* Right Column: BarChart */}
+                    <Col>
+                        <strong>Running Tasks:</strong>
+                        <ResponsiveContainer width="100%" height={200}>
+                            <BarChart data={historyData}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis
+                                    dataKey="time"
+                                    label={{
+                                        value: "Time",
+                                        position: "insideBottom",
+                                        offset: -5,
+                                    }}
+                                />
+                                <YAxis
+                                    label={{
+                                        value: "Tasks",
+                                        angle: -90,
+                                        position: "insideLeft",
+                                    }}
+                                />
+                                <Tooltip />
+                                <Bar dataKey="tasks" fill="#007bff" />
+                            </BarChart>
+                        </ResponsiveContainer>
                     </Col>
                 </Row>
             </Card.Body>
