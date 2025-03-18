@@ -60,6 +60,10 @@ const TaskStatusHistoryOverviewView = ({
         <Card.Header
             as="h5"
             className="d-flex justify-content-between align-items-center"
+            style={{
+                background: "linear-gradient(45deg, #007bff, #00d8ff)",
+                color: "white",
+            }}
         >
             {name}
         </Card.Header>
