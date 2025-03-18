@@ -105,8 +105,13 @@ public class PersistentTaskTestService {
             }
 
             newTriggers = scheduleNextTriggers();
+            if (newTriggers.isEmpty()) {
+                Thread.sleep(200);
+                newTriggers = scheduleNextTriggers();
+            }
             result.addAll(awaitTriggers(maxWaitTime, newTriggers));
         } while (newTriggers.size() > 0);
+
         return result;
     }
     

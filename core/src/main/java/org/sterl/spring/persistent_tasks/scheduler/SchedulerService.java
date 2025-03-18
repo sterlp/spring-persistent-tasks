@@ -66,6 +66,7 @@ public class SchedulerService {
     public void stop() {
         taskExecutor.close();
         editSchedulerStatus.offline(name);
+        runOrQueue.clear();
     }
 
     public void shutdownNow() {
@@ -76,8 +77,8 @@ public class SchedulerService {
     }
 
     public SchedulerEntity getScheduler() {
-        var result = editSchedulerStatus.get(name);
-        return result;
+        return editSchedulerStatus.checkinToRegistry(name, 
+                taskExecutor.countRunning(), taskExecutor.getMaxThreads());
     }
 
     public Optional<SchedulerEntity> findStatus(String name) {
@@ -136,7 +137,7 @@ public class SchedulerService {
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void checkIfTrigerShouldRun(TriggerAddedEvent addedTrigger) {
+    public void checkIfTriggerShouldRun(TriggerAddedEvent addedTrigger) {
         if (runOrQueue.checkIfTrigerShouldRun(addedTrigger.id())) {
             editSchedulerStatus.checkinToRegistry(name, taskExecutor.countRunning(), taskExecutor.getMaxThreads());
         }
@@ -165,8 +166,11 @@ public class SchedulerService {
     public Collection<Future<TriggerKey>> getRunning() {
         return taskExecutor.getRunningTasks();
     }
-    public boolean hasRunningTriggers() {
-        return !taskExecutor.isStopped() 
-                && (taskExecutor.countRunning() > 0 || runOrQueue.hasWaitingTriggers());
+    public List<TriggerEntity> getRunningTriggers() {
+        return taskExecutor.getRunningTriggers();
     }
+    public boolean hasRunningTriggers() {
+        return taskExecutor.countRunning() > 0 || runOrQueue.hasWaitingTriggers();
+    }
+
 }

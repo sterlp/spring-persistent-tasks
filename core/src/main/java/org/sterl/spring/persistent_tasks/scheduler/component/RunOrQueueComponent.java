@@ -84,4 +84,8 @@ public class RunOrQueueComponent {
             }
         }
     }
+
+    public void clear() {
+        shouldRun.clear();
+    }
 }
