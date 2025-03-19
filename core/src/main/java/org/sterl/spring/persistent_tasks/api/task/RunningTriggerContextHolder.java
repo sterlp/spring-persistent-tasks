@@ -37,11 +37,6 @@ public class RunningTriggerContextHolder {
     public static String buildOrGetCorrelationId(String newCorrelationId) {
         var correlationId = getCorrelationId();
         if (correlationId == null) correlationId = newCorrelationId;
-        // take over any key from the trigger before ...
-        if (correlationId == null) {
-            var c = getContext();
-            if (c != null) correlationId = c.getKey().getId();
-        }
         return correlationId;
     }
 }

@@ -1,10 +1,16 @@
 # Changelog
 
-## v1.6.4  - (2025-03-19)
+## v1.6.5  - (2025-03-19)
+
+-   fixed correlation ID size
+-   cancel can now always be triggered from the UI
+-   showing slow used history
+
+## v1.6.4  - (2025-03-18)
 
 -   in tests the task executor may finish a task before it returns it reference
 
-## v1.6.3  - (2025-03-19)
+## v1.6.3  - (2025-03-18)
 
 -   ensure the remove of a running trigger happens after it is added
 

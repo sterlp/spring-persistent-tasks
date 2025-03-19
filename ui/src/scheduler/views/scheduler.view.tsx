@@ -32,7 +32,7 @@ const SchedulerStatusView = ({ scheduler }: Props) => {
                 return [
                     ...prev.slice(-10), // Keep only the last 14 entries
                     {
-                        time: new Date().toLocaleTimeString(), // Format timestamp
+                        time: new Date(scheduler.lastPing).toLocaleTimeString(), // Format timestamp
                         tasks: scheduler.runningTasks ?? 0, // Running tasks
                         ping: scheduler.lastPing,
                     },

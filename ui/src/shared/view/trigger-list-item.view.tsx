@@ -87,19 +87,19 @@ const TriggerItemView = ({
                             >
                                 Run now
                             </Button>
-                            <Button
-                                variant="danger"
-                                onClick={() => {
-                                    editTrigger
-                                        .doCall("", "DELETE")
-                                        .then(afterTriggerChanged)
-                                        .catch((e) => console.info(e));
-                                }}
-                            >
-                                Cancel Trigger
-                            </Button>
                         </>
                     ) : undefined}
+                    <Button
+                        variant="danger"
+                        onClick={() => {
+                            editTrigger
+                                .doCall("", "DELETE")
+                                .then(afterTriggerChanged)
+                                .catch((e) => console.info(e));
+                        }}
+                    >
+                        Cancel Trigger
+                    </Button>
                     {showReRunButton ? (
                         <Button
                             variant="warning"

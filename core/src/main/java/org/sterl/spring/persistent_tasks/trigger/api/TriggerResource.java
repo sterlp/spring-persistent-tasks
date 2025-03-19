@@ -49,7 +49,7 @@ public class TriggerResource {
     }
     
     @PostMapping("triggers/{taskName}/{id}/run-at")
-    public Optional<Trigger> cancelTrigger(
+    public Optional<Trigger> setRunAt(
             @PathVariable("taskName") String taskName,
             @PathVariable("id") String id,
             @RequestBody OffsetDateTime runAt) {
