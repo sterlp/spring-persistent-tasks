@@ -12,10 +12,20 @@ spring:
   liquibase:
       change-log: classpath:db/changelog/db.changelog-master.xml
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  appoptics:
+    metrics:
+      export:
+        enabled: true
+      
 springdoc:
   swagger-ui:
     use-root-path: true
-    
+
 logging:
   level:
     org.sterl.spring.persistent_tasks: DEBUG

@@ -22,11 +22,12 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.EnableSpringPersistentTasks;
 import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
-import org.sterl.spring.persistent_tasks.scheduler.component.TaskExecutorComponent;
 import org.sterl.spring.persistent_tasks.scheduler.config.SchedulerConfig;
 import org.sterl.spring.persistent_tasks.scheduler.config.SchedulerConfig.SchedulerCustomizer;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks_ui.EnableSpringPersistentTasksUI;
+
+import io.micrometer.core.instrument.MeterRegistry;
 
 @EnableWebSecurity
 @SpringBootApplication
@@ -68,11 +69,13 @@ public class ExampleApplication {
     // just one more for demonstration
     @Bean(name = "schedulerB", initMethod = "start", destroyMethod = "stop")
     SchedulerService schedulerB(
+            MeterRegistry meterRegistry,
             TriggerService triggerService, 
             EditSchedulerStatusComponent editSchedulerStatus,
             TransactionTemplate trx) throws UnknownHostException {
 
-        return SchedulerConfig.newSchedulerService("schedulerB", 
+        return SchedulerConfig.newSchedulerService("schedulerB",
+                meterRegistry,
                 triggerService, 
                 editSchedulerStatus, 7, Duration.ofSeconds(1), trx);
     }
