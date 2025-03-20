@@ -17,6 +17,7 @@ import org.sterl.spring.persistent_tasks.scheduler.component.RunOrQueueComponent
 import org.sterl.spring.persistent_tasks.scheduler.component.TaskExecutorComponent;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -48,6 +49,7 @@ public class SchedulerConfig {
     @Bean(name = "schedulerService", initMethod = "start", destroyMethod = "stop")
     SchedulerService schedulerService(
             TriggerService triggerService,
+            MeterRegistry meterRegistry,
             @Value("${spring.persistent-tasks.max-threads:10}") int maxThreads,
             EditSchedulerStatusComponent editSchedulerStatus,
             Optional<SchedulerCustomizer> customizer,
@@ -57,11 +59,16 @@ public class SchedulerConfig {
         final var name = customizer.get().name();
         final var maxShutdownWaitTime = Duration.ofSeconds(10);
 
-        return newSchedulerService(name, triggerService, editSchedulerStatus, maxThreads, maxShutdownWaitTime, trx);
+        return newSchedulerService(name, meterRegistry, triggerService, editSchedulerStatus, maxThreads, maxShutdownWaitTime, trx);
     }
 
-    public static SchedulerService newSchedulerService(final String name, TriggerService triggerService,
-            EditSchedulerStatusComponent editSchedulerStatus, int maxThreads, final Duration maxShutdownWaitTime,
+    public static SchedulerService newSchedulerService(
+            String name,
+            MeterRegistry meterRegistry,
+            TriggerService triggerService,
+            EditSchedulerStatusComponent editSchedulerStatus, 
+            int maxThreads, 
+            Duration maxShutdownWaitTime,
             TransactionTemplate trx) {
         
         final var taskExecutor = new TaskExecutorComponent(name, triggerService, maxThreads);
@@ -74,6 +81,7 @@ public class SchedulerConfig {
                 taskExecutor, 
                 editSchedulerStatus,
                 runOrQueue,
-                trx);
+                trx,
+                meterRegistry);
     }
 }

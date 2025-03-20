@@ -1,12 +1,15 @@
 import { SchedulerEntity } from "@src/server-api";
 import { DateTime } from "luxon";
 import { useEffect, useState } from "react";
-import { Card, Col, Form, ProgressBar, Row } from "react-bootstrap";
-
-interface Props {
-    scheduler: SchedulerEntity;
-}
-import { Tooltip, OverlayTrigger } from "react-bootstrap";
+import {
+    Card,
+    Col,
+    Form,
+    ProgressBar,
+    Row,
+    Tooltip,
+    OverlayTrigger,
+} from "react-bootstrap";
 import {
     Bar,
     BarChart,
@@ -15,6 +18,10 @@ import {
     XAxis,
     YAxis,
 } from "recharts";
+
+interface Props {
+    scheduler: SchedulerEntity;
+}
 
 const SchedulerStatusView = ({ scheduler }: Props) => {
     const [historyData, setHistoryData] = useState<
@@ -42,12 +49,6 @@ const SchedulerStatusView = ({ scheduler }: Props) => {
         });
     }, [scheduler.lastPing]); // Depend only on lastPing
 
-    const renderTooltip = (props: any, label: string) => (
-        <Tooltip id="button-tooltip" {...props}>
-            {label}
-        </Tooltip>
-    );
-
     return (
         <Card className="shadow-sm rounded border-0">
             <Card.Header
@@ -70,90 +71,26 @@ const SchedulerStatusView = ({ scheduler }: Props) => {
                             <strong>Last Ping:</strong>{" "}
                             {durationSince(new Date(scheduler.lastPing))}
                         </p>
-                        <Form.Label htmlFor={"slot-" + scheduler.id}>
-                            {"Running " +
-                                scheduler.runningTasks +
-                                " of " +
-                                scheduler.tasksSlotCount}
-                        </Form.Label>
-                        <OverlayTrigger
-                            placement="top"
-                            overlay={(props) =>
-                                renderTooltip(
-                                    props,
-                                    `${scheduler.runningTasks} tasks running`
-                                )
-                            }
-                        >
-                            <ProgressBar
-                                id={"slot-" + scheduler.id}
-                                animated={true}
-                                striped
-                                variant={getVariant(
-                                    scheduler.runningTasks,
-                                    scheduler.tasksSlotCount
-                                )}
-                                now={scheduler.runningTasks}
-                                max={scheduler.tasksSlotCount}
-                            />
-                        </OverlayTrigger>
-                        <Form.Label htmlFor={"cpu-" + scheduler.id}>
-                            CPU
-                        </Form.Label>
-                        <OverlayTrigger
-                            placement="top"
-                            overlay={(props) =>
-                                renderTooltip(
-                                    props,
-                                    `CPU Load: ${scheduler.systemLoadAverage}%`
-                                )
-                            }
-                        >
-                            <ProgressBar
-                                id={"cpu-" + scheduler.id}
-                                animated={true}
-                                striped
-                                variant={getVariant(
-                                    scheduler.systemLoadAverage,
-                                    100
-                                )}
-                                now={scheduler.systemLoadAverage}
-                                max={100}
-                                label={`${
-                                    Math.round(
-                                        scheduler.systemLoadAverage * 10
-                                    ) / 10
-                                }%`}
-                            />
-                        </OverlayTrigger>
-                        <Form.Label htmlFor={"memory-" + scheduler.id}>
-                            Memory{" "}
-                            {formatMemory(scheduler.usedHeap) +
-                                " of " +
-                                formatMemory(scheduler.maxHeap)}
-                        </Form.Label>
-                        <OverlayTrigger
-                            placement="top"
-                            overlay={(props) =>
-                                renderTooltip(
-                                    props,
-                                    `${formatMemory(scheduler.usedHeap)} used`
-                                )
-                            }
-                        >
-                            <ProgressBar
-                                id={"memory-" + scheduler.id}
-                                animated={true}
-                                striped
-                                variant={getVariant(
-                                    scheduler.usedHeap,
-                                    scheduler.maxHeap
-                                )}
-                                now={scheduler.usedHeap}
-                                max={scheduler.maxHeap}
-                                label={formatMemory(scheduler.usedHeap)}
-                            />
-                        </OverlayTrigger>
+                        {renderLoadStatus(
+                            "Threads",
+                            scheduler.runningTasks,
+                            scheduler.tasksSlotCount,
+                            "t_" + scheduler.id
+                        )}
+                        {renderLoadStatus(
+                            "CPU",
+                            scheduler.systemLoadAverage,
+                            100,
+                            "cpu" + scheduler.id,
+                            "%"
+                        )}
+                        {renderLoadStatus(
+                            "Memory",
+                            scheduler.usedHeap / 1024 / 1024,
+                            scheduler.maxHeap / 1024 / 1024,
+                            "memory" + scheduler.id,
+                            "MB"
+                        )}
                     </Col>
 
                     {/* Right Column: BarChart */}
@@ -190,6 +127,47 @@ const SchedulerStatusView = ({ scheduler }: Props) => {
 
 export default SchedulerStatusView;
 
+const renderLoadStatus = (
+    label: string,
+    current: number,
+    max: number,
+    id: string,
+    unit: string = ""
+) => (
+    <>
+        <Form.Label htmlFor={`label-${id}`}>{label}</Form.Label>
+        <OverlayTrigger
+            placement="top"
+            overlay={(props) =>
+                renderTooltip(
+                    props,
+                    `${label}: ${Math.round(current)}${unit} of ${Math.round(
+                        max
+                    )}${unit}`
+                )
+            }
+        >
+            <ProgressBar
+                id={`progress-${id}`}
+                animated
+                striped
+                variant={getVariant(current, max)}
+                now={current}
+                max={max}
+                label={`${Math.round(current)}${unit}`}
+            />
+        </OverlayTrigger>
+    </>
+);
+
+function renderTooltip(props: any, label: string) {
+    return (
+        <Tooltip id="button-tooltip" {...props}>
+            {label}
+        </Tooltip>
+    );
+}
+
 function durationSince(from: Date) {
     const now = DateTime.now();
     const diff = now.diff(DateTime.fromJSDate(from), [
@@ -198,31 +176,26 @@ function durationSince(from: Date) {
         "minutes",
         "seconds",
     ]);
-    const days = diff.days;
-    const hours = diff.hours;
-    const minutes = diff.minutes;
-    const seconds = diff.seconds;
     const result = [];
-    if (days > 0) result.push(`${Math.floor(days)}d`);
-    if (hours > 0) result.push(`${Math.floor(hours)}h`);
-    if (minutes > 0) result.push(`${Math.floor(minutes)}min`);
-    if (result.length === 0 || (days === 0 && seconds > 0))
-        result.push(`${Math.floor(seconds)}s`);
+    if (diff.days > 0) result.push(`${Math.floor(diff.days)}d`);
+    if (diff.hours > 0) result.push(`${Math.floor(diff.hours)}h`);
+    if (diff.minutes > 0) result.push(`${Math.floor(diff.minutes)}min`);
+    if (result.length === 0 || (diff.days === 0 && diff.seconds > 0))
+        result.push(`${Math.floor(diff.seconds)}s`);
     return result.join(" ") + " ago";
 }
 
-function formatMemory(value: number) {
-    const result = value / 1024 / 1024;
-
-    if (result > 999) {
-        return Math.round((result / 1024) * 10) / 10 + "GB";
-    }
-    return Math.round(result) + "MB";
-}
-
 function getVariant(value: number, max: number) {
+    if (max <= 0 || value < 0) {
+        console.warn(
+            "Invalid input: max must be greater than zero and value must be non-negative."
+        );
+        return "danger";
+    }
     const percentage = (value / max) * 100;
-    if (percentage < 80) return "success"; // Grün
-    if (percentage < 100) return "warning"; // Gelb
-    return "danger"; // Rot
+    return percentage < 80
+        ? "success"
+        : percentage < 100
+        ? "warning"
+        : "danger";
 }

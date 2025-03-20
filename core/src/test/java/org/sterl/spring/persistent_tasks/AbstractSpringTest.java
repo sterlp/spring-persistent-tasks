@@ -33,6 +33,7 @@ import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 import org.sterl.spring.sample_app.SampleApp;
 import org.sterl.test.hibernate_asserts.HibernateAsserts;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
@@ -91,20 +92,24 @@ public class AbstractSpringTest {
         @Primary
         @Bean("schedulerA")
         @SuppressWarnings("resource")
-        SchedulerService schedulerA(TriggerService triggerService, EditSchedulerStatusComponent editSchedulerStatus,
+        SchedulerService schedulerA(TriggerService triggerService,
+                MeterRegistry meterRegistry,
+                EditSchedulerStatusComponent editSchedulerStatus,
                 TransactionTemplate trx) throws UnknownHostException {
 
             final var name = "schedulerA";
-            return SchedulerConfig.newSchedulerService(name, triggerService, editSchedulerStatus, 10, Duration.ZERO, trx);
+            return SchedulerConfig.newSchedulerService(name, meterRegistry, triggerService, editSchedulerStatus, 10, Duration.ZERO, trx);
         }
 
         @Bean
         @SuppressWarnings("resource")
-        SchedulerService schedulerB(TriggerService triggerService, EditSchedulerStatusComponent editSchedulerStatus,
+        SchedulerService schedulerB(TriggerService triggerService,
+                MeterRegistry meterRegistry,
+                EditSchedulerStatusComponent editSchedulerStatus,
                 TransactionTemplate trx) throws UnknownHostException {
 
             final var name = "schedulerB";
-            return SchedulerConfig.newSchedulerService(name, triggerService, editSchedulerStatus, 20, Duration.ZERO, trx);
+            return SchedulerConfig.newSchedulerService(name, meterRegistry, triggerService, editSchedulerStatus, 20, Duration.ZERO, trx);
         }
 
         /**

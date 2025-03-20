@@ -35,6 +35,7 @@ public class EditSchedulerStatusComponent {
         result.setTasksSlotCount(maxTasks);
 
         result.setLastPing(OffsetDateTime.now());
+
         log.debug("Ping {}", result);
         return schedulerRepository.save(result);
     }

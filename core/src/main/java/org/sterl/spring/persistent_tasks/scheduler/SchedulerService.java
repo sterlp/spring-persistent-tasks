@@ -25,6 +25,10 @@ import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerAddedEvent;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.binder.BaseUnits;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.Getter;
@@ -51,11 +55,27 @@ public class SchedulerService {
     private final RunOrQueueComponent runOrQueue;
 
     private final TransactionTemplate trx;
+    
+    private final MeterRegistry meterRegistry;
 
     @PostConstruct
     public void start() {
         taskExecutor.start();
         editSchedulerStatus.checkinToRegistry(name, 0, taskExecutor.getMaxThreads());
+
+        Gauge.builder("persistent_tasks.scheduler." + name, 
+                taskExecutor, 
+                e -> e.countRunning())
+            .tags(Tags.of("thread", "running"))
+            .baseUnit(BaseUnits.TASKS)
+            .register(meterRegistry);
+        
+        Gauge.builder("persistent_tasks.scheduler." + name, 
+                taskExecutor, 
+                e -> e.getMaxThreads())
+            .tags(Tags.of("thread", "max"))
+            .baseUnit(BaseUnits.TASKS)
+            .register(meterRegistry);
     }
 
     public void setMaxThreads(int value) {
