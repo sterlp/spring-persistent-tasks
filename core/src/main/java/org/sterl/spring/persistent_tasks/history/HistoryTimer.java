@@ -25,7 +25,7 @@ class HistoryTimer {
     private Duration historyTimeout = Duration.ofDays(30);
 
     @Scheduled(
-            initialDelay = 120_000,
+            initialDelay = 1,
             fixedDelayString = "${spring.persistent-tasks.history.delete-rate:24}", timeUnit = TimeUnit.HOURS)
     void deleteOldHistory() {
         try {
