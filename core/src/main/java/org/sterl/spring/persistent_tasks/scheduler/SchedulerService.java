@@ -27,7 +27,6 @@ import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.binder.BaseUnits;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -63,17 +62,15 @@ public class SchedulerService {
         taskExecutor.start();
         editSchedulerStatus.checkinToRegistry(name, 0, taskExecutor.getMaxThreads());
 
-        Gauge.builder("persistent_tasks.scheduler." + name, 
-                taskExecutor, 
-                e -> e.countRunning())
-            .tags(Tags.of("thread", "running"))
+        Gauge.builder("persistent_tasks.schedulers", 
+                taskExecutor, e -> e.countRunning())
+            .tags("scheduler", name, BaseUnits.TASKS, "running")
             .baseUnit(BaseUnits.TASKS)
             .register(meterRegistry);
         
-        Gauge.builder("persistent_tasks.scheduler." + name, 
-                taskExecutor, 
-                e -> e.getMaxThreads())
-            .tags(Tags.of("thread", "max"))
+        Gauge.builder("persistent_tasks.schedulers", 
+                taskExecutor, e -> e.getMaxThreads())
+            .tags("scheduler", name, BaseUnits.TASKS, "total")
             .baseUnit(BaseUnits.TASKS)
             .register(meterRegistry);
     }

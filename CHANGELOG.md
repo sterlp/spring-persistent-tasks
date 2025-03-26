@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.6.6  - (2025-03-20)
+
+### New features:
+- first metrics
+
+### Bug fixes:
+- fixed history delete start of history
+
+
 ## v1.6.5  - (2025-03-19)
 
 -   fixed correlation ID size
