@@ -96,15 +96,21 @@ public class PersistentTaskTestService {
         final var result = new LinkedHashSet<TriggerKey>();
         final var timeOut = System.currentTimeMillis() + maxWaitTime.toMillis();
 
-        result.addAll(awaitRunningTriggers(maxWaitTime));
         List<TriggerKey> newTriggers;
         do {
 
             if (System.currentTimeMillis() > timeOut) {
                 throw new RuntimeException("Timeout waiting for triggers after " + maxWaitTime);
             }
-
-            newTriggers = awaitTriggers(maxWaitTime, scheduleNextTriggers());
+            // 1. the running
+            newTriggers = awaitRunningTriggers(maxWaitTime);
+            
+            // 2. check if we have waiting new tasks
+            if (newTriggers.isEmpty()) {
+                newTriggers = awaitTriggers(maxWaitTime, scheduleNextTriggers());
+            }
+            // 3. in case we are really fast in our tests (empty tasks) we double check
+            // that we have no race condition and missed a now running task
             if (newTriggers.isEmpty()) {
                 newTriggers = awaitRunningTriggers(maxWaitTime);
             }

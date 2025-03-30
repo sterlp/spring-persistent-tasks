@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.6.7
+
+### New features:
+
+### Bug fixes:
+- abandoned triggers will now fire a failed trigger event
+- trigger history scheduler waits now in case of shut down for any history events to get saved
+
 ## v1.6.6  - (2025-03-20)
 
 ### New features:

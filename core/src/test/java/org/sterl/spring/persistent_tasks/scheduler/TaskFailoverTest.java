@@ -60,5 +60,9 @@ class TaskFailoverTest extends AbstractSpringTest {
             .isEqualTo(1);
         assertThat(triggerService.countTriggers(TriggerStatus.WAITING))
             .isEqualTo(1);
+        // AND
+        var timeoutTrigger = historyService.findAllDetailsForKey(willTimeout.getKey()).getContent().getFirst();
+        assertThat(timeoutTrigger.status()).isEqualTo(TriggerStatus.FAILED);
+        assertThat(timeoutTrigger.getData().getLastException()).contains("Trigger abandoned");
     }
 }

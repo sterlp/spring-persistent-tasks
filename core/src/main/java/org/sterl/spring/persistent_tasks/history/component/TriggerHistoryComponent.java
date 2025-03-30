@@ -31,7 +31,7 @@ public class TriggerHistoryComponent {
     // as if the trigger fails, a rollback would also remove this entry
     // furthermore async to ensure that we would not block
     // as REQURES_NEW would block two DB connections ...
-    @Async
+    @Async("triggerHistoryExecutor")
     @Transactional(timeout = 10)
     @EventListener
     public void onRunning(TriggerRunningEvent e) {

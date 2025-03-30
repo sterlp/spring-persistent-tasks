@@ -18,9 +18,11 @@ import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
 import org.sterl.spring.persistent_tasks.task.TaskService;
 import org.sterl.spring.persistent_tasks.trigger.component.EditTriggerComponent;
+import org.sterl.spring.persistent_tasks.trigger.component.FailTriggerComponent;
 import org.sterl.spring.persistent_tasks.trigger.component.LockNextTriggerComponent;
 import org.sterl.spring.persistent_tasks.trigger.component.ReadTriggerComponent;
 import org.sterl.spring.persistent_tasks.trigger.component.RunTriggerComponent;
+import org.sterl.spring.persistent_tasks.trigger.component.StateSerializer;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 import lombok.RequiredArgsConstructor;
@@ -32,9 +34,11 @@ import lombok.extern.slf4j.Slf4j;
 public class TriggerService {
 
     private final TaskService taskService;
+    private final StateSerializer stateSerializer = new StateSerializer();
     private final RunTriggerComponent runTrigger;
     private final ReadTriggerComponent readTrigger;
     private final EditTriggerComponent editTrigger;
+    private final FailTriggerComponent failTrigger;
     private final LockNextTriggerComponent lockNextTrigger;
 
     /**
@@ -169,10 +173,11 @@ public class TriggerService {
     public List<TriggerEntity> rescheduleAbandonedTasks(OffsetDateTime timeout) {
         final List<TriggerEntity> result = readTrigger.findTriggersLastPingAfter(
                 timeout);
+        final var e = new IllegalStateException("Trigger abandoned - timeout: " + timeout);
         result.forEach(t -> {
-            t.setRunningOn(null);
-            t.getData().setStatus(TriggerStatus.WAITING);
-            t.getData().setExceptionName("Abandoned tasks");
+            var task = taskService.get(t.newTaskId());
+            var state = stateSerializer.deserializeOrNull(t.getData().getState());
+            failTrigger.execute(task.orElse(null), t, state, e);
         });
         log.debug("rescheduled {} triggers", result.size());
         return result;

@@ -70,13 +70,13 @@ public class TaskExecutorComponent implements Closeable {
         if (trigger == null) {
             return CompletableFuture.completedFuture(null);
         }
-        if (stopped.get() || executor == null) {
-            throw new IllegalStateException("Executor of " + schedulerName + " is already stopped");
-        }
 
         try {
             Future<TriggerKey> result;
             synchronized (runningTasks) {
+                if (stopped.get() || executor == null) {
+                    throw new IllegalStateException("Executor of " + schedulerName + " is already stopped");
+                }
                 result = executor.submit(() -> runTrigger(trigger));
                 runningTasks.put(trigger, result);
             }
@@ -115,28 +115,25 @@ public class TaskExecutorComponent implements Closeable {
 
     @Override
     public void close() {
-        ExecutorService executorRef;
+        stopped.set(true);
         synchronized (runningTasks) {
-            executorRef = executor;
-            executor = null;
-            stopped.set(true);
-        }
-        
-        if (executorRef != null) {
-            executorRef.shutdown();
-            log.info("Shutdown {} with {} running tasks, waiting for {}.", schedulerName, runningTasks.size(),
-                    maxShutdownWaitTime);
-
-            if (runningTasks.size() > 0) {
-                try {
-                    executorRef.awaitTermination(maxShutdownWaitTime.getSeconds(), TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    log.warn("Failed to complete runnings tasks.", e.getCause() == null ? e : e.getCause());
-                    shutdownNow();
-                } finally {
-                    executorRef = null;
-                    runningTasks.clear();
+            if (executor != null) {
+                var execRef = executor;
+                execRef.shutdown();
+                log.info("Shutdown {} with {} running tasks, waiting for {}.", schedulerName, runningTasks.size(),
+                        maxShutdownWaitTime);
+                
+                if (runningTasks.size() > 0) {
+                    try {
+                        execRef.awaitTermination(maxShutdownWaitTime.getSeconds(), TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        log.warn("Failed to complete runnings tasks.", e.getCause() == null ? e : e.getCause());
+                        shutdownNow();
+                    } finally {
+                        executor = null;
+                        runningTasks.clear();
+                    }
                 }
             }
         }

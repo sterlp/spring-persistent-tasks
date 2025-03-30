@@ -41,7 +41,6 @@ class PersistentTaskServiceTest extends AbstractSpringTest {
         final var correlationId = UUID.randomUUID().toString();
 
         // WHEN
-        System.err.println("-----");
         subject.runOrQueue(task1.newTrigger(234).correlationId(correlationId).build());
 
         // THEN
