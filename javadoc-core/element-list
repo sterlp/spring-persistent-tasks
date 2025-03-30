@@ -7,6 +7,7 @@ org.sterl.spring.persistent_tasks.exception
 org.sterl.spring.persistent_tasks.history
 org.sterl.spring.persistent_tasks.history.api
 org.sterl.spring.persistent_tasks.history.component
+org.sterl.spring.persistent_tasks.history.config
 org.sterl.spring.persistent_tasks.history.model
 org.sterl.spring.persistent_tasks.history.repository
 org.sterl.spring.persistent_tasks.scheduler
