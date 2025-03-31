@@ -70,22 +70,25 @@ public class TaskExecutorComponent implements Closeable {
         if (trigger == null) {
             return CompletableFuture.completedFuture(null);
         }
-
+        assertStarted();
         try {
-            Future<TriggerKey> result;
             synchronized (runningTasks) {
-                if (stopped.get() || executor == null) {
-                    throw new IllegalStateException("Executor of " + schedulerName + " is already stopped");
-                }
-                result = executor.submit(() -> runTrigger(trigger));
+                assertStarted();
+                var result = executor.submit(() -> runTrigger(trigger));
                 runningTasks.put(trigger, result);
+                return result;
             }
-            return result;
         } catch (Exception e) {
             runningTasks.remove(trigger);
             throw new RuntimeException("Failed to run " + trigger.getKey(), e);
         }
 
+    }
+
+    private void assertStarted() {
+        if (stopped.get() || executor == null) {
+            throw new IllegalStateException("Executor of " + schedulerName + " is already stopped");
+        }
     }
 
     private TriggerKey runTrigger(TriggerEntity trigger) {
