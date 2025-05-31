@@ -1,6 +1,5 @@
 package org.sterl.spring.persistent_tasks.scheduler.component;
 
-import java.io.Closeable;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
  * </p>
  */
 @Slf4j
-public class TaskExecutorComponent implements Closeable {
+public class TaskExecutorComponent {
 
     private final String schedulerName;
     private final TriggerService triggerService;
@@ -49,16 +48,12 @@ public class TaskExecutorComponent implements Closeable {
     private final AtomicBoolean stopped = new AtomicBoolean(true);
     private final Lock lock = new ReentrantLock(true);
 
-    public TaskExecutorComponent(
-            String schedulerName,
-            TriggerService triggerService,
-            SchedulerThreadFactory threadFactory,
-            int maxThreads) {
+    public TaskExecutorComponent(String schedulerName, TriggerService triggerService,
+            SchedulerThreadFactory threadFactory, int maxThreads) {
         super();
         this.schedulerName = schedulerName;
         this.triggerService = triggerService;
         this.maxThreads.set(maxThreads);
-        this.start();
     }
 
     @NonNull
@@ -78,8 +73,8 @@ public class TaskExecutorComponent implements Closeable {
         if (trigger == null) {
             return CompletableFuture.completedFuture(null);
         }
+        lock.lock();
         assertStarted();
-        // lock.lock();
         try {
             var result = executor.submit(() -> runTrigger(trigger));
             runningTasks.put(trigger, result);
@@ -88,7 +83,7 @@ public class TaskExecutorComponent implements Closeable {
             runningTasks.remove(trigger);
             throw new RuntimeException("Failed to run " + trigger.getKey(), e);
         } finally {
-            // lock.unlock();
+            lock.unlock();
         }
 
     }
@@ -104,49 +99,56 @@ public class TaskExecutorComponent implements Closeable {
             triggerService.run(trigger);
             return trigger.getKey();
         } finally {
-            // lock.lock();
+            lock.lock();
             try {
                 if (runningTasks.remove(trigger) == null && runningTasks.size() > 0) {
                     var runningKeys = runningTasks.keySet().stream().map(TriggerEntity::key).toList();
                     log.error("Failed to remove trigger with {} - {}", trigger.key(), runningKeys);
                 }
             } finally {
-                // lock.unlock();
+                lock.unlock();
             }
         }
     }
 
     public void start() {
         if (stopped.compareAndExchange(true, false)) {
-            runningTasks.clear();
-            executor = new ThreadPoolExecutor(
-                    1, this.maxThreads.get(),
-                    60L, TimeUnit.SECONDS,
-                    new LinkedBlockingQueue<Runnable>());
-            log.info("Started {} with {} threads.", schedulerName, maxThreads.get());
-            stopped.set(false);
+            lock.lock();
+            try {
+                runningTasks.clear();
+                executor = new ThreadPoolExecutor(1, this.maxThreads.get(), 60L, TimeUnit.SECONDS,
+                        new LinkedBlockingQueue<Runnable>());
+                log.info("Started {} with {} threads.", schedulerName, maxThreads.get());
+                stopped.set(false);
+            } finally {
+                lock.unlock();
+            }
         }
     }
 
-    @Override
-    public void close() {
+    public void shutdown() {
         stopped.set(true);
         if (executor != null) {
-            executor.shutdown();
-            log.info("Shutdown {} with {} running tasks, waiting for {}.", schedulerName, runningTasks.size(),
-                    maxShutdownWaitTime);
-
-            if (runningTasks.size() > 0) {
-                try {
-                    executor.awaitTermination(maxShutdownWaitTime.getSeconds(), TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    log.warn("Failed to complete runnings tasks.", e.getCause() == null ? e : e.getCause());
-                    shutdownNow();
-                } finally {
-                    executor = null;
-                    runningTasks.clear();
+            lock.lock();
+            try {
+                executor.shutdown();
+                if (runningTasks.size() > 0) {
+                    log.info("Shutdown {} with {} running tasks, waiting for {}.", schedulerName, runningTasks.size(),
+                            maxShutdownWaitTime);
+                    try {
+                        executor.awaitTermination(maxShutdownWaitTime.getSeconds(), TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        log.warn("Failed to complete runnings tasks.", e.getCause() == null ? e : e.getCause());
+                        shutdownNow();
+                    }
+                } else {
+                    log.info("Shutdown {} with.", schedulerName);
                 }
+            } finally {
+                executor = null;
+                runningTasks.clear();
+                lock.unlock();
             }
         }
     }
@@ -154,10 +156,15 @@ public class TaskExecutorComponent implements Closeable {
     public void shutdownNow() {
         stopped.set(true);
         if (executor != null) {
-            executor.shutdownNow();
-            log.info("Force stop {} with {} running tasks", schedulerName, runningTasks.size());
-            runningTasks.clear();
-            executor = null;
+            lock.lock();
+            try {
+                executor.shutdownNow();
+                log.info("Force stop {} with {} running tasks", schedulerName, runningTasks.size());
+            } finally {
+                runningTasks.clear();
+                executor = null;
+                lock.unlock();
+            }
         }
     }
 
@@ -166,8 +173,7 @@ public class TaskExecutorComponent implements Closeable {
             return 0;
         }
         if (maxThreads.get() - runningTasks.size() < 0) {
-            log.warn("Already {} running tasks, more than threads {} in pool.",
-                    runningTasks.size(), maxThreads.get());
+            log.warn("Already {} running tasks, more than threads {} in pool.", runningTasks.size(), maxThreads.get());
         }
         return Math.max(maxThreads.get() - runningTasks.size(), 0);
     }
@@ -181,8 +187,7 @@ public class TaskExecutorComponent implements Closeable {
     }
 
     public List<TriggerEntity> getRunningTriggers() {
-        var doneAndNotRemovedFutures = this.runningTasks.entrySet().stream()
-                .filter(e -> e.getValue().isDone())
+        var doneAndNotRemovedFutures = this.runningTasks.entrySet().stream().filter(e -> e.getValue().isDone())
                 .toList();
 
         if (doneAndNotRemovedFutures.size() > 0) {
