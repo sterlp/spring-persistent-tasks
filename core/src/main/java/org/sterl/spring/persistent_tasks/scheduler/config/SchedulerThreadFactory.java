@@ -1,6 +1,6 @@
 package org.sterl.spring.persistent_tasks.scheduler.config;
 
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 @FunctionalInterface
 public interface SchedulerThreadFactory {
-    Executor newThreadFactory(int maxThreads);
+    ExecutorService newExecutorService(int maxThreads);
     
     enum Type {
         DEFAULT,

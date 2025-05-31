@@ -7,9 +7,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -38,12 +37,13 @@ public class TaskExecutorComponent {
 
     private final String schedulerName;
     private final TriggerService triggerService;
+    private final SchedulerThreadFactory threadFactory;
     private final AtomicInteger maxThreads = new AtomicInteger(0);
     @Getter
     @Setter
     private Duration maxShutdownWaitTime = Duration.ofSeconds(10);
     @Nullable
-    private ThreadPoolExecutor executor;
+    private ExecutorService executor;
     private final ConcurrentHashMap<TriggerEntity, Future<TriggerKey>> runningTasks = new ConcurrentHashMap<>();
     private final AtomicBoolean stopped = new AtomicBoolean(true);
     private final Lock lock = new ReentrantLock(true);
@@ -54,6 +54,7 @@ public class TaskExecutorComponent {
         this.schedulerName = schedulerName;
         this.triggerService = triggerService;
         this.maxThreads.set(maxThreads);
+        this.threadFactory = threadFactory;
     }
 
     @NonNull
@@ -116,8 +117,7 @@ public class TaskExecutorComponent {
             lock.lock();
             try {
                 runningTasks.clear();
-                executor = new ThreadPoolExecutor(1, this.maxThreads.get(), 60L, TimeUnit.SECONDS,
-                        new LinkedBlockingQueue<Runnable>());
+                executor = threadFactory.newExecutorService(getMaxThreads());
                 log.info("Started {} with {} threads.", schedulerName, maxThreads.get());
                 stopped.set(false);
             } finally {
