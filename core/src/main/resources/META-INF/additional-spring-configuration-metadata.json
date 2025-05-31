@@ -27,6 +27,11 @@
       "defaultValue": true
     },
     {
+      "name": "spring.persistent-tasks.thread-factory",
+      "type": "org.sterl.spring.persistent_tasks.scheduler.config.SchedulerThreadFactory.Type",
+      "description": "Which thread factory should be used DEFAULT or VIRTUAL."
+    },
+    {
       "name": "spring.persistent-tasks.history.delete-rate",
       "type": "java.lang.Integer",
       "description": "The interval at which old triggers are deleted, in hours. Default 24h."

@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -179,6 +180,31 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
     }
     
     @Test
+    void testRunOrQueueTransactions() throws Exception {
+        // GIVEN & WHEN
+        var k1 = subject.runOrQueue(TriggerBuilder.newTrigger("savePersonInTrx").state("Paul").build());
+
+        // THEN 1 to save and 1 to start it and 1 for the history
+        Awaitility.await().until(() -> hibernateAsserts.getStatistics().getTransactionCount() > 2);
+        Thread.sleep(250); // wait for the history async events
+        hibernateAsserts.assertTrxCount(3);
+        assertThat(persistentTaskService.getLastTriggerData(k1).get().getStatus())
+            .isEqualTo(TriggerStatus.RUNNING);
+
+        // WHEN
+        hibernateAsserts.reset();
+        COUNTDOWN.countDown();
+        Awaitility.await().until(() -> hibernateAsserts.getStatistics().getTransactionCount() >= 1);
+        hibernateAsserts.assertTrxCount(1);
+
+        // THEN
+        assertThat(personRepository.count()).isEqualTo(1);
+        // AND
+        assertThat(persistentTaskService.getLastTriggerData(k1).get().getStatus())
+            .isEqualTo(TriggerStatus.SUCCESS);
+    }
+    
+    @Test
     void testRunOrQueueShowsRunning() throws Exception {
         // GIVEN
         var k1 = subject.runOrQueue(TriggerBuilder.newTrigger("savePersonInTrx").state("Paul").build());
@@ -190,13 +216,9 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         assertThat(persistentTaskService.getLastTriggerData(k2).get().getStatus())
             .isEqualTo(TriggerStatus.RUNNING);
 
-        // THEN
-        Thread.sleep(150); // wait for the history async events
-        hibernateAsserts.assertTrxCount(7);
-        
-        // WHEN
         COUNTDOWN.countDown();
         awaitRunningTasks();
+
         // THEN
         assertThat(personRepository.count()).isEqualTo(2);
         // AND

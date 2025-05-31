@@ -81,7 +81,7 @@ public class SchedulerService {
 
     @PreDestroy
     public void stop() {
-        taskExecutor.close();
+        taskExecutor.shutdown();
         editSchedulerStatus.offline(name);
         runOrQueue.clear();
     }

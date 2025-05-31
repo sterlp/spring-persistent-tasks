@@ -6,6 +6,7 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -59,8 +60,8 @@ class HistoryServiceTest extends AbstractSpringTest {
         assertThat(triggers.get(2).getData().getStatus()).isEqualTo(TriggerStatus.WAITING);
     }
     
-    @Test
-    void testTriggerHistoryTrx() throws TimeoutException, InterruptedException {
+    @RepeatedTest(3)
+    void testTriggerHistoryTrx() {
         // GIVEN
         final var trigger = Task3.ID.newUniqueTrigger("Hallo");
         persistentTaskService.queue(trigger);
@@ -71,9 +72,11 @@ class HistoryServiceTest extends AbstractSpringTest {
         });
         
         // THEN
-        // 2 to get the work
+        // 2 to get the work done
         // 1 for the running history
         // 1 for the success history
         hibernateAsserts.assertTrxCount(4);
+        assertThat(subject.countTriggers(trigger.key())).isEqualTo(1);
+        assertThat(subject.findAllDetailsForKey(trigger.key()).getTotalElements()).isEqualTo(3);
     }
 }

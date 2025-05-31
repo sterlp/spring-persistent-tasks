@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +16,7 @@ import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
 import org.sterl.spring.persistent_tasks.scheduler.component.RunOrQueueComponent;
 import org.sterl.spring.persistent_tasks.scheduler.component.TaskExecutorComponent;
+import org.sterl.spring.persistent_tasks.scheduler.config.SchedulerThreadFactory.Type;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 
 import io.micrometer.core.instrument.MeterRegistry;
@@ -42,6 +44,16 @@ public class SchedulerConfig {
             }
         }
     }
+    
+    @ConditionalOnMissingBean
+    @Bean
+    SchedulerThreadFactory schedulerThreadFactory(@Value("${spring.persistent-tasks.thread-factory:DEFAULT}") 
+        SchedulerThreadFactory.Type type) {
+        log.info("Using {} thread factory.", type);
+        if (type == Type.VIRTUAL) return SchedulerThreadFactory.VIRTUAL_THREAD_POOL_FACTORY;
+        return SchedulerThreadFactory.DEFAULT_THREAD_POOL_FACTORY;
+    }
+    
 
     @ConditionalSchedulerServiceByProperty
     @Primary
@@ -50,6 +62,7 @@ public class SchedulerConfig {
     SchedulerService schedulerService(
             TriggerService triggerService,
             MeterRegistry meterRegistry,
+            SchedulerThreadFactory schedulerThreadFactory,
             @Value("${spring.persistent-tasks.max-threads:10}") int maxThreads,
             EditSchedulerStatusComponent editSchedulerStatus,
             Optional<SchedulerCustomizer> customizer,
@@ -59,7 +72,9 @@ public class SchedulerConfig {
         final var name = customizer.get().name();
         final var maxShutdownWaitTime = Duration.ofSeconds(10);
 
-        return newSchedulerService(name, meterRegistry, triggerService, editSchedulerStatus, maxThreads, maxShutdownWaitTime, trx);
+        return newSchedulerService(name, meterRegistry, triggerService, editSchedulerStatus, 
+                schedulerThreadFactory, maxThreads, 
+                maxShutdownWaitTime, trx);
     }
 
     public static SchedulerService newSchedulerService(
@@ -71,7 +86,23 @@ public class SchedulerConfig {
             Duration maxShutdownWaitTime,
             TransactionTemplate trx) {
         
-        final var taskExecutor = new TaskExecutorComponent(name, triggerService, maxThreads);
+        return newSchedulerService(name, meterRegistry, triggerService, editSchedulerStatus,
+                SchedulerThreadFactory.DEFAULT_THREAD_POOL_FACTORY,
+                maxThreads, 
+                maxShutdownWaitTime, trx);
+    }
+    
+    public static SchedulerService newSchedulerService(
+            String name,
+            MeterRegistry meterRegistry,
+            TriggerService triggerService,
+            EditSchedulerStatusComponent editSchedulerStatus,
+            SchedulerThreadFactory schedulerThreadFactory,
+            int maxThreads, 
+            Duration maxShutdownWaitTime,
+            TransactionTemplate trx) {
+        
+        final var taskExecutor = new TaskExecutorComponent(name, triggerService, schedulerThreadFactory, maxThreads);
         if (maxShutdownWaitTime != null) taskExecutor.setMaxShutdownWaitTime(maxShutdownWaitTime);
 
         final var runOrQueue = new RunOrQueueComponent(name, triggerService, taskExecutor);

@@ -1,0 +1,3 @@
+spring:
+  persistent-tasks:
+    thread-factory: virtual

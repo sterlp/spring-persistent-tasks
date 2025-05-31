@@ -11,7 +11,7 @@ public class Countdown {
     
     public void await() {
         Awaitility
-            .await("Countdown")
+            .await("Countdown " + count.get())
             .atMost(Duration.ofSeconds(3))
             .until(() -> count.get() <= 0);
     }
@@ -22,5 +22,9 @@ public class Countdown {
 
     public void reset() {
         count.set(1);
+    }
+    
+    public void reset(int newCount) {
+        count.set(newCount);
     }
 }

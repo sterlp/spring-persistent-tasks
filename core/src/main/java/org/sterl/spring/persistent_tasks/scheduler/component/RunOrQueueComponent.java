@@ -47,7 +47,7 @@ public class RunOrQueueComponent {
             if (taskExecutor.getFreeThreads() > 0) {
                 trigger = triggerService.markTriggersAsRunning(trigger, schedulerName);
                 shouldRun.put(trigger.getId(), trigger);
-                log.debug("{} added for immediate execution, waiting for commit on={}", trigger.getKey(), schedulerName);
+                log.debug("Immediate execution for={}, waiting for commit on={}", trigger.getKey(), schedulerName);
             } else {
                 log.debug("Currently not enough free thread available {} of {} in use. PersistentTask {} queued.",
                         taskExecutor.getFreeThreads(), taskExecutor.getMaxThreads(), trigger.getKey());
