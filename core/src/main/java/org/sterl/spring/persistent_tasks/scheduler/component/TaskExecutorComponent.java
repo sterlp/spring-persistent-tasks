@@ -20,6 +20,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.scheduler.config.SchedulerThreadFactory;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
@@ -48,11 +49,16 @@ public class TaskExecutorComponent implements Closeable {
     private final AtomicBoolean stopped = new AtomicBoolean(true);
     private final Lock lock = new ReentrantLock(true);
 
-    public TaskExecutorComponent(String schedulerName, TriggerService triggerService, int maxThreads) {
+    public TaskExecutorComponent(
+            String schedulerName,
+            TriggerService triggerService,
+            SchedulerThreadFactory threadFactory,
+            int maxThreads) {
         super();
         this.schedulerName = schedulerName;
         this.triggerService = triggerService;
         this.maxThreads.set(maxThreads);
+        this.start();
     }
 
     @NonNull
@@ -73,9 +79,8 @@ public class TaskExecutorComponent implements Closeable {
             return CompletableFuture.completedFuture(null);
         }
         assertStarted();
+        // lock.lock();
         try {
-            assertStarted();
-            lock.lock();
             var result = executor.submit(() -> runTrigger(trigger));
             runningTasks.put(trigger, result);
             return result;
@@ -83,7 +88,7 @@ public class TaskExecutorComponent implements Closeable {
             runningTasks.remove(trigger);
             throw new RuntimeException("Failed to run " + trigger.getKey(), e);
         } finally {
-            lock.unlock();
+            // lock.unlock();
         }
 
     }
@@ -99,14 +104,14 @@ public class TaskExecutorComponent implements Closeable {
             triggerService.run(trigger);
             return trigger.getKey();
         } finally {
+            // lock.lock();
             try {
-                lock.lock();
                 if (runningTasks.remove(trigger) == null && runningTasks.size() > 0) {
-                    var runningKeys = runningTasks.keySet().stream().map(TriggerEntity::key);
+                    var runningKeys = runningTasks.keySet().stream().map(TriggerEntity::key).toList();
                     log.error("Failed to remove trigger with {} - {}", trigger.key(), runningKeys);
                 }
             } finally {
-                lock.unlock();
+                // lock.unlock();
             }
         }
     }
@@ -114,8 +119,9 @@ public class TaskExecutorComponent implements Closeable {
     public void start() {
         if (stopped.compareAndExchange(true, false)) {
             runningTasks.clear();
-            executor = new ThreadPoolExecutor(1, this.maxThreads.get(),
-                    0L, TimeUnit.MILLISECONDS,
+            executor = new ThreadPoolExecutor(
+                    1, this.maxThreads.get(),
+                    60L, TimeUnit.SECONDS,
                     new LinkedBlockingQueue<Runnable>());
             log.info("Started {} with {} threads.", schedulerName, maxThreads.get());
             stopped.set(false);
@@ -129,7 +135,7 @@ public class TaskExecutorComponent implements Closeable {
             executor.shutdown();
             log.info("Shutdown {} with {} running tasks, waiting for {}.", schedulerName, runningTasks.size(),
                     maxShutdownWaitTime);
-            
+
             if (runningTasks.size() > 0) {
                 try {
                     executor.awaitTermination(maxShutdownWaitTime.getSeconds(), TimeUnit.SECONDS);
@@ -173,19 +179,20 @@ public class TaskExecutorComponent implements Closeable {
     public Collection<Future<TriggerKey>> getRunningTasks() {
         return runningTasks.values();
     }
+
     public List<TriggerEntity> getRunningTriggers() {
         var doneAndNotRemovedFutures = this.runningTasks.entrySet().stream()
-            .filter(e -> e.getValue().isDone())
-            .toList();
-        
+                .filter(e -> e.getValue().isDone())
+                .toList();
+
         if (doneAndNotRemovedFutures.size() > 0) {
-            log.warn("Found still pending futures, maybe an issue, report a bug if so {}", 
+            log.warn("Found still pending futures, maybe an issue, report a bug if so {}",
                     doneAndNotRemovedFutures.stream().map(e -> e.getKey().getKey()));
             for (var entry : doneAndNotRemovedFutures) {
                 runningTasks.remove(entry.getKey());
             }
         }
-        
+
         return Collections.list(this.runningTasks.keys());
     }
 
