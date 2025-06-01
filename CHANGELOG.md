@@ -1,11 +1,13 @@
 # Changelog
 
-## v1.7.0
+## v1.7.0 - (2025-06-01)
+
+### New features:
 
 -   Added support for a virtual thread factory
 -   Added support to configure a custom thread factory
 
-### New features:
+## v1.6.7 - (2025-04-01)
 
 ### Bug fixes:
 

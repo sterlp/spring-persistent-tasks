@@ -146,7 +146,14 @@ jobs:
 
     all-tests:
         runs-on: ubuntu-latest
-        needs: [test-mssql, test-mssql-virtual, test-mariadb, test-postgres, test-postgres-virtual]
+        needs:
+            [
+                test-mssql,
+                test-mssql-virtual,
+                test-mariadb,
+                test-postgres,
+                test-postgres-virtual,
+            ]
         steps:
             - name: All test done
               run: echo "All test succeeded."
@@ -172,7 +179,7 @@ jobs:
                   distribution: "temurin"
                   cache: maven
             - name: Deploy JavaDoc 🚀
-              uses: MathieuSoysal/Javadoc-publisher.yml@v2.5.0
+              uses: MathieuSoysal/Javadoc-publisher.yml@v3.0.2
               with:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   javadoc-branch: javadoc
