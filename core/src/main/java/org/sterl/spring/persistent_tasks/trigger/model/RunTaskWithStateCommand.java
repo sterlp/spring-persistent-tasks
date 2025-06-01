@@ -43,7 +43,7 @@ public record RunTaskWithStateCommand (
 
     private Optional<TriggerEntity> runTask(EditTriggerComponent editTrigger) {
         editTrigger.triggerIsNowRunning(trigger, state);
-        
+
         task.accept(state);
 
         var result = editTrigger.completeTaskWithSuccess(trigger.getKey(), state);

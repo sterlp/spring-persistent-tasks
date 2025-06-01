@@ -73,11 +73,11 @@ public class TriggerEntity implements HasTriggerData {
         if (e == null) {
             this.data.setExceptionName("PersistentTask canceled");
         } else {
-            data.setExceptionName(e.getClass().getName());
-            data.setLastException(ExceptionUtils.getStackTrace(e));
+            this.data.setExceptionName(e.getClass().getName());
+            this.data.setLastException(ExceptionUtils.getStackTrace(e));
         }
 
-        data.updateRunningDuration();
+        this.data.updateRunningDuration();
         return this;
     }
 

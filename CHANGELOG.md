@@ -1,41 +1,47 @@
 # Changelog
 
-## v1.6.7
+## v1.7.0
+
+-   Added support for a virtual thread factory
+-   Added support to configure a custom thread factory
 
 ### New features:
 
 ### Bug fixes:
-- abandoned triggers will now fire a failed trigger event
-- trigger history scheduler waits now in case of shut down for any history events to get saved
 
-## v1.6.6  - (2025-03-20)
+-   abandoned triggers will now fire a failed trigger event
+-   trigger history scheduler waits now in case of shut down for any history events to get saved
+
+## v1.6.6 - (2025-03-20)
 
 ### New features:
-- first metrics
+
+-   first metrics
 
 ### Bug fixes:
-- fixed history delete start of history
 
+-   fixed history delete start of history
 
-## v1.6.5  - (2025-03-19)
+## v1.6.5 - (2025-03-19)
 
 -   fixed correlation ID size
 -   cancel can now always be triggered from the UI
 -   showing slow used history
 
-## v1.6.4  - (2025-03-18)
+## v1.6.4 - (2025-03-18)
 
 -   in tests the task executor may finish a task before it returns it reference
 
-## v1.6.3  - (2025-03-18)
+## v1.6.3 - (2025-03-18)
 
 -   ensure the remove of a running trigger happens after it is added
 
-## v1.6.2  - (2025-03-18)
+## v1.6.2 - (2025-03-18)
 
 -   removed synchronized from TaskExecutorComponent
 
-## v1.6.1  - (2025-03-18)
+## v1.6.1 - (2025-03-18)
+
 -   simpler RetryStrategy - as function
 -   showing last ping
 -   showing execution time or still running triggers

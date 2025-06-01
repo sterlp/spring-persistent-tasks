@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.sterl.spring</groupId>
         <artifactId>spring-persistent-tasks-root</artifactId>
-        <version>1.6.8-SNAPSHOT</version>
+        <version>1.7.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -86,7 +86,7 @@
         <dependency>
             <groupId>org.sterl.test</groupId>
             <artifactId>hibernate-asserts</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -110,6 +110,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
                 <executions>
                     <execution>
                         <id>copy-test-resources</id>
