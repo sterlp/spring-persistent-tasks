@@ -143,7 +143,7 @@ public class TaskExecutorComponent {
                         shutdownNow();
                     }
                 } else {
-                    log.info("Shutdown {} with.", schedulerName);
+                    log.info("Shutdown {}.", schedulerName);
                 }
             } finally {
                 executor = null;
@@ -210,7 +210,7 @@ public class TaskExecutorComponent {
     }
 
     public int getMaxThreads() {
-        return isStopped() ? 0 : this.maxThreads.get();
+        return this.maxThreads.get();
     }
 
     public boolean isRunning(TriggerEntity trigger) {

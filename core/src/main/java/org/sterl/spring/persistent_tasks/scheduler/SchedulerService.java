@@ -126,14 +126,15 @@ public class SchedulerService {
             final var result = trx.execute(t -> {
                 var triggers = triggerService.lockNextTrigger(name, taskExecutor.getFreeThreads(), timeDue);
                 editSchedulerStatus.checkinToRegistry(name, 
-                        taskExecutor.countRunning() + triggers.size(), taskExecutor.getMaxThreads());
+                        taskExecutor.countRunning() + triggers.size(), 
+                        taskExecutor.getMaxThreads());
                 return triggers;
             });
 
             return taskExecutor.submit(result);
         } else {
-            log.info("No free threads {}/{} right now to run jobs due for: {}",
-                    taskExecutor.getFreeThreads(),
+            log.info("No free threads {}/{} right now to run jobs due={}",
+                    taskExecutor.countRunning(),
                     taskExecutor.getMaxThreads(),
                     timeDue);
             editSchedulerStatus.checkinToRegistry(name, taskExecutor.countRunning(), taskExecutor.getMaxThreads());
