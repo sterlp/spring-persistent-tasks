@@ -207,10 +207,11 @@
                     <classPatterns>
                         <pattern>org.sterl.spring.persistent_tasks.api.*</pattern>
                     </classPatterns>
-                    <excludeClassPatterns>
-                        <pattern>com.querydsl.core.types.dsl.**</pattern>
-                        <pattern>java.lang.reflect.**</pattern>
-                    </excludeClassPatterns>
+                    <excludeClasses>
+                        <class>java.lang.Class</class>
+                        <class>org.sterl.spring.persistent_tasks.api.QTriggerKey</class>
+                        <class>java.io.Serializable</class>
+                    </excludeClasses>
                     <outputFile>../ui/src/server-api.d.ts</outputFile>
                     <outputKind>module</outputKind>
                 </configuration>

@@ -25,6 +25,13 @@ public class TriggerSearch {
                 || status != null;
     }
     
+    
+    public static TriggerSearch byCorrelationId(String correlationId) {
+        var result = new TriggerSearch();
+        result.setCorrelationId(correlationId);
+        return result;
+    }
+    
     /** create time ASC */
     public static final Sort DEFAULT_SORT = sortByCreatedTime(Direction.ASC);
 
@@ -36,11 +43,6 @@ public class TriggerSearch {
         if (page.getSort() == Sort.unsorted()) {
             result = PageRequest.of(page.getPageNumber(), page.getPageSize(), DEFAULT_SORT);
         }
-        return result;
-    }
-    public static TriggerSearch byCorrelationId(String correlationId) {
-        var result = new TriggerSearch();
-        result.setCorrelationId(correlationId);
         return result;
     }
 }
