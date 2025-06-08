@@ -130,7 +130,8 @@ public class EditTriggerComponent {
                 .runAt(trigger.runtAt())
                 .priority(trigger.priority())
                 .state(state)
-                .correlationId(correlationId);
+                .correlationId(correlationId)
+                .tag(trigger.tag());
 
         final var t = TriggerEntity.builder()
             .data(data.build())

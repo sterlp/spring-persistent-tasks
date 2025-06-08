@@ -13,13 +13,14 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.lang.Nullable;
 import org.sterl.spring.persistent_tasks.api.TaskStatusHistoryOverview;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
+import org.sterl.spring.persistent_tasks.history.model.QTriggerHistoryLastStateEntity;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryDetailEntity;
 import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryLastStateEntity;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryDetailRepository;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryLastStateRepository;
-import org.sterl.spring.persistent_tasks.shared.StringHelper;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
 
 import lombok.RequiredArgsConstructor;
@@ -97,16 +98,21 @@ public class HistoryService {
      * @param page page informations
      * @return the found data, looking only the last states
      */
-    public Page<TriggerHistoryLastStateEntity> findTriggerState(
-            @Nullable TriggerKey key, @Nullable TriggerStatus status, Pageable page) {
+    public Page<TriggerHistoryLastStateEntity> searchTriggers(
+            @Nullable TriggerSearch search, Pageable page) {
 
         page = applyDefaultSortIfNeeded(page);
-        if (key == null && status == null) {
-            return triggerHistoryLastStateRepository.findAll(page);
+        Page<TriggerHistoryLastStateEntity> result;
+
+        if (search != null && search.hasValue()) {
+            var p = triggerHistoryLastStateRepository.buildSearch(
+                    QTriggerHistoryLastStateEntity.triggerHistoryLastStateEntity.data, 
+                    search);
+            result = triggerHistoryLastStateRepository.findAll(p, page);
+        } else {
+            result = triggerHistoryLastStateRepository.findAll(page);
         }
-        final var id = StringHelper.applySearchWildCard(key);
-        final var name = key == null ? null : key.getTaskName();
-        return triggerHistoryLastStateRepository.findAll(id, name, status, page);
+        return result;
     }
 
     private Pageable applyDefaultSortIfNeeded(Pageable page) {
@@ -119,9 +125,5 @@ public class HistoryService {
 
     public List<TaskStatusHistoryOverview> taskStatusHistory() {
         return triggerHistoryLastStateRepository.listTriggerStatus();
-    }
-
-    public List<TriggerHistoryLastStateEntity> findTriggerByCorrelationId(String correlationId, Pageable page) {
-        return triggerHistoryLastStateRepository.findByCorrelationId(correlationId, page);
     }
 }

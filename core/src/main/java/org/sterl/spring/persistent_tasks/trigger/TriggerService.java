@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
 import org.sterl.spring.persistent_tasks.task.TaskService;
@@ -98,9 +99,8 @@ public class TriggerService {
     }
 
     @Transactional(readOnly = true , timeout = 10)
-    public Page<TriggerEntity> findAllTriggers(
-            @Nullable TriggerKey key, @Nullable TriggerStatus status, Pageable page) {
-        return this.readTrigger.listTriggers(key, status, page);
+    public Page<TriggerEntity> searchTriggers(@Nullable TriggerSearch search, Pageable page) {
+        return this.readTrigger.searchTriggers(search, page);
     }
     
     @Transactional(readOnly = true , timeout = 10)
@@ -196,10 +196,5 @@ public class TriggerService {
             t.getData().setRunAt(time);
             return t;
         });
-    }
-
-    public List<TriggerEntity> findTriggerByCorrelationId(String correlationId, Pageable page) {
-        return readTrigger.findTriggerByCorrelationId(correlationId, page);
-        
     }
 }

@@ -73,9 +73,8 @@ class HistoryServiceTest extends AbstractSpringTest {
         
         // THEN
         // 2 to get the work done
-        // 1 for the running history
         // 1 for the success history
-        hibernateAsserts.assertTrxCount(4);
+        hibernateAsserts.assertTrxCount(3);
         assertThat(subject.countTriggers(trigger.key())).isEqualTo(1);
         assertThat(subject.findAllDetailsForKey(trigger.key()).getTotalElements()).isEqualTo(3);
     }

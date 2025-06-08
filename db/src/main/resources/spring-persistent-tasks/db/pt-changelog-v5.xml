@@ -1,0 +1,80 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet author="sterlp" id="2025-06-07-tag">
+
+        <addColumn tableName="pt_task_triggers">
+            <column name="tag" type="varchar(200)" />
+        </addColumn>
+
+        <addColumn tableName="pt_trigger_history_details">
+            <column name="tag" type="varchar(200)" />
+        </addColumn>
+
+        <addColumn tableName="pt_trigger_history_last_states">
+            <column name="tag" type="varchar(200)" />
+        </addColumn>
+
+        <createIndex indexName="idx_pt_triggers_tag" tableName="pt_task_triggers">
+            <column name="tag" />
+        </createIndex>
+
+        <createIndex indexName="idx_pt_trigger_history_details_tag"
+            tableName="pt_trigger_history_details">
+            <column name="tag" />
+        </createIndex>
+
+        <createIndex indexName="idx_pt_trigger_history_last_states_tag"
+            tableName="pt_trigger_history_last_states">
+            <column name="tag" />
+        </createIndex>
+
+    </changeSet>
+
+
+    <changeSet author="sterlp" id="2025-06-08-index-names">
+        <dropIndex indexName="idx_pt_triggers_history_created_time"
+            tableName="pt_trigger_history_details" />
+
+        <dropIndex indexName="idx_pt_triggers_history_instance_id"
+            tableName="pt_trigger_history_details" />
+
+        <dropIndex indexName="idx_pt_triggers_history_status"
+            tableName="pt_trigger_history_details" />
+
+        <dropIndex indexName="idx_pt_triggers_history_task_name"
+            tableName="pt_trigger_history_details" />
+
+        <dropIndex indexName="idx_pt_triggers_history_trigger_id"
+            tableName="pt_trigger_history_details" />
+
+        <createIndex indexName="idx_pt_trigger_history_details_created_time"
+            tableName="pt_trigger_history_details">
+            <column name="created_time" />
+        </createIndex>
+        <createIndex indexName="idx_pt_trigger_history_details_instance_id"
+            tableName="pt_trigger_history_details">
+            <column name="instance_id" />
+        </createIndex>
+        <createIndex indexName="idx_pt_trigger_history_details_status"
+            tableName="pt_trigger_history_details">
+            <column name="status" />
+        </createIndex>
+        <createIndex indexName="idx_pt_trigger_history_details_task_name"
+            tableName="pt_trigger_history_details">
+            <column name="task_name" />
+        </createIndex>
+        <createIndex indexName="idx_pt_trigger_history_details_trigger_id"
+            tableName="pt_trigger_history_details">
+            <column name="trigger_id" />
+        </createIndex>
+    </changeSet>
+
+
+</databaseChangeLog>

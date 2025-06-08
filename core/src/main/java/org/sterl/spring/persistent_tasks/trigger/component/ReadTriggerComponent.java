@@ -10,9 +10,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.lang.Nullable;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
-import org.sterl.spring.persistent_tasks.shared.StringHelper;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalCompontant;
+import org.sterl.spring.persistent_tasks.trigger.model.QTriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
 
@@ -51,20 +52,19 @@ public class ReadTriggerComponent {
         return triggerRepository.findTriggersLastPingAfter(dateTime);
     }
 
-    public Page<TriggerEntity> listTriggers(@Nullable TriggerKey key,
-            @Nullable TriggerStatus status, Pageable page) {
-        if (key == null && status == null) return triggerRepository.findAll(page);
-        final var id = StringHelper.applySearchWildCard(key);
-        final var name = key == null ? null : key.getTaskName();
-        return triggerRepository.findAll(id, name, status, page);
+    public Page<TriggerEntity> searchTriggers(@Nullable TriggerSearch search, Pageable page) {
+        page = TriggerSearch.applyDefaultSortIfNeeded(page);
+        if (search != null && search.hasValue()) {
+            var p = triggerRepository.buildSearch(QTriggerEntity.triggerEntity.data, search);
+            return triggerRepository.findAll(p, page);
+        } else {
+            return triggerRepository.findAll(page);
+        }
+        
     }
 
     public Page<TriggerEntity> listTriggers(TaskId<? extends Serializable> task, Pageable page) {
         if (task == null) return triggerRepository.findAll(page);
         return triggerRepository.findAll(task.name(), page);
-    }
-
-    public List<TriggerEntity> findTriggerByCorrelationId(String correlationId, Pageable page) {
-        return triggerRepository.findByCorrelationId(correlationId, triggerRepository.applyDefaultSortIfNeeded(page));
     }
 }

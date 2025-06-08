@@ -2,9 +2,10 @@ package org.sterl.spring.persistent_tasks.api;
 
 import java.io.Serializable;
 import java.time.OffsetDateTime;
-import java.util.UUID;
 
 import org.springframework.lang.Nullable;
+
+import com.github.f4b6a3.uuid.UuidCreator;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,7 +30,7 @@ public class TriggerKey implements Serializable {
     private String taskName;
     
     public static TriggerKey of(@Nullable String id, TaskId<? extends Serializable> taskId) {
-        return new TriggerKey(id == null ? UUID.randomUUID().toString() : id, taskId.name());
+        return new TriggerKey(id == null ? UuidCreator.getTimeOrderedEpochFast().toString() : id, taskId.name());
     }
 
     public TaskId<Serializable> toTaskId() {
@@ -40,7 +41,7 @@ public class TriggerKey implements Serializable {
      * Builds a trigger for the given persistentTask name
      */
     public TriggerKey(String taskName) {
-        id = UUID.randomUUID().toString();
+        id = UuidCreator.getTimeOrderedEpochFast().toString();
         this.taskName = taskName;
     }
 
@@ -52,7 +53,7 @@ public class TriggerKey implements Serializable {
     }
 
     public <T extends Serializable> AddTriggerRequest<T> newTrigger(TaskId<T> taskId, T state) {
-        return newTrigger(UUID.randomUUID().toString(), taskId, state);
+        return newTrigger(UuidCreator.getTimeOrderedEpochFast().toString(), taskId, state);
     }
 
     public <T extends Serializable> AddTriggerRequest<T> newTrigger(String id, TaskId<T> taskId, T state) {
@@ -64,6 +65,6 @@ public class TriggerKey implements Serializable {
                 .id(id) //
                 .state(state) //
                 .when(when) //
-                .build();
+                .build(); //
     }
 }

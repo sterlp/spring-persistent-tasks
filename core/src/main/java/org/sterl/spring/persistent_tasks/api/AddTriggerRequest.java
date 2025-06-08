@@ -15,7 +15,8 @@ public record AddTriggerRequest<T extends Serializable>(
         T state,
         OffsetDateTime runtAt,
         int priority,
-        String correlationId) {
+        String correlationId,
+        String tag) {
     
     @SuppressWarnings("unchecked")
     public TaskId<T> taskId() {

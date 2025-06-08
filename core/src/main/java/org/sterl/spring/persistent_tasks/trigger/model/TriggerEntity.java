@@ -32,6 +32,7 @@ import lombok.NoArgsConstructor;
         @Index(name = "idx_pt_triggers_status", columnList = "status"),
         @Index(name = "idx_pt_triggers_ping", columnList = "last_ping"),
         @Index(name = "idx_pt_triggers_correlation_id", columnList = "correlation_id"),
+        @Index(name = "idx_pt_triggers_tag", columnList = "tag"),
 })
 @Data
 @NoArgsConstructor

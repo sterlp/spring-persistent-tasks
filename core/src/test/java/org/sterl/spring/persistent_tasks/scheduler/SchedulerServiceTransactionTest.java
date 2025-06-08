@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.Nullable;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.PersistentTaskService;
@@ -43,7 +44,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         TransactionalTask<String> savePersonInTrx(PersonRepository personRepository) {
             return new TransactionalTask<String>() {
                 @Override
-                public void accept(String name) {
+                public void accept(@Nullable String name) {
                     personRepository.save(new PersonEntity(name));
                     COUNTDOWN.await();
                     if (sendError.get()) {
@@ -61,7 +62,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
                 PersonRepository personRepository) {
             return new PersistentTask<>() {
                 @Override
-                public void accept(String name) {
+                public void accept(@Nullable String name) {
                     trx.executeWithoutResult(t -> {
                         personRepository.save(new PersonEntity(name));
                         COUNTDOWN.await();
@@ -106,10 +107,9 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         // THEN
         // 1. get the trigger 
         // 2. one the event running 
-        // 3. for the work
-        // 4. for success status
-        // 5. the history
-        hibernateAsserts.assertTrxCount(5);
+        // 3. for the work & for success status
+        // 4. the history
+        hibernateAsserts.assertTrxCount(4);
         assertThat(personRepository.count()).isOne();
         // AND
         var data = persistentTaskService.getLastDetailData(trigger.key());

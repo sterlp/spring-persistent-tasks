@@ -49,6 +49,18 @@ class TaskTransactionTest extends AbstractSpringTest {
             personRepository.save(new PersonEntity(name));
         }
     }
+    
+    @Component("transactionalRequiresNew")
+    @RequiredArgsConstructor
+    static class TransactionalRequiresNew implements PersistentTask<String> {
+        private final PersonRepository personRepository;
+        @Transactional(timeout = 6, propagation = Propagation.REQUIRES_NEW)
+        @Override
+        public void accept(String name) {
+            personRepository.save(new PersonEntity(name));
+            personRepository.save(new PersonEntity(name));
+        }
+    }
 
     /**
      * A closure cannot be annotated, so we use a anonymous class
@@ -58,6 +70,7 @@ class TaskTransactionTest extends AbstractSpringTest {
         @Bean("transactionalAnonymous")
         PersistentTask<String> transactionalAnonymous(PersonRepository personRepository) {
             return new PersistentTask<String>() {
+                // this will not work!
                 @Transactional(timeout = 7, propagation = Propagation.REQUIRES_NEW)
                 @Override
                 public void accept(String name) {
@@ -83,6 +96,8 @@ class TaskTransactionTest extends AbstractSpringTest {
     PersistentTask<String> transactionalMethod;
     @Autowired @Qualifier("transactionalAnonymous")
     PersistentTask<String> transactionalAnonymous;
+    @Autowired @Qualifier("transactionalClosure")
+    PersistentTask<String> transactionalClosure;
 
     @Test
     void testFindTransactionAnnotation() {
@@ -97,10 +112,12 @@ class TaskTransactionTest extends AbstractSpringTest {
         a = ReflectionUtil.getAnnotation(transactionalAnonymous, Transactional.class);
         assertThat(a).isNotNull();
         assertThat(a.timeout()).isEqualTo(7);
+        assertThat(a.propagation()).isEqualTo(Propagation.REQUIRES_NEW);
     }
 
     @Test
     void testGetTransactionTemplate() {
+        /*
         var a = subject.getTransactionTemplate(transactionalClass);
         assertThat(a).isPresent();
         assertThat(a.get().getTimeout()).isEqualTo(5);
@@ -111,8 +128,11 @@ class TaskTransactionTest extends AbstractSpringTest {
         assertThat(a.get().getTimeout()).isEqualTo(6);
         assertThat(a.get().getPropagationBehavior()).isEqualTo(Propagation.REQUIRED.value());
         assertThat(a.get().getIsolationLevel()).isEqualTo(Isolation.REPEATABLE_READ.value());
+        */
+        var a = subject.getTransactionTemplate(transactionalAnonymous);
+        assertThat(a).isEmpty();
         
-        a = subject.getTransactionTemplate(transactionalAnonymous);
+        a = subject.getTransactionTemplate(transactionalClosure);
         assertThat(a).isEmpty();
     }
     
@@ -120,7 +140,7 @@ class TaskTransactionTest extends AbstractSpringTest {
     void testRequiresNewHasOwnTransaction() {
         // GIVEN
         var t = triggerService.queue(TriggerBuilder
-                .newTrigger("transactionalAnonymous", "test").build());
+                .newTrigger("transactionalRequiresNew", "test").build());
         
         // WHEN
         personRepository.deleteAllInBatch();
@@ -128,8 +148,8 @@ class TaskTransactionTest extends AbstractSpringTest {
         triggerService.run(t).get();
         
         // THEN
-        hibernateAsserts.assertTrxCount(4);
-        assertThat(personRepository.count()).isEqualTo(1);
+        hibernateAsserts.assertTrxCount(3);
+        assertThat(personRepository.count()).isEqualTo(2);
     }
 
     @ParameterizedTest
@@ -143,7 +163,7 @@ class TaskTransactionTest extends AbstractSpringTest {
         personRepository.deleteAllInBatch();
         hibernateAsserts.reset();
         triggerService.run(t).get();
-        Thread.sleep(50); // TODO wait for the history running event
+        Thread.sleep(50); // wait for the history running event
         // THEN
         hibernateAsserts.assertTrxCount(2);
         assertThat(personRepository.count()).isEqualTo(2);

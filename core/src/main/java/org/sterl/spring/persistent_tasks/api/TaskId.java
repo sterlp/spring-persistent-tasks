@@ -34,6 +34,7 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
         private final TaskId<T> taskId;
         private String id;
         private String correlationId;
+        private String tag;
         private T state;
         private OffsetDateTime when = OffsetDateTime.now();
         private int priority = AddTriggerRequest.DEFAULT_PRIORITY;
@@ -46,7 +47,7 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
         }
         public AddTriggerRequest<T> build() {
             var key = TriggerKey.of(id, taskId);
-            return new AddTriggerRequest<>(key, state, when, priority, correlationId);
+            return new AddTriggerRequest<>(key, state, when, priority, correlationId, tag);
         }
         /**
          * The ID of this task, same queued ids are replaced.
@@ -61,6 +62,10 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
          */
         public TriggerBuilder<T> correlationId(String correlationId) {
             this.correlationId = correlationId;
+            return this;
+        }
+        public TriggerBuilder<T> tag(String tag) {
+            this.tag = tag;
             return this;
         }
         public TriggerBuilder<T> state(T state) {
@@ -88,6 +93,9 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
             this.when = when;
             return this;
         }
+        /**
+         * synonym for {@link #runAt(OffsetDateTime)}
+         */
         public TriggerBuilder<T> runAfter(Duration duration) {
             runAt(OffsetDateTime.now().plus(duration));
             return this;

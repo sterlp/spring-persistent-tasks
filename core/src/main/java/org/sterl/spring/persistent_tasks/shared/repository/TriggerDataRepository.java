@@ -1,46 +1,61 @@
 package org.sterl.spring.persistent_tasks.shared.repository;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
+import org.sterl.spring.persistent_tasks.shared.QueryHelper;
+import org.sterl.spring.persistent_tasks.shared.StringHelper;
 import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
+import org.sterl.spring.persistent_tasks.shared.model.QTriggerData;
+
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.Predicate;
 
 @NoRepositoryBean
-public interface TriggerDataRepository<T extends HasTriggerData> extends JpaRepository<T, Long> {
-    Sort DEFAULT_SORT = Sort.by(Direction.ASC, "data.createdTime");
+public interface TriggerDataRepository<T extends HasTriggerData> extends JpaRepository<T, Long>, QuerydslPredicateExecutor<T> {
 
-    default Pageable applyDefaultSortIfNeeded(Pageable page) {
-        var result = page;
-        if (page.getSort() == Sort.unsorted()) {
-            result = PageRequest.of(page.getPageNumber(), page.getPageSize(), DEFAULT_SORT);
+    default Predicate buildSearch(
+            @NonNull QTriggerData qData,
+            @NonNull TriggerSearch search) {
+
+        final var predicate = new BooleanBuilder();
+
+        if (search.getSearch() != null) {
+            final var value = StringHelper.applySearchWildCard(search.getSearch());
+            Predicate pId;
+            if (StringHelper.isSqlSearch(value)) {
+                pId = ExpressionUtils.or(
+                        qData.key.id.like(value),
+                        qData.correlationId.like(value));
+            } else {
+                pId = ExpressionUtils.or(
+                        qData.key.id.eq(value),
+                        qData.correlationId.eq(value));
+            }
+            predicate.andAnyOf(pId);
         }
-        return result;
-    }
+        
+        predicate.and(QueryHelper.eqOrLike(qData.key.id, search.getKeyId()));
+        predicate.and(QueryHelper.eqOrLike(qData.key.taskName, search.getTaskName()));
+        predicate.and(QueryHelper.eqOrLike(qData.correlationId, search.getCorrelationId()));
+        predicate.and(QueryHelper.eqOrLike(qData.tag, search.getTag()));
+        predicate.and(QueryHelper.eq(qData.status, search.getStatus()));
 
-    @Query("""
-            SELECT e FROM #{#entityName} e
-            WHERE ((:id IS NULL       OR e.data.key.id LIKE :id)
-                OR (:id IS NULL       OR e.data.correlationId LIKE :id))
-            AND    (:taskName IS NULL OR e.data.key.taskName = :taskName)
-            AND    (:status IS NULL   OR e.data.status = :status)
-            """)
-     Page<T> findAll(@Param("id") String id,
-             @Param("taskName") String taskName,
-             @Param("status") TriggerStatus status,
-             Pageable page);
+        return predicate;
+    }
 
     @Query("""
            SELECT e FROM #{#entityName} e
@@ -80,10 +95,4 @@ public interface TriggerDataRepository<T extends HasTriggerData> extends JpaRepo
            """)
     @Modifying
     long deleteOlderThan(@Param("age") OffsetDateTime age);
-
-    @Query("""
-            SELECT   e FROM #{#entityName} e
-            WHERE    e.data.correlationId = :correlationId
-            """)
-    List<T> findByCorrelationId(@Param("correlationId") String correlationId, Pageable page);
 }

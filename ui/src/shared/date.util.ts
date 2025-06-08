@@ -68,3 +68,9 @@ export function formatMs(ms?: number) {
     const inDays = Math.floor(inHours / 24);
     return sign + inDays + "d " + (inHours % 24) + "h";
 }
+
+export function runningSince(value?: string) {
+    if (!value) return "";
+    const msRuntime = new Date().getTime() - new Date(value).getTime();
+    return `since ${formatMs(msRuntime)}`;
+}
