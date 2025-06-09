@@ -19,7 +19,9 @@ import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerAddedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerCanceledEvent;
+import org.sterl.spring.persistent_tasks.trigger.event.TriggerExpiredEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerFailedEvent;
+import org.sterl.spring.persistent_tasks.trigger.event.TriggerResumedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerRunningEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerSuccessEvent;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
@@ -88,14 +90,17 @@ public class EditTriggerComponent {
     public Optional<TriggerEntity> cancelTask(TriggerKey id, Exception e) {
         return triggerRepository //
                 .findByKey(id) //
-                .map(t -> cancelTask(t, e));
+                .map(t -> cancelTrigger(t, e));
     }
 
-    private TriggerEntity cancelTask(TriggerEntity t, Exception e) {
+    private TriggerEntity cancelTrigger(TriggerEntity t, Exception e) {
         t.cancel(e);
+
         publisher.publishEvent(new TriggerCanceledEvent(
-                t.getId(), t.copyData(),
+                t.getId(), 
+                t.copyData(),
                 stateSerializer.deserializeOrNull(t.getData().getState())));
+
         triggerRepository.delete(t);
         return t;
     }
@@ -121,8 +126,10 @@ public class EditTriggerComponent {
             result = triggerRepository.save(result);
             log.debug("Added trigger={}", result);
         }
+
         publisher.publishEvent(new TriggerAddedEvent(
                 result.getId(), result.copyData(), tigger.state()));
+
         return result;
     }
     
@@ -130,7 +137,7 @@ public class EditTriggerComponent {
         var search = TriggerSearch.forTriggerRequest(trigger);
         search.setStatus(TriggerStatus.AWAITING_SIGNAL);
         
-        var foundTriggers = readTrigger.searchTriggers(TriggerSearch.byCorrelationId(trigger.correlationId()), Pageable.ofSize(100));
+        var foundTriggers = readTrigger.searchTriggers(search, Pageable.ofSize(100));
         
         log.debug("Resuming {} triggers for given data {}", foundTriggers.getSize(), trigger);
         foundTriggers.forEach(t -> {
@@ -140,8 +147,22 @@ public class EditTriggerComponent {
 
             t.setData(newData.getData());
             t.runAt(trigger.runtAt());
+
+            publisher.publishEvent(new TriggerResumedEvent(t.getId(), t.copyData(), trigger.state()));
         });
         return foundTriggers;
+    }
+    
+    public TriggerEntity expireTrigger(TriggerEntity t) {
+        t.getData().setStatus(TriggerStatus.EXPIRED_SIGNAL);
+        t.getData().setStart(null);
+        t.getData().setEnd(null);
+        t.getData().updateRunningDuration();
+        
+        publisher.publishEvent(new TriggerExpiredEvent(
+                t.getId(), t.copyData(), 
+                stateSerializer.deserializeOrNull(t.getData().getState())));
+        return t;
     }
 
     @NonNull

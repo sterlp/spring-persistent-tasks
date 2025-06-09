@@ -166,7 +166,7 @@ public class SchedulerService {
     }
 
     @Transactional
-    public List<TriggerEntity> rescheduleAbandonedTasks(OffsetDateTime timeout) {
+    public List<TriggerEntity> rescheduleAbandonedTriggers(OffsetDateTime timeout) {
         var schedulers = editSchedulerStatus.findOnlineSchedulers(timeout);
 
         final List<TriggerKey> runningKeys = this.taskExecutor.getRunningTriggers().stream().map(TriggerEntity::getKey)
@@ -175,7 +175,7 @@ public class SchedulerService {
         int running = triggerService.markTriggersAsRunning(runningKeys, name);
         log.atLevel(running > 0 ? Level.INFO : Level.DEBUG).log("({}) - {} trigger(s) are running on {} schedulers", 
                 running, runningKeys, schedulers);
-        return triggerService.rescheduleAbandonedTasks(timeout);
+        return triggerService.rescheduleAbandoned(timeout);
     }
 
     public List<SchedulerEntity> listAll() {

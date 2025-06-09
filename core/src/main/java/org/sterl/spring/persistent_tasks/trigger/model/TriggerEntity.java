@@ -65,20 +65,31 @@ public class TriggerEntity implements HasTriggerData {
         if (data == null) return null;
         return data.getKey();
     }
+    
+    /**
+     * @param e Sets either {@link TriggerStatus#SUCCESS} or {@link TriggerStatus#FAILED}
+     * based if the {@link Exception} is <code>null</code> or not.
+     */
+    public TriggerEntity complete(Exception e) {
+        finishTriggerWithStatus(e == null ? TriggerStatus.SUCCESS : TriggerStatus.FAILED, e);
+        return this;
+    }
 
     public TriggerEntity cancel(Exception e) {
-        this.data.setEnd(OffsetDateTime.now());
-        this.data.setStatus(TriggerStatus.CANCELED);
+        finishTriggerWithStatus(TriggerStatus.CANCELED, e);
+        if (e == null) this.data.setExceptionName("PersistentTask canceled");
+        return this;
+    }
 
-        if (e == null) {
-            this.data.setExceptionName("PersistentTask canceled");
-        } else {
+    public void finishTriggerWithStatus(TriggerStatus status, Exception e) {
+        this.data.setEnd(OffsetDateTime.now());
+        this.data.updateRunningDuration();
+        this.data.setStatus(status);
+
+        if (e != null) {
             this.data.setExceptionName(e.getClass().getName());
             this.data.setLastException(ExceptionUtils.getStackTrace(e));
         }
-
-        this.data.updateRunningDuration();
-        return this;
     }
 
     public TriggerEntity runOn(String runningOn) {
@@ -89,24 +100,6 @@ public class TriggerEntity implements HasTriggerData {
         this.data.updateRunningDuration();
         this.lastPing = OffsetDateTime.now();
         this.runningOn = runningOn;
-        return this;
-    }
-
-    /**
-     * @param e Sets either {@link TriggerStatus#SUCCESS} or {@link TriggerStatus#FAILED}
-     * based if the {@link Exception} is <code>null</code> or not.
-     */
-    public TriggerEntity complete(Exception e) {
-        data.setStatus(TriggerStatus.SUCCESS);
-        data.setEnd(OffsetDateTime.now());
-        data.updateRunningDuration();
-
-        if (e != null) {
-            data.setStatus(TriggerStatus.FAILED);
-            data.setExceptionName(e.getClass().getName());
-            data.setLastException(ExceptionUtils.getStackTrace(e));
-        }
-
         return this;
     }
 

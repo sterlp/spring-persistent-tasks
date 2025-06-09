@@ -7,13 +7,13 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.sterl.spring.persistent_tasks.scheduler.config.ConditionalSchedulerServiceByProperty;
+import org.sterl.spring.persistent_tasks.shared.TimersEnabled;
 
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-@ConditionalSchedulerServiceByProperty
+@TimersEnabled
 @Service
 @RequiredArgsConstructor
 @Slf4j

@@ -97,6 +97,7 @@
                                 <argument>--</argument>
                                 <argument>--run</argument>
                             </arguments>
+                        <skip>${skipTests}</skip>
                         </configuration>
                     </execution>
                 </executions>

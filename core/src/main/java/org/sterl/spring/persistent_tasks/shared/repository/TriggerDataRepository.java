@@ -1,6 +1,7 @@
 package org.sterl.spring.persistent_tasks.shared.repository;
 
 import java.time.OffsetDateTime;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -19,6 +20,7 @@ import org.sterl.spring.persistent_tasks.shared.QueryHelper;
 import org.sterl.spring.persistent_tasks.shared.StringHelper;
 import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
 import org.sterl.spring.persistent_tasks.shared.model.QTriggerData;
+import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ExpressionUtils;

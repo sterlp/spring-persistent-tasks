@@ -7,7 +7,6 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
@@ -17,10 +16,10 @@ import org.springframework.test.context.event.ApplicationEvents;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
 import org.sterl.spring.persistent_tasks.PersistentTaskService;
-import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryLastStateRepository;
 import org.sterl.spring.persistent_tasks.task.exception.CancelTaskException;
@@ -29,7 +28,9 @@ import org.sterl.spring.persistent_tasks.task.repository.TaskRepository;
 import org.sterl.spring.persistent_tasks.trigger.component.StateSerializer.DeSerializationFailedException;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerAddedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerCanceledEvent;
+import org.sterl.spring.persistent_tasks.trigger.event.TriggerExpiredEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerFailedEvent;
+import org.sterl.spring.persistent_tasks.trigger.event.TriggerResumedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerSuccessEvent;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
@@ -402,7 +403,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         triggerRepository.save(t2);
 
         // WHEN
-        final var rescheduledTasks = subject.rescheduleAbandonedTasks(now.minusSeconds(59));
+        final var rescheduledTasks = subject.rescheduleAbandoned(now.minusSeconds(59));
 
         // THEN
         assertThat(rescheduledTasks).hasSize(1);
@@ -459,9 +460,9 @@ class TriggerServiceTest extends AbstractSpringTest {
         assertThat(historyService.findLastKnownStatus(key1).get().status()).isEqualTo(TriggerStatus.CANCELED);
         
         // AND
-        assertThat(events.stream(TriggerCanceledEvent.class).count()).isOne();
-        assertThat(events.stream(TriggerFailedEvent.class).count()).isZero();
-        assertThat(events.stream(TriggerSuccessEvent.class).count()).isZero();
+        assertThat(events.stream(TriggerCanceledEvent.class)).hasSize(1);
+        assertThat(events.stream(TriggerFailedEvent.class)).hasSize(0);
+        assertThat(events.stream(TriggerSuccessEvent.class)).hasSize(0);
     }
     
     @Test
@@ -505,6 +506,10 @@ class TriggerServiceTest extends AbstractSpringTest {
     void testResumeWaitingTriggerForSignal() {
         // GIVEN
         TaskId<String> taskId = taskService.replace("foo", asserts::info);
+        subject.queue(taskId.newTrigger()
+                .waitForSignal(OffsetDateTime.now().plusDays(1))
+                .state("foo bar")
+                .build());
         var triggerKey = subject.queue(taskId.newTrigger()
                 .waitForSignal(OffsetDateTime.now().plusDays(1))
                 .state("old state")
@@ -525,5 +530,47 @@ class TriggerServiceTest extends AbstractSpringTest {
         // THEN
         asserts.awaitValueOnce("new state");
         asserts.assertMissing("old state");
+        asserts.assertMissing("foo bar");
+        assertThat(events.stream(TriggerResumedEvent.class).count()).isOne();
+        // AND
+        assertThat(persistentTaskTestService.runNextTrigger()).isEmpty();
+    }
+    
+    @Test
+    void testAwaitForSignalTriggersInTimeoutWillNotRun() {
+        // GIVEN
+        TaskId<String> taskId = taskService.replace("foo", asserts::info);
+        subject.queue(taskId.newTrigger()
+                .waitForSignal(OffsetDateTime.now().minusSeconds(1))
+                .state("old state")
+                .build()).getKey();
+
+        // WHEN & THEN
+        assertThat(persistentTaskTestService.runNextTrigger()).isEmpty();
+        // AND
+        asserts.assertMissing("old state");
+    }
+    
+    @Test
+    void testExpireTimeoutTriggers() {
+        // GIVEN
+        TaskId<String> taskId = taskService.replace("foo", asserts::info);
+        subject.queue(taskId.newTrigger()
+                .waitForSignal(OffsetDateTime.now().plusMinutes(1))
+                .state("old state")
+                .build());
+        var trigger = subject.queue(taskId.newTrigger()
+                .waitForSignal(OffsetDateTime.now().minusSeconds(1))
+                .state("foobar")
+                .build());
+        
+        // WHEN
+        var expired = subject.expireTimeoutTriggers();
+        
+        // WHEN
+        assertThat(expired).hasSize(1);
+        assertThat(trigger).isEqualTo(expired.get(0));
+        // AND
+        assertThat(events.stream(TriggerExpiredEvent.class).count()).isOne();
     }
 }

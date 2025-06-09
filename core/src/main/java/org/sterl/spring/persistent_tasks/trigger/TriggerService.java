@@ -11,9 +11,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
@@ -185,7 +185,7 @@ public class TriggerService {
      *
      * Retry will be triggered based on the set strategy.
      */
-    public List<TriggerEntity> rescheduleAbandonedTasks(OffsetDateTime timeout) {
+    public List<TriggerEntity> rescheduleAbandoned(OffsetDateTime timeout) {
         final List<TriggerEntity> result = readTrigger.findTriggersLastPingAfter(
                 timeout);
         final var e = new IllegalStateException("Trigger abandoned - timeout: " + timeout);
@@ -197,6 +197,13 @@ public class TriggerService {
         log.debug("rescheduled {} triggers", result.size());
         return result;
     }
+    
+    public List<TriggerEntity> expireTimeoutTriggers() {
+        return readTrigger.findTriggersTimeoutOut(20)
+                          .stream()
+                          .map(editTrigger::expireTrigger)
+                          .toList();
+    }
 
     public long countTriggers() {
         return readTrigger.countByStatus(null);
@@ -204,7 +211,7 @@ public class TriggerService {
 
     public Optional<TriggerEntity> updateRunAt(TriggerKey key, OffsetDateTime time) {
         return readTrigger.get(key).map(t -> {
-            if (t.getData().getStatus() != TriggerStatus.WAITING) {
+            if (t.getData().getStatus() == TriggerStatus.RUNNING) {
                 throw new IllegalStateException("Cannot update status of " + key
                         + " as the current status is: " + t.getData().getStatus());
             }

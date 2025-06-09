@@ -22,6 +22,7 @@ import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
 
 public interface TriggerRepository extends TriggerDataRepository<TriggerEntity> {
+
     @Query("SELECT e FROM #{#entityName} e WHERE e.data.key = :key")
     Optional<TriggerEntity> findByKey(@Param("key") TriggerKey key);
 
@@ -72,4 +73,14 @@ public interface TriggerRepository extends TriggerDataRepository<TriggerEntity> 
             """)
     List<TriggerEntity> findTriggersLastPingAfter(
             @Param("lastPing") OffsetDateTime lastPing);
+    
+    @Query("""
+            SELECT e FROM #{#entityName} e
+            WHERE  e.data.status = :status
+            AND    e.data.runAt <= :runAt
+            """)
+    List<TriggerEntity> findByStatusAndRunAtAfter(
+            @Param("status") TriggerStatus status,
+            @Param("runAt") OffsetDateTime runAt,
+            Pageable page);
 }
