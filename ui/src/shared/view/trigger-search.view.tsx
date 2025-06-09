@@ -9,6 +9,7 @@ import TaskSelect from "@src/task/view/task-select.view";
 import { useQuery } from "crossroad";
 import { Accordion, Col, Form, Row, Stack } from "react-bootstrap";
 import TriggerListItemView from "./trigger-list-item.view";
+import { useEffect, useState } from "react";
 
 interface Props {
     url: string;
@@ -21,7 +22,12 @@ const TriggersSearchView = ({
     showReRunButton,
 }: Props) => {
     const [query, setQuery] = useQuery();
+    const [search, setSearch] = useState(query.search || "");
     const triggers = useServerObject<PagedModel<Trigger>>(url);
+
+    useEffect(() => {
+        setSearch(query.search || "");
+    }, [query]);
 
     const doReload = () => {
         return triggers.doGet(
@@ -44,16 +50,12 @@ const TriggersSearchView = ({
             <Row>
                 <Col>
                     <Form.Control
-                        defaultValue={query.id || ""}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
                         type="text"
                         placeholder="ID search, '*' any string, '_' any character ..."
                         onKeyUp={(e) =>
-                            e.key == "Enter"
-                                ? doUpdateQuery({
-                                      search: (e.target as HTMLInputElement)
-                                          .value,
-                                  })
-                                : null
+                            e.key == "Enter" ? doUpdateQuery({ search }) : null
                         }
                     />
                 </Col>
@@ -99,6 +101,7 @@ const TriggersSearchView = ({
                         afterTriggerChanged={
                             allowUpdateAnCancel ? doReload : undefined
                         }
+                        onFieldClick={(k, v) => doUpdateQuery({ [k]: v })}
                     />
                 ))}
             </Accordion>

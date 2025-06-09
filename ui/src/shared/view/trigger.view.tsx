@@ -9,18 +9,30 @@ import StackTraceView from "./stacktrace-view";
 const TriggerView = ({
     trigger,
     history,
+    onClick,
 }: {
     trigger: Trigger;
     history?: Trigger[];
+    onClick: (key: string, value?: string) => void;
 }) => {
     return (
         <>
             <Row>
                 <Col md="6" xl="4">
-                    <LabeledText label="Key Id" value={trigger.key.id} />
+                    <LabeledText
+                        label="Key Id"
+                        value={trigger.key.id}
+                        onClick={() => onClick("search", trigger.key.id)}
+                    />
                 </Col>
                 <Col md="6" xl="4">
-                    <LabeledText label="Task" value={trigger.key.taskName} />
+                    <LabeledText
+                        label="Task"
+                        value={trigger.key.taskName}
+                        onClick={() =>
+                            onClick("taskName", trigger.key.taskName)
+                        }
+                    />
                 </Col>
                 <Col md="6" xl="4">
                     <LabeledText label="Priority" value={trigger.priority} />
@@ -31,10 +43,15 @@ const TriggerView = ({
                     <LabeledText
                         label="Correlation Id"
                         value={trigger.correlationId}
+                        onClick={() => onClick("search", trigger.key.id)}
                     />
                 </Col>
                 <Col md="6" xl="4">
-                    <LabeledText label="Tag" value={trigger.tag} />
+                    <LabeledText
+                        label="Tag"
+                        value={trigger.tag}
+                        onClick={() => onClick("search", trigger.key.id)}
+                    />
                 </Col>
                 <Col md="6" xl="4">
                     <LabeledText

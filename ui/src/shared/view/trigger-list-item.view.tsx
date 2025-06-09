@@ -20,12 +20,14 @@ interface TriggerProps {
     trigger: Trigger;
     afterTriggerChanged?: () => void;
     showReRunButton: boolean;
+    onFieldClick: (key: string, value?: string) => void;
 }
 
 const TriggerListItemView = ({
     trigger,
     afterTriggerChanged,
     showReRunButton,
+    onFieldClick,
 }: TriggerProps) => {
     // className="d-flex justify-content-between align-items-center"
     const [url, setUrl] = useUrl();
@@ -112,6 +114,7 @@ const TriggerListItemView = ({
                     key={trigger.id + "-TriggerDetailsView"}
                     trigger={trigger}
                     history={triggerHistory.data}
+                    onClick={onFieldClick}
                 />
             </Accordion.Body>
         </Accordion.Item>

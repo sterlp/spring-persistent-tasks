@@ -39,15 +39,19 @@ public interface TriggerDataRepository<T extends HasTriggerData> extends JpaRepo
             final var value = StringHelper.applySearchWildCard(search.getSearch());
             Predicate pId;
             if (StringHelper.isSqlSearch(value)) {
-                pId = ExpressionUtils.or(
+                pId = ExpressionUtils.anyOf(
                         qData.key.id.like(value),
-                        qData.correlationId.like(value));
+                        qData.correlationId.like(value),
+                        qData.tag.like(value)
+                    );
             } else {
-                pId = ExpressionUtils.or(
+                pId = ExpressionUtils.anyOf(
                         qData.key.id.eq(value),
-                        qData.correlationId.eq(value));
+                        qData.correlationId.eq(value),
+                        qData.tag.eq(value)
+                    );
             }
-            predicate.andAnyOf(pId);
+            predicate.and(pId);
         }
         
         predicate.and(QueryHelper.eqOrLike(qData.key.id, search.getKeyId()));
