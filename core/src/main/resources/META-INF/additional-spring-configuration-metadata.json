@@ -57,7 +57,5 @@
       "type": "java.lang.Duration",
       "description": "The max age for a trigger in the hstory. Default is PT72H, 30 days."
     }
-    
-    @Scheduled(fixedDelayString = "${spring.persistent-tasks.poll-persistentTask-timeout:300}", timeUnit = TimeUnit.SECONDS)
   ]
 }
