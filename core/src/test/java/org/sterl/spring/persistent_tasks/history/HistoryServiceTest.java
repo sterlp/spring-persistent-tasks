@@ -13,7 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
 import org.sterl.spring.persistent_tasks.PersistentTaskService;
-import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
+import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 
@@ -27,7 +27,7 @@ class HistoryServiceTest extends AbstractSpringTest {
     @Test
     void testReQueueTrigger() {
         // GIVEN
-        final AddTriggerRequest<String> triggerRequest = Task3.ID.newUniqueTrigger("Hallo");
+        final TriggerRequest<String> triggerRequest = Task3.ID.newUniqueTrigger("Hallo");
         var trigger = triggerService.run(triggerRequest, "test").get();
         asserts.assertValue(Task3.NAME + "::Hallo");
         

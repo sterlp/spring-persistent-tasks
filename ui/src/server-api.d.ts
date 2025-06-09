@@ -16,15 +16,6 @@ export interface SchedulerEntity {
     lastPing: string;
 }
 
-export interface AddTriggerRequest<T> {
-    key: TriggerKey;
-    state: T;
-    runtAt: string;
-    priority: number;
-    correlationId: string;
-    tag: string;
-}
-
 export interface RetryStrategy {
 }
 
@@ -70,6 +61,16 @@ export interface TriggerKey {
     taskName: string;
 }
 
+export interface TriggerRequest<T> {
+    key: TriggerKey;
+    status: TriggerStatus;
+    state: T;
+    runtAt: string;
+    priority: number;
+    correlationId: string;
+    tag: string;
+}
+
 export interface TriggerSearch {
     search: string;
     keyId: string;
@@ -86,4 +87,4 @@ export interface PageMetadata {
     totalPages: number;
 }
 
-export type TriggerStatus = "WAITING" | "RUNNING" | "SUCCESS" | "FAILED" | "CANCELED";
+export type TriggerStatus = "AWAITING_SIGNAL" | "WAITING" | "RUNNING" | "SUCCESS" | "FAILED" | "CANCELED" | "EXPIRED_SIGNAL";

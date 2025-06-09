@@ -51,7 +51,7 @@ public class RunTriggerComponent {
     private RunTaskWithStateCommand buildTaskWithStateFor(TriggerEntity trigger) {
         try {
             final var task = taskService.assertIsKnown(trigger.newTaskId());
-            final var trx = taskService.getTransactionTemplate(task);
+            final var trx = taskService.getTransactionTemplateIfJoinable(task);
             final var state = serializer.deserialize(trigger.getData().getState());
             return new RunTaskWithStateCommand(task, trx, state, trigger);
         } catch (Exception e) {

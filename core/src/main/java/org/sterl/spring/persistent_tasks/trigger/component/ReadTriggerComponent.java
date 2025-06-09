@@ -34,8 +34,8 @@ public class ReadTriggerComponent {
         return triggerRepository.countByStatus(status);
     }
 
-    public Optional<TriggerEntity> get(TriggerKey id) {
-        return triggerRepository.findByKey(id);
+    public Optional<TriggerEntity> get(TriggerKey key) {
+        return triggerRepository.findByKey(key);
     }
 
     /**

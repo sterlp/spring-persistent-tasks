@@ -20,7 +20,7 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
         return new TriggerBuilder<>(this).state(state);
     }
 
-    public AddTriggerRequest<T> newUniqueTrigger(T state) {
+    public TriggerRequest<T> newUniqueTrigger(T state) {
         return new TriggerBuilder<>(this).state(state).build();
     }
 
@@ -35,9 +35,10 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
         private String id;
         private String correlationId;
         private String tag;
+        private TriggerStatus status = TriggerStatus.WAITING;
         private T state;
         private OffsetDateTime when = OffsetDateTime.now();
-        private int priority = AddTriggerRequest.DEFAULT_PRIORITY;
+        private int priority = TriggerRequest.DEFAULT_PRIORITY;
 
         public static <T extends Serializable> TriggerBuilder<T> newTrigger(String name) {
             return new TriggerBuilder<>(new TaskId<T>(name));
@@ -45,9 +46,12 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
         public static <T extends Serializable> TriggerBuilder<T> newTrigger(String name, T state) {
             return new TriggerBuilder<>(new TaskId<T>(name)).state(state);
         }
-        public AddTriggerRequest<T> build() {
+        public static <T extends Serializable> TriggerBuilder<T> newTrigger(TriggerKey key, T state) {
+            return new TriggerBuilder<>(new TaskId<T>(key.getTaskName())).id(key.getId()).state(state);
+        }
+        public TriggerRequest<T> build() {
             var key = TriggerKey.of(id, taskId);
-            return new AddTriggerRequest<>(key, state, when, priority, correlationId, tag);
+            return new TriggerRequest<>(key, status, state, when, priority, correlationId, tag);
         }
         /**
          * The ID of this task, same queued ids are replaced.
@@ -91,6 +95,7 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
         }
         public TriggerBuilder<T> runAt(OffsetDateTime when) {
             this.when = when;
+            this.status = TriggerStatus.WAITING;
             return this;
         }
         /**
@@ -98,6 +103,15 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
          */
         public TriggerBuilder<T> runAfter(Duration duration) {
             runAt(OffsetDateTime.now().plus(duration));
+            return this;
+        }
+        /**
+         * Creates a trigger which waits for an external signal and
+         * will run into {@link TriggerStatus#EXPIRED_SIGNAL} if no signal happens.
+         */
+        public TriggerBuilder<T> waitForSignal(OffsetDateTime timeout) {
+            this.when = timeout;
+            this.status = TriggerStatus.AWAITING_SIGNAL;
             return this;
         }
     }

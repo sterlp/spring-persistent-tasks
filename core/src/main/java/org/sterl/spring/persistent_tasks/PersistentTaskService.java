@@ -15,7 +15,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
+import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
@@ -86,7 +86,7 @@ public class PersistentTaskService {
      */
     @Transactional(timeout = 10)
     @NonNull
-    public <T extends Serializable> List<TriggerKey> queue(Collection<AddTriggerRequest<T>> triggers) {
+    public <T extends Serializable> List<TriggerKey> queue(Collection<TriggerRequest<T>> triggers) {
         if (triggers == null || triggers.isEmpty()) {
             return Collections.emptyList();
         }
@@ -105,7 +105,7 @@ public class PersistentTaskService {
      */
     @Transactional(timeout = 5)
     @NonNull
-    public <T extends Serializable> TriggerKey queue(AddTriggerRequest<T> trigger) {
+    public <T extends Serializable> TriggerKey queue(TriggerRequest<T> trigger) {
         return triggerService.queue(trigger).getKey();
     }
 
@@ -115,7 +115,7 @@ public class PersistentTaskService {
      * @return the reference to the {@link TriggerKey}
      */
     public <T extends Serializable> TriggerKey runOrQueue(
-            AddTriggerRequest<T> triggerRequest) {
+            TriggerRequest<T> triggerRequest) {
         if (schedulerService.isPresent()) {
             schedulerService.get().runOrQueue(triggerRequest);
         } else {

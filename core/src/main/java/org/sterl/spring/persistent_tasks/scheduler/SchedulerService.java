@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
+import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
 import org.sterl.spring.persistent_tasks.scheduler.component.RunOrQueueComponent;
@@ -150,7 +150,7 @@ public class SchedulerService {
      *         available it is resolved
      */
     @Transactional(timeout = 10)
-    public <T extends Serializable> TriggerKey runOrQueue(AddTriggerRequest<T> triggerRequest) {
+    public <T extends Serializable> TriggerKey runOrQueue(TriggerRequest<T> triggerRequest) {
         return runOrQueue.execute(triggerRequest);
     }
 

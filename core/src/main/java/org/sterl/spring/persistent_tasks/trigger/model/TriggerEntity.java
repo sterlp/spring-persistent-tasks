@@ -56,10 +56,9 @@ public class TriggerEntity implements HasTriggerData {
     @Nullable
     private OffsetDateTime lastPing;
 
-    public TriggerEntity(TriggerKey key, String correlationId) {
+    public TriggerEntity(TriggerKey key) {
         if (this.data == null) this.data = new TriggerData();
         this.data.setKey(key);
-        this.data.setCorrelationId(correlationId);
     }
 
     public TriggerKey getKey() {

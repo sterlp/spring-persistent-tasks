@@ -31,6 +31,24 @@ public class TriggerSearch {
         result.setCorrelationId(correlationId);
         return result;
     }
+    public static TriggerSearch byStatus(TriggerStatus status) {
+        var result = new TriggerSearch();
+        result.setStatus(status);
+        return result;
+    }
+    public static TriggerSearch forTriggerRequest(TriggerRequest<?> trigger) {
+        var search = new TriggerSearch();
+        if (trigger.key() != null) {
+            search.setKeyId(trigger.key().getId());
+            search.setTaskName(trigger.key().getTaskName());
+        }
+
+        if (trigger.correlationId() != null) search.setCorrelationId(trigger.correlationId());
+        if (trigger.tag() != null) search.setTag(trigger.tag());
+        if (trigger.status() != null) search.setStatus(trigger.status());
+
+        return search;
+    }
     
     /** create time ASC */
     public static final Sort DEFAULT_SORT = sortByCreatedTime(Direction.ASC);
@@ -45,4 +63,5 @@ public class TriggerSearch {
         }
         return result;
     }
+
 }

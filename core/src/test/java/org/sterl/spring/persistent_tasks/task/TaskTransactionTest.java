@@ -6,10 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,129 +17,136 @@ import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
 import org.sterl.spring.persistent_tasks.api.task.TransactionalTask;
 import org.sterl.spring.persistent_tasks.task.util.ReflectionUtil;
+import org.sterl.spring.persistent_tasks.test.AsyncAsserts;
 import org.sterl.spring.sample_app.person.PersonEntity;
 import org.sterl.spring.sample_app.person.PersonRepository;
 
-import lombok.RequiredArgsConstructor;
-
 class TaskTransactionTest extends AbstractSpringTest {
-
-    @Component("transactionalClass")
-    @Transactional(timeout = 5, propagation = Propagation.MANDATORY)
-    @RequiredArgsConstructor
-    static class TransactionalClass implements PersistentTask<String> {
-        private final PersonRepository personRepository;
-        @Override
-        public void accept(String name) {
-            personRepository.save(new PersonEntity(name));
-            personRepository.save(new PersonEntity(name));
-        }
-    }
-
-    @Component("transactionalMethod")
-    @Transactional(timeout = 76, propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
-    @RequiredArgsConstructor
-    static class TransactionalMethod implements PersistentTask<String> {
-        private final PersonRepository personRepository;
-        @Transactional(timeout = 6, propagation = Propagation.MANDATORY, isolation = Isolation.REPEATABLE_READ)
-        @Override
-        public void accept(String name) {
-            personRepository.save(new PersonEntity(name));
-            personRepository.save(new PersonEntity(name));
-        }
-    }
-    
-    @Component("transactionalRequiresNew")
-    @RequiredArgsConstructor
-    static class TransactionalRequiresNew implements PersistentTask<String> {
-        private final PersonRepository personRepository;
-        @Transactional(timeout = 6, propagation = Propagation.REQUIRES_NEW)
-        @Override
-        public void accept(String name) {
-            personRepository.save(new PersonEntity(name));
-            personRepository.save(new PersonEntity(name));
-        }
-    }
-
     /**
      * A closure cannot be annotated, so we use a anonymous class
      */
     @Configuration
+    @ComponentScan("org.sterl.spring.persistent_tasks.task.test_class")
     static class Config {
-        @Bean("transactionalAnonymous")
-        PersistentTask<String> transactionalAnonymous(PersonRepository personRepository) {
+        @Bean("persistentTaskAnnotated")
+        PersistentTask<String> persistentTaskAnnotated(PersonRepository personRepository, AsyncAsserts asserts) {
             return new PersistentTask<String>() {
                 // this will not work!
-                @Transactional(timeout = 7, propagation = Propagation.REQUIRES_NEW)
+                @Transactional(timeout = 8, propagation = Propagation.REQUIRES_NEW)
                 @Override
                 public void accept(String name) {
                     personRepository.save(new PersonEntity(name));
+                    asserts.info(name);
+                } 
+            };
+        }
+        @Bean("transactionalTaskAnnotated")
+        PersistentTask<String> transactionalTaskAnnotated(PersonRepository personRepository, AsyncAsserts asserts) {
+            return new TransactionalTask<String>() {
+                // this will not work!
+                @Transactional(timeout = 9, propagation = Propagation.REQUIRES_NEW)
+                @Override
+                public void accept(String name) {
+                    personRepository.save(new PersonEntity(name));
+                    asserts.info(name);
                 } 
             };
         }
         @Bean("transactionalClosure")
-        TransactionalTask<String> transactionalClosure(PersonRepository personRepository) {
+        TransactionalTask<String> transactionalClosure(PersonRepository personRepository, AsyncAsserts asserts) {
             return name -> {
                 personRepository.save(new PersonEntity(name));
-                personRepository.save(new PersonEntity(name));
+                asserts.info(name);
             };
         }
     }
     
+    @Autowired AsyncAsserts asserts;
     @Autowired TaskService subject;
     @Autowired PersonRepository personRepository;
 
-    @Autowired @Qualifier("transactionalClass")
+    @Autowired
     PersistentTask<String> transactionalClass;
-    @Autowired @Qualifier("transactionalMethod")
-    PersistentTask<String> transactionalMethod;
-    @Autowired @Qualifier("transactionalAnonymous")
-    PersistentTask<String> transactionalAnonymous;
-    @Autowired @Qualifier("transactionalClosure")
+    @Autowired
+    PersistentTask<String> transactionalClassAndMethod;
+    @Autowired
+    PersistentTask<String> requiresNewMethod;
+
+    @Autowired
+    PersistentTask<String> persistentTaskAnnotated;
+    @Autowired
+    PersistentTask<String> transactionalTaskAnnotated;
+    @Autowired
     PersistentTask<String> transactionalClosure;
+    
 
     @Test
     void testFindTransactionAnnotation() {
         var a = ReflectionUtil.getAnnotation(transactionalClass, Transactional.class);
         assertThat(a).isNotNull();
         assertThat(a.timeout()).isEqualTo(5);
+        assertThat(a.propagation()).isEqualTo(Propagation.MANDATORY);
         
-        a = ReflectionUtil.getAnnotation(transactionalMethod, Transactional.class);
+        a = ReflectionUtil.getAnnotation(transactionalClassAndMethod, Transactional.class);
         assertThat(a).isNotNull();
         assertThat(a.timeout()).isEqualTo(6);
+        assertThat(a.propagation()).isEqualTo(Propagation.MANDATORY);
+        assertThat(a.isolation()).isEqualTo(Isolation.REPEATABLE_READ);
         
-        a = ReflectionUtil.getAnnotation(transactionalAnonymous, Transactional.class);
+        a = ReflectionUtil.getAnnotation(requiresNewMethod, Transactional.class);
         assertThat(a).isNotNull();
         assertThat(a.timeout()).isEqualTo(7);
         assertThat(a.propagation()).isEqualTo(Propagation.REQUIRES_NEW);
+        
+        
+        a = ReflectionUtil.getAnnotation(persistentTaskAnnotated, Transactional.class);
+        assertThat(a).isNotNull();
+        assertThat(a.timeout()).isEqualTo(8);
+        assertThat(a.propagation()).isEqualTo(Propagation.REQUIRES_NEW);
+        
+        a = ReflectionUtil.getAnnotation(transactionalTaskAnnotated, Transactional.class);
+        assertThat(a).isNotNull();
+        assertThat(a.timeout()).isEqualTo(9);
+        assertThat(a.propagation()).isEqualTo(Propagation.REQUIRES_NEW);
+
+        a = ReflectionUtil.getAnnotation(transactionalClosure, Transactional.class);
+        assertThat(a).isNull();
     }
 
     @Test
     void testGetTransactionTemplate() {
-        /*
-        var a = subject.getTransactionTemplate(transactionalClass);
-        assertThat(a).isPresent();
-        assertThat(a.get().getTimeout()).isEqualTo(5);
-        assertThat(a.get().getPropagationBehavior()).isEqualTo(Propagation.REQUIRED.value());
+        var a = subject.getTransactionTemplateIfJoinable(transactionalClass).orElse(null);
+        assertThat(a).isNotNull();
+        assertThat(a.getTimeout()).isEqualTo(5);
+        assertThat(a.getPropagationBehavior()).isEqualTo(Propagation.REQUIRED.value());
         
-        a = subject.getTransactionTemplate(transactionalMethod);
-        assertThat(a).isPresent();
-        assertThat(a.get().getTimeout()).isEqualTo(6);
-        assertThat(a.get().getPropagationBehavior()).isEqualTo(Propagation.REQUIRED.value());
-        assertThat(a.get().getIsolationLevel()).isEqualTo(Isolation.REPEATABLE_READ.value());
-        */
-        var a = subject.getTransactionTemplate(transactionalAnonymous);
-        assertThat(a).isEmpty();
+        a = subject.getTransactionTemplateIfJoinable(transactionalClassAndMethod).orElse(null);
+        assertThat(a).isNotNull();
+        assertThat(a.getTimeout()).isEqualTo(6);
+        assertThat(a.getPropagationBehavior()).isEqualTo(Propagation.REQUIRED.value());
+        assertThat(a.getIsolationLevel()).isEqualTo(Isolation.REPEATABLE_READ.value());
         
-        a = subject.getTransactionTemplate(transactionalClosure);
-        assertThat(a).isEmpty();
+        a = subject.getTransactionTemplateIfJoinable(requiresNewMethod).orElse(null);
+        assertThat(a).isNull(); // cannot join requires new
+        
+        
+        a = subject.getTransactionTemplateIfJoinable(persistentTaskAnnotated).orElse(null);
+        assertThat(a).isNull(); // cannot join requires new
+        
+        a = subject.getTransactionTemplateIfJoinable(transactionalTaskAnnotated).orElse(null);
+        assertThat(a).isNull(); // cannot join requires new
+
+        a = subject.getTransactionTemplateIfJoinable(transactionalClosure).orElse(null);
+        assertThat(a).isNotNull(); // the default one
+        assertThat(a.getPropagationBehavior()).isEqualTo(Propagation.REQUIRED.value());
     }
     
-    @Test
-    void testRequiresNewHasOwnTransaction() {
+    @ParameterizedTest
+    @ValueSource(strings = {"transactionalTaskAnnotated", "persistentTaskAnnotated", "requiresNewMethod"})
+    void testRequiresNewHasOwnTransaction(String task) {
         // GIVEN
         var t = triggerService.queue(TriggerBuilder
-                .newTrigger("transactionalRequiresNew", "test").build());
+                .newTrigger(task, task + "test").build());
         
         // WHEN
         personRepository.deleteAllInBatch();
@@ -148,24 +154,26 @@ class TaskTransactionTest extends AbstractSpringTest {
         triggerService.run(t).get();
         
         // THEN
+        asserts.awaitValue(task + "test");
         hibernateAsserts.assertTrxCount(3);
-        assertThat(personRepository.count()).isEqualTo(2);
+        assertThat(personRepository.count()).isEqualTo(1);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"transactionalClass", "transactionalMethod", "transactionalClosure"})
+    @ValueSource(strings = {"transactionalClass", "transactionalClassAndMethod", "transactionalClosure"})
     void testTransactionalTask(String task) throws InterruptedException {
         // GIVEN
         var t = triggerService.queue(TriggerBuilder
-                .newTrigger(task, "test").build());
-        
+                .newTrigger(task, task).build());
+
         // WHEN
         personRepository.deleteAllInBatch();
         hibernateAsserts.reset();
         triggerService.run(t).get();
-        Thread.sleep(50); // wait for the history running event
+
         // THEN
+        asserts.awaitValue(task);
         hibernateAsserts.assertTrxCount(2);
-        assertThat(personRepository.count()).isEqualTo(2);
+        assertThat(personRepository.count()).isEqualTo(1);
     }
 }

@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
+import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerSearch;
@@ -26,6 +26,7 @@ import org.sterl.spring.persistent_tasks.trigger.component.RunTriggerComponent;
 import org.sterl.spring.persistent_tasks.trigger.component.StateSerializer;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TriggerService {
 
     private final TaskService taskService;
+    @Getter
     private final StateSerializer stateSerializer = new StateSerializer();
     private final RunTriggerComponent runTrigger;
     private final ReadTriggerComponent readTrigger;
@@ -71,7 +73,7 @@ public class TriggerService {
     }
     
     @Transactional(propagation = Propagation.NEVER)
-    public Optional<TriggerEntity> run(@Nullable AddTriggerRequest<?> request, String runningOn) {
+    public Optional<TriggerEntity> run(@Nullable TriggerRequest<?> request, String runningOn) {
         var trigger = queue(request);
         trigger = lockNextTrigger.lock(trigger.getKey(), runningOn);
         return run(trigger);
@@ -124,13 +126,26 @@ public class TriggerService {
      * Adds or updates an existing trigger based on its {@link TriggerKey}
      * 
      * @param <T> the state type
-     * @param tigger the {@link AddTriggerRequest} to save
+     * @param tigger the {@link TriggerRequest} to save
      * @return the saved {@link TriggerEntity}
      * @throws IllegalStateException if the trigger already exists and is {@link TriggerStatus#RUNNING}
      */
-    public <T extends Serializable> TriggerEntity queue(AddTriggerRequest<T> tigger) {
+    public <T extends Serializable> TriggerEntity queue(TriggerRequest<T> tigger) {
         taskService.assertIsKnown(tigger.taskId());
         return editTrigger.addTrigger(tigger);
+    }
+    
+    /**
+     * Will resume any found
+     * @param trigger
+     * @return
+     */
+    public Page<TriggerEntity> resume(TriggerRequest<?> trigger) {
+        if (trigger.key().getId() == null && trigger.correlationId() == null) {
+            throw new IllegalArgumentException("Trigger ID or correlationId required to resume: " + trigger);
+        }
+        taskService.assertIsKnown(trigger.taskId());
+        return editTrigger.resume(trigger);
     }
 
     /**
