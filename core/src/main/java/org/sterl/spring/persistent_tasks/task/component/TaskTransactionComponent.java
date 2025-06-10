@@ -2,10 +2,8 @@ package org.sterl.spring.persistent_tasks.task.component;
 
 import java.io.Serializable;
 import java.util.EnumSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -28,22 +26,28 @@ public class TaskTransactionComponent {
     private final TransactionTemplate template;
     private final Set<Propagation> joinTransaction = EnumSet.of(
             Propagation.MANDATORY, Propagation.REQUIRED, Propagation.SUPPORTS);
-    private final Map<PersistentTask<? extends Serializable>, Optional<TransactionTemplate>> cache = new ConcurrentHashMap<>();
     
-    public Optional<TransactionTemplate> getTransactionTemplate(PersistentTask<? extends Serializable> task) {
-        if (cache.containsKey(task)) return cache.get(task);
+    /**
+     * Returns a transaction template if and only if we can join the transaction with the anotated apply method
+     */
+    public Optional<TransactionTemplate> buildOrGetDefaultTransactionTemplate(PersistentTask<? extends Serializable> task) {
+        Optional<TransactionTemplate> result;
+        var annotation = ReflectionUtil.getAnnotation(task, Transactional.class);
+        if (annotation == null) {
+            result = useDefaultTransactionTemplate(task);
+        } else {
+            result = Optional.ofNullable(builTransactionTemplate(task, annotation));
+        }
+        return result;
+    }
 
+    public Optional<TransactionTemplate> useDefaultTransactionTemplate(PersistentTask<? extends Serializable> task) {
         Optional<TransactionTemplate> result;
         // first we apply a default
         if (task.isTransactional()) result = Optional.of(template);
         else result = Optional.empty();
         
-        var annotation = ReflectionUtil.getAnnotation(task, Transactional.class);
-        if (annotation != null) {
-            log.debug("found {} on task={}, creating custom ", annotation, task.getClass().getName());
-            result = Optional.ofNullable(builTransactionTemplate(task, annotation));
-        }
-        cache.put(task, result);
+        log.debug("Using default template={} for task={}", result, task.getClass().getName());
         return result;
     }
 
@@ -58,10 +62,10 @@ public class TaskTransactionComponent {
                 var dev = convertTransactionalToDefinition(annotation);
                 dev.setName(task.getClass().getSimpleName());
                 result = new TransactionTemplate(transactionManager, dev);
+                log.debug("Using custom template={} for task={}", result, task.getClass().getName());
             }
         } else {
-            log.info("Propagation={} disables join of transaction for {}", 
-                    annotation.propagation(), task.getClass().getName());
+            log.info("Propagation={} disables join of transaction for task={}", annotation.propagation(), task.getClass().getName());
             result = null;
         }
         return result;
@@ -70,7 +74,6 @@ public class TaskTransactionComponent {
     static DefaultTransactionDefinition convertTransactionalToDefinition(Transactional transactional) {
         DefaultTransactionDefinition def = new DefaultTransactionDefinition();
 
-        // Map Transactional attributes to DefaultTransactionDefinition
         def.setIsolationLevel(transactional.isolation().value());
         def.setPropagationBehavior(Propagation.REQUIRED.value());
         def.setTimeout(transactional.timeout());

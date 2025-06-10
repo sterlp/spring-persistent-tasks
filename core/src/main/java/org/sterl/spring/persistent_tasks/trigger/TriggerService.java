@@ -11,9 +11,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.api.TriggerRequest;
+import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
 import org.sterl.spring.persistent_tasks.task.TaskService;
@@ -25,6 +26,7 @@ import org.sterl.spring.persistent_tasks.trigger.component.RunTriggerComponent;
 import org.sterl.spring.persistent_tasks.trigger.component.StateSerializer;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TriggerService {
 
     private final TaskService taskService;
+    @Getter
     private final StateSerializer stateSerializer = new StateSerializer();
     private final RunTriggerComponent runTrigger;
     private final ReadTriggerComponent readTrigger;
@@ -70,7 +73,7 @@ public class TriggerService {
     }
     
     @Transactional(propagation = Propagation.NEVER)
-    public Optional<TriggerEntity> run(@Nullable AddTriggerRequest<?> request, String runningOn) {
+    public Optional<TriggerEntity> run(@Nullable TriggerRequest<?> request, String runningOn) {
         var trigger = queue(request);
         trigger = lockNextTrigger.lock(trigger.getKey(), runningOn);
         return run(trigger);
@@ -98,9 +101,8 @@ public class TriggerService {
     }
 
     @Transactional(readOnly = true , timeout = 10)
-    public Page<TriggerEntity> findAllTriggers(
-            @Nullable TriggerKey key, @Nullable TriggerStatus status, Pageable page) {
-        return this.readTrigger.listTriggers(key, status, page);
+    public Page<TriggerEntity> searchTriggers(@Nullable TriggerSearch search, Pageable page) {
+        return this.readTrigger.searchTriggers(search, page);
     }
     
     @Transactional(readOnly = true , timeout = 10)
@@ -124,13 +126,26 @@ public class TriggerService {
      * Adds or updates an existing trigger based on its {@link TriggerKey}
      * 
      * @param <T> the state type
-     * @param tigger the {@link AddTriggerRequest} to save
+     * @param tigger the {@link TriggerRequest} to save
      * @return the saved {@link TriggerEntity}
      * @throws IllegalStateException if the trigger already exists and is {@link TriggerStatus#RUNNING}
      */
-    public <T extends Serializable> TriggerEntity queue(AddTriggerRequest<T> tigger) {
+    public <T extends Serializable> TriggerEntity queue(TriggerRequest<T> tigger) {
         taskService.assertIsKnown(tigger.taskId());
         return editTrigger.addTrigger(tigger);
+    }
+    
+    /**
+     * Will resume any found
+     * @param trigger
+     * @return
+     */
+    public Page<TriggerEntity> resume(TriggerRequest<?> trigger) {
+        if (trigger.key().getId() == null && trigger.correlationId() == null) {
+            throw new IllegalArgumentException("Trigger ID or correlationId required to resume: " + trigger);
+        }
+        taskService.assertIsKnown(trigger.taskId());
+        return editTrigger.resume(trigger);
     }
 
     /**
@@ -170,7 +185,7 @@ public class TriggerService {
      *
      * Retry will be triggered based on the set strategy.
      */
-    public List<TriggerEntity> rescheduleAbandonedTasks(OffsetDateTime timeout) {
+    public List<TriggerEntity> rescheduleAbandoned(OffsetDateTime timeout) {
         final List<TriggerEntity> result = readTrigger.findTriggersLastPingAfter(
                 timeout);
         final var e = new IllegalStateException("Trigger abandoned - timeout: " + timeout);
@@ -182,6 +197,13 @@ public class TriggerService {
         log.debug("rescheduled {} triggers", result.size());
         return result;
     }
+    
+    public List<TriggerEntity> expireTimeoutTriggers() {
+        return readTrigger.findTriggersTimeoutOut(20)
+                          .stream()
+                          .map(editTrigger::expireTrigger)
+                          .toList();
+    }
 
     public long countTriggers() {
         return readTrigger.countByStatus(null);
@@ -189,17 +211,12 @@ public class TriggerService {
 
     public Optional<TriggerEntity> updateRunAt(TriggerKey key, OffsetDateTime time) {
         return readTrigger.get(key).map(t -> {
-            if (t.getData().getStatus() != TriggerStatus.WAITING) {
+            if (t.getData().getStatus() == TriggerStatus.RUNNING) {
                 throw new IllegalStateException("Cannot update status of " + key
                         + " as the current status is: " + t.getData().getStatus());
             }
             t.getData().setRunAt(time);
             return t;
         });
-    }
-
-    public List<TriggerEntity> findTriggerByCorrelationId(String correlationId, Pageable page) {
-        return readTrigger.findTriggerByCorrelationId(correlationId, page);
-        
     }
 }

@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
-import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
+import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
@@ -34,7 +34,7 @@ public class RunOrQueueComponent {
      * @return the reference to the {@link Future} with the key, if no threads are
      *         available it is resolved
      */
-    public <T extends Serializable> TriggerKey execute(AddTriggerRequest<T> triggerRequest) {
+    public <T extends Serializable> TriggerKey execute(TriggerRequest<T> triggerRequest) {
         var trigger = triggerService.queue(triggerRequest);
 
         trigger = offerToRun(trigger);

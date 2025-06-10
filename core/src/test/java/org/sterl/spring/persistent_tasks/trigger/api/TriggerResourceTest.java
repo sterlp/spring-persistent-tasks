@@ -75,7 +75,7 @@ class TriggerResourceTest extends AbstractSpringTest {
         
         // WHEN
         var response = template.exchange(
-                baseUrl + "?id=*" + key2.getId().substring(5, 30) + "*",
+                baseUrl + "?search=*" + key2.getId().substring(5, 30) + "*",
                 HttpMethod.GET,
                 null,
                 String.class);
@@ -85,7 +85,7 @@ class TriggerResourceTest extends AbstractSpringTest {
         
         // WHEN
         response = template.exchange(
-                baseUrl + "?id=" + key1.getId().substring(0, 30) + "*",
+                baseUrl + "?search=" + key1.getId().substring(0, 30) + "*",
                 HttpMethod.GET,
                 null,
                 String.class);
@@ -100,13 +100,13 @@ class TriggerResourceTest extends AbstractSpringTest {
     @Test
     void testSearchByCorrelationId() {
         // GIVEN
-        var t1 = triggerService.queue(TriggerBuilder.newTrigger("task1").correlationId(UUID.randomUUID().toString()).build());
+        var t1 = triggerService.queue(TriggerBuilder.newTrigger("task1").correlationId("correlationId" + UUID.randomUUID().toString()).build());
         var t2 = triggerService.queue(TriggerBuilder.newTrigger("task1").build()); // null
-        var t3 = triggerService.queue(TriggerBuilder.newTrigger("task2").correlationId(UUID.randomUUID().toString()).build());
+        var t3 = triggerService.queue(TriggerBuilder.newTrigger("task2").correlationId("correlationId" + UUID.randomUUID().toString()).build());
         
         // WHEN
         var response = template.exchange(
-                baseUrl + "?id=" + t3.getData().getCorrelationId().substring(0, 28) + "*",
+                baseUrl + "?search=" + t3.getData().getCorrelationId().substring(0, 30) + "*",
                 HttpMethod.GET,
                 null,
                 String.class);

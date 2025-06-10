@@ -29,7 +29,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Embeddable
-@ToString(of = {"key", "correlationId", "status", "priority", "executionCount", "createdTime", "runAt", "start", "end"})
+@ToString(of = {"key", "correlationId", "tag", "status", "priority", "executionCount", "createdTime", "runAt", "start", "end"})
 @Builder(toBuilder = true)
 public class TriggerData {
     
@@ -48,6 +48,8 @@ public class TriggerData {
         )
     )
     private TriggerKey key;
+    
+    private String tag;
 
     @Column(nullable = true, updatable = false)
     private String correlationId;

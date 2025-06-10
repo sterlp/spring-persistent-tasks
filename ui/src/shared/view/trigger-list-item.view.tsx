@@ -1,7 +1,7 @@
-import TriggerHistoryListView from "@src/history/view/trigger-history.view";
 import { Trigger } from "@src/server-api";
 import LabeledText from "@src/shared/view/labled-text.view";
-import JsonView from "@uiw/react-json-view";
+import { useUrl } from "crossroad";
+import { useEffect } from "react";
 import {
     Accordion,
     Badge,
@@ -12,22 +12,22 @@ import {
     Row,
 } from "react-bootstrap";
 import TriggerStatusView from "../../trigger/views/trigger-staus.view";
-import { formatMs, formatShortDateTime } from "../date.util";
+import { formatMs, formatShortDateTime, runningSince } from "../date.util";
 import { useServerObject } from "../http-request";
 import HttpErrorView from "./http-error.view";
-import StackTraceView from "./stacktrace-view";
-import { useUrl } from "crossroad";
-import { useEffect } from "react";
+import TriggerView from "./trigger.view";
 interface TriggerProps {
     trigger: Trigger;
     afterTriggerChanged?: () => void;
     showReRunButton: boolean;
+    onFieldClick: (key: string, value?: string) => void;
 }
 
-const TriggerItemView = ({
+const TriggerListItemView = ({
     trigger,
     afterTriggerChanged,
     showReRunButton,
+    onFieldClick,
 }: TriggerProps) => {
     // className="d-flex justify-content-between align-items-center"
     const [url, setUrl] = useUrl();
@@ -54,10 +54,7 @@ const TriggerItemView = ({
     }, [setUrl, reRunTrigger.data]);
 
     return (
-        <Accordion.Item
-            eventKey={trigger.id + ""}
-            onClick={() => triggerHistory.doGet()}
-        >
+        <Accordion.Item eventKey={trigger.id + ""}>
             <Accordion.Header>
                 <Container>
                     <TriggerCompactView
@@ -66,7 +63,7 @@ const TriggerItemView = ({
                     />
                 </Container>
             </Accordion.Header>
-            <Accordion.Body>
+            <Accordion.Body onEnter={() => triggerHistory.doGet()}>
                 <HttpErrorView
                     error={
                         triggerHistory.error ||
@@ -113,23 +110,18 @@ const TriggerItemView = ({
                         </Button>
                     ) : undefined}
                 </div>
-                <TriggerDetailsView
-                    key={trigger.id + "TriggerDetailsView"}
+                <TriggerView
+                    key={trigger.id + "-TriggerDetailsView"}
                     trigger={trigger}
                     history={triggerHistory.data}
+                    onClick={onFieldClick}
                 />
             </Accordion.Body>
         </Accordion.Item>
     );
 };
 
-export default TriggerItemView;
-
-function runningSince(value?: string) {
-    if (!value) return "";
-    const msRuntime = new Date().getTime() - new Date(value).getTime();
-    return `since ${formatMs(msRuntime)}`;
-}
+export default TriggerListItemView;
 
 const TriggerCompactView = ({ trigger }: { trigger: Trigger }) => (
     <Row className="align-items-center">
@@ -143,10 +135,17 @@ const TriggerCompactView = ({ trigger }: { trigger: Trigger }) => (
             <div>{trigger.key.taskName}</div>
         </Col>
         <Col className="col-2">
-            <LabeledText
-                label="Run at"
-                value={formatShortDateTime(trigger.runAt)}
-            />
+            {isActive(trigger) ? (
+                <LabeledText
+                    label="Run at"
+                    value={formatShortDateTime(trigger.runAt)}
+                />
+            ) : (
+                <LabeledText
+                    label="Finished at"
+                    value={formatShortDateTime(trigger.end)}
+                />
+            )}
         </Col>
         <Col className="col-3">
             <TriggerExecutiomView trigger={trigger} />
@@ -192,101 +191,6 @@ const TriggerExecutiomView = ({ trigger }: { trigger: Trigger }) => {
     );
 };
 
-const TriggerDetailsView = ({
-    trigger,
-    history,
-}: {
-    trigger: Trigger;
-    history?: Trigger[];
-}) => {
-    return (
-        <>
-            <Row>
-                <Col md="6" xl="4">
-                    <LabeledText label="Key Id" value={trigger.key.id} />
-                </Col>
-                <Col md="6" xl="4">
-                    <LabeledText label="Task" value={trigger.key.taskName} />
-                </Col>
-                <Col md="6" xl="4">
-                    <LabeledText label="Priority" value={trigger.priority} />
-                </Col>
-            </Row>
-            <Row>
-                <Col md="6" xl="4">
-                    <LabeledText
-                        label="Correlation Id"
-                        value={trigger.correlationId}
-                    />
-                </Col>
-                <Col md="6" xl="4">
-                    <LabeledText
-                        label="Run at"
-                        value={formatShortDateTime(trigger.runAt)}
-                    />
-                </Col>
-            </Row>
-            <Row>
-                <Col md="6" xl="4">
-                    <LabeledText
-                        label="Started at"
-                        value={formatShortDateTime(trigger.start)}
-                    />
-                </Col>
-                <Col md="6" xl="4">
-                    <LabeledText
-                        label="Finished at"
-                        value={formatShortDateTime(trigger.end)}
-                    />
-                </Col>
-                <Col md="6" xl="4">
-                    <LabeledText
-                        label="Duration MS"
-                        value={
-                            trigger.runningDurationInMs
-                                ? formatMs(trigger.runningDurationInMs)
-                                : runningSince(trigger.start)
-                        }
-                    />
-                </Col>
-            </Row>
-            {trigger.lastPing ? (
-                <Row>
-                    <Col md="12">
-                        <LabeledText
-                            label="Last keep alive ping"
-                            value={formatShortDateTime(trigger.lastPing)}
-                        />
-                    </Col>
-                </Row>
-            ) : undefined}
-            <Row className="mt-2">
-                <Col>
-                    <TriggerHistoryListView triggers={history} />
-                </Col>
-            </Row>
-            <hr />
-            <Row className="mt-2">
-                <Col>
-                    {isObject(trigger.state) ? (
-                        <JsonView value={trigger.state} />
-                    ) : (
-                        <pre>{trigger.state}</pre>
-                    )}
-                </Col>
-                <Col>
-                    <StackTraceView
-                        key={trigger.id + "-error-view"}
-                        title={trigger.exceptionName}
-                        error={trigger.lastException}
-                    />
-                </Col>
-            </Row>
-        </>
-    );
-};
-
-function isObject(value: any): boolean {
-    if (value === undefined || value === null) return false;
-    return typeof value === "object" || Array.isArray(value);
+function isActive(trigger: Trigger): boolean {
+    return trigger.status == "RUNNING" || trigger.status == "WAITING";
 }

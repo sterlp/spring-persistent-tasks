@@ -47,7 +47,6 @@ public record RunTaskWithStateCommand (
         task.accept(state);
 
         var result = editTrigger.completeTaskWithSuccess(trigger.getKey(), state);
-        editTrigger.deleteTrigger(trigger);
 
         return result;
     }

@@ -1,8 +1,10 @@
 package org.sterl.spring.persistent_tasks.task;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import org.springframework.lang.NonNull;
@@ -22,6 +24,7 @@ public class TaskService {
 
     private final TaskTransactionComponent taskTransactionComponent;
     private final TaskRepository taskRepository;
+    private final Map<PersistentTask<? extends Serializable>, Optional<TransactionTemplate>> cache = new ConcurrentHashMap<>();
 
     public Set<TaskId<? extends Serializable>> findAllTaskIds() {
         return this.taskRepository.all();
@@ -31,9 +34,14 @@ public class TaskService {
         return taskRepository.get(id);
     }
     
-    public <T extends Serializable> Optional<TransactionTemplate> getTransactionTemplate(
+    /**
+     * Returns a {@link TransactionTemplate} if the task and the framework may join transaction.
+     */
+    public <T extends Serializable> Optional<TransactionTemplate> getTransactionTemplateIfJoinable(
             PersistentTask<T> task) {
-        return taskTransactionComponent.getTransactionTemplate(task);
+
+        return cache.computeIfAbsent(task, 
+                t -> taskTransactionComponent.buildOrGetDefaultTransactionTemplate(t));
     }
 
     /**
@@ -78,7 +86,7 @@ public class TaskService {
      * A way to manually register a PersistentTask, usually not needed as spring beans will be added automatically.
      */
     public <T extends Serializable> TaskId<T> register(TaskId<T> id, PersistentTask<T> task) {
-        taskTransactionComponent.getTransactionTemplate(task);
+        taskTransactionComponent.buildOrGetDefaultTransactionTemplate(task);
         return taskRepository.addTask(id, task);
     }
     /**

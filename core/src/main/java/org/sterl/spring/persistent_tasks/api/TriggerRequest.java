@@ -10,19 +10,21 @@ import java.util.Collections;
  * For any registered persistentTask a persistentTask trigger represent one unit of work, executing this persistentTask once.
  * @param <T> state type which has to be of {@link Serializable}
  */
-public record AddTriggerRequest<T extends Serializable>(
+public record TriggerRequest<T extends Serializable>(
         TriggerKey key,
+        TriggerStatus status,
         T state,
         OffsetDateTime runtAt,
         int priority,
-        String correlationId) {
+        String correlationId,
+        String tag) {
     
     @SuppressWarnings("unchecked")
     public TaskId<T> taskId() {
         return (TaskId<T>)key.toTaskId();
     }
 
-    public Collection<AddTriggerRequest<T>> toList() {
+    public Collection<TriggerRequest<T>> toList() {
         return Collections.singleton(this);
     }
 

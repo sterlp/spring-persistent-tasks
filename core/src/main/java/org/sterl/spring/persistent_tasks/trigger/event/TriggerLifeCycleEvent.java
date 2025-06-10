@@ -2,7 +2,6 @@ package org.sterl.spring.persistent_tasks.trigger.event;
 
 import java.io.Serializable;
 
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.sterl.spring.persistent_tasks.api.event.PersistentTasksEvent;
 import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
@@ -17,7 +16,6 @@ public interface TriggerLifeCycleEvent extends HasTriggerData, PersistentTasksEv
         return data();
     }
     long id();
-    @NonNull
     TriggerData data();
     @Nullable
     Serializable state();

@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
+import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
 import org.sterl.spring.persistent_tasks.scheduler.component.RunOrQueueComponent;
@@ -150,7 +150,7 @@ public class SchedulerService {
      *         available it is resolved
      */
     @Transactional(timeout = 10)
-    public <T extends Serializable> TriggerKey runOrQueue(AddTriggerRequest<T> triggerRequest) {
+    public <T extends Serializable> TriggerKey runOrQueue(TriggerRequest<T> triggerRequest) {
         return runOrQueue.execute(triggerRequest);
     }
 
@@ -166,7 +166,7 @@ public class SchedulerService {
     }
 
     @Transactional
-    public List<TriggerEntity> rescheduleAbandonedTasks(OffsetDateTime timeout) {
+    public List<TriggerEntity> rescheduleAbandonedTriggers(OffsetDateTime timeout) {
         var schedulers = editSchedulerStatus.findOnlineSchedulers(timeout);
 
         final List<TriggerKey> runningKeys = this.taskExecutor.getRunningTriggers().stream().map(TriggerEntity::getKey)
@@ -175,7 +175,7 @@ public class SchedulerService {
         int running = triggerService.markTriggersAsRunning(runningKeys, name);
         log.atLevel(running > 0 ? Level.INFO : Level.DEBUG).log("({}) - {} trigger(s) are running on {} schedulers", 
                 running, runningKeys, schedulers);
-        return triggerService.rescheduleAbandonedTasks(timeout);
+        return triggerService.rescheduleAbandoned(timeout);
     }
 
     public List<SchedulerEntity> listAll() {

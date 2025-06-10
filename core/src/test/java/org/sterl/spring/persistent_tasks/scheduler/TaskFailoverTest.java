@@ -50,7 +50,7 @@ class TaskFailoverTest extends AbstractSpringTest {
             .isEqualTo(2);
         
         // WHEN
-        final var tasks = schedulerB.rescheduleAbandonedTasks(timeout);
+        final var tasks = schedulerB.rescheduleAbandonedTriggers(timeout);
 
         // THEN
         assertThat(tasks).hasSize(1);

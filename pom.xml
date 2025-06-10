@@ -58,6 +58,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <pmd.version>7.13.0</pmd.version>
+        <querydsl.version>5.1.0</querydsl.version>
     </properties>
 
     <modules>
