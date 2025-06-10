@@ -3,13 +3,13 @@
     {
       "name": "spring.persistent-tasks.poll-rate",
       "type": "java.lang.Integer",
-      "description": "The interval at which the scheduler checks for new tasks in seconds."
+      "description": "The interval at which the scheduler checks for new tasks in seconds.",
       "defaultValue": 60
     },
     {
       "name": "spring.persistent-tasks.poll-abandoned-triggers",
       "type": "java.lang.Integer",
-      "description": "The interval at which to check for abandoned triggers in seconds."
+      "description": "The interval at which to check for abandoned triggers in seconds.",
       "defaultValue": 300
     },
     {
