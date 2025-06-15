@@ -41,7 +41,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(of = "id")
 public class HistoryTriggerEntity implements HasTrigger {
 
-    @GeneratedValue(generator = "seq_pt_trigger_history", strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(generator = "seq_pt_trigger_history_details", strategy = GenerationType.SEQUENCE)
     @Column(updatable = false)
     @Id
     private Long id;

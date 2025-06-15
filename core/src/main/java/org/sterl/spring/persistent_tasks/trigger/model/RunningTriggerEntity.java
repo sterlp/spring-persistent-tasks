@@ -41,7 +41,7 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 public class RunningTriggerEntity implements HasTrigger {
 
-    @GeneratedValue(generator = "seq_pt_running_triggers", strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(generator = "seq_pt_task_triggers", strategy = GenerationType.SEQUENCE)
     @Column(updatable = false)
     @Id
     private Long id;

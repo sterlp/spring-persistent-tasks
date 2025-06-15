@@ -73,8 +73,6 @@
         <dropPrimaryKey tableName="pt_running_triggers" />
         <addPrimaryKey tableName="pt_running_triggers"
             columnNames="id" constraintName="pk_pt_running_triggers_id" />
-        <renameSequence newSequenceName="seq_pt_running_triggers"
-            oldSequenceName="seq_pt_task_triggers" />
 
         <createIndex indexName="unq_pt_running_triggers_key"
             tableName="pt_running_triggers"
@@ -109,8 +107,6 @@
         <dropPrimaryKey tableName="pt_trigger_history" />
         <addPrimaryKey tableName="pt_trigger_history"
             columnNames="id" constraintName="pk_pt_trigger_history_id" />
-        <renameSequence newSequenceName="seq_pt_trigger_history"
-            oldSequenceName="seq_pt_trigger_history_details" />
 
         <createIndex indexName="idx_pt_trigger_history_instance_id" tableName="pt_trigger_history">
             <column name="instance_id" />
