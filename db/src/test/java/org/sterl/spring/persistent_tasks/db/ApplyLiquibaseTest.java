@@ -55,13 +55,13 @@ class ApplyLiquibaseTest {
                 Map.of("TABLE_NAME", "PT_SCHEDULER", 
                         "TABLE_SCHEMA", "PUBLIC"));
         assertThat(tables).contains(
-                Map.of("TABLE_NAME", "PT_TASK_TRIGGERS", 
+                Map.of("TABLE_NAME", "PT_RUNNING_TRIGGERS", 
                         "TABLE_SCHEMA", "PUBLIC"));
         assertThat(tables).contains(
-                Map.of("TABLE_NAME", "PT_TRIGGER_HISTORY_DETAILS", 
+                Map.of("TABLE_NAME", "PT_COMPLETED_TRIGGERS", 
                         "TABLE_SCHEMA", "PUBLIC"));
         assertThat(tables).contains(
-                Map.of("TABLE_NAME", "PT_TRIGGER_HISTORY_LAST_STATES", 
+                Map.of("TABLE_NAME", "PT_TRIGGER_HISTORY", 
                         "TABLE_SCHEMA", "PUBLIC"));
     }
 
