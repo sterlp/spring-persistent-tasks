@@ -2,6 +2,7 @@ package org.sterl.spring.example_app.vehicle.task;
 
 import java.util.Random;
 
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.example_app.vehicle.model.Vehicle;
@@ -24,7 +25,7 @@ public class BuildVehicleTask implements TransactionalTask<Vehicle> {
 
     @Transactional(timeout = 5)
     @Override
-    public void accept(Vehicle vehicle) {
+    public void accept(@Nullable Vehicle vehicle) {
         vehicleRepository.save(vehicle);
         log.info("Create vehicle ={}", vehicle);
         try {

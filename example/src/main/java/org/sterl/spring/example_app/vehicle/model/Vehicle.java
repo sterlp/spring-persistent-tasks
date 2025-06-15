@@ -21,6 +21,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class Vehicle extends AbstractEntity<Long> {
+    private static final long serialVersionUID = 1L;
 
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Id

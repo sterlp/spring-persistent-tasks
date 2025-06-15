@@ -14,6 +14,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -29,7 +30,7 @@ import org.sterl.spring.persistent_tasks.task.TaskService;
 import org.sterl.spring.persistent_tasks.test.AsyncAsserts;
 import org.sterl.spring.persistent_tasks.test.PersistentTaskTestService;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
 import org.sterl.spring.sample_app.SampleApp;
 import org.sterl.test.hibernate_asserts.HibernateAsserts;
 
@@ -137,7 +138,7 @@ public class AbstractSpringTest {
             private final AsyncAsserts asserts;
 
             @Override
-            public void accept(String state) {
+            public void accept(@Nullable String state) {
                 try {
                     Thread.sleep(1);
                 } catch (InterruptedException e) {
@@ -165,7 +166,7 @@ public class AbstractSpringTest {
     }
 
     @Deprecated
-    protected Optional<TriggerEntity> runNextTrigger() {
+    protected Optional<RunningTriggerEntity> runNextTrigger() {
         return persistentTaskTestService.runNextTrigger();
     }
 

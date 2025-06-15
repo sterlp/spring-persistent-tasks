@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.Query;
 import org.sterl.spring.persistent_tasks.api.TaskStatusHistoryOverview;
-import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryLastStateEntity;
+import org.sterl.spring.persistent_tasks.history.model.CompletedTriggerEntity;
 
-public interface TriggerHistoryLastStateRepository extends HistoryTriggerRepository<TriggerHistoryLastStateEntity> {
+public interface CompletedTriggerRepository extends HistoryTriggerRepository<CompletedTriggerEntity> {
 
     @Query("""
            SELECT new org.sterl.spring.persistent_tasks.api.TaskStatusHistoryOverview(

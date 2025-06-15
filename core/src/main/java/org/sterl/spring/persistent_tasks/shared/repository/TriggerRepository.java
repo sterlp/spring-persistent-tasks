@@ -1,7 +1,6 @@
 package org.sterl.spring.persistent_tasks.shared.repository;
 
 import java.time.OffsetDateTime;
-import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -18,19 +17,18 @@ import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.QueryHelper;
 import org.sterl.spring.persistent_tasks.shared.StringHelper;
-import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
-import org.sterl.spring.persistent_tasks.shared.model.QTriggerData;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
+import org.sterl.spring.persistent_tasks.shared.model.HasTrigger;
+import org.sterl.spring.persistent_tasks.shared.model.QTriggerEntity;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Predicate;
 
 @NoRepositoryBean
-public interface TriggerDataRepository<T extends HasTriggerData> extends JpaRepository<T, Long>, QuerydslPredicateExecutor<T> {
+public interface TriggerRepository<T extends HasTrigger> extends JpaRepository<T, Long>, QuerydslPredicateExecutor<T> {
 
     default Predicate buildSearch(
-            @NonNull QTriggerData qData,
+            @NonNull QTriggerEntity qData,
             @NonNull TriggerSearch search) {
 
         final var predicate = new BooleanBuilder();

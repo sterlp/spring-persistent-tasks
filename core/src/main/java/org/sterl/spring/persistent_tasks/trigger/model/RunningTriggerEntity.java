@@ -5,8 +5,8 @@ import java.time.OffsetDateTime;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
-import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
+import org.sterl.spring.persistent_tasks.shared.model.HasTrigger;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
@@ -25,30 +25,30 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "pt_task_triggers", indexes = {
-        @Index(name = "unq_pt_triggers_key", columnList = "trigger_id, task_name", unique = true),
-        @Index(name = "idx_pt_triggers_priority", columnList = "priority"),
-        @Index(name = "idx_pt_triggers_run_at", columnList = "run_at"),
-        @Index(name = "idx_pt_triggers_status", columnList = "status"),
-        @Index(name = "idx_pt_triggers_ping", columnList = "last_ping"),
-        @Index(name = "idx_pt_triggers_correlation_id", columnList = "correlation_id"),
-        @Index(name = "idx_pt_triggers_tag", columnList = "tag"),
+@Table(name = "pt_running_triggers", indexes = {
+        @Index(name = "unq_pt_running_triggers_key", columnList = "trigger_id, task_name", unique = true),
+        @Index(name = "idx_pt_running_triggers_priority", columnList = "priority"),
+        @Index(name = "idx_pt_running_triggers_run_at", columnList = "run_at"),
+        @Index(name = "idx_pt_running_triggers_status", columnList = "status"),
+        @Index(name = "idx_pt_running_triggers_last_ping", columnList = "last_ping"),
+        @Index(name = "idx_pt_running_triggers_correlation_id", columnList = "correlation_id"),
+        @Index(name = "idx_pt_running_triggers_tag", columnList = "tag"),
 })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-@Builder
-public class TriggerEntity implements HasTriggerData {
+@Builder(toBuilder = true)
+public class RunningTriggerEntity implements HasTrigger {
 
-    @GeneratedValue(generator = "seq_pt_task_triggers", strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(generator = "seq_pt_running_triggers", strategy = GenerationType.SEQUENCE)
     @Column(updatable = false)
     @Id
     private Long id;
 
     @Default
     @Embedded
-    private TriggerData data = new TriggerData();
+    private TriggerEntity data = new TriggerEntity();
 
     @Column(length = 200)
     private String runningOn;
@@ -56,8 +56,8 @@ public class TriggerEntity implements HasTriggerData {
     @Nullable
     private OffsetDateTime lastPing;
 
-    public TriggerEntity(TriggerKey key) {
-        if (this.data == null) this.data = new TriggerData();
+    public RunningTriggerEntity(TriggerKey key) {
+        if (this.data == null) this.data = new TriggerEntity();
         this.data.setKey(key);
     }
 
@@ -70,12 +70,12 @@ public class TriggerEntity implements HasTriggerData {
      * @param e Sets either {@link TriggerStatus#SUCCESS} or {@link TriggerStatus#FAILED}
      * based if the {@link Exception} is <code>null</code> or not.
      */
-    public TriggerEntity complete(Exception e) {
+    public RunningTriggerEntity complete(Exception e) {
         finishTriggerWithStatus(e == null ? TriggerStatus.SUCCESS : TriggerStatus.FAILED, e);
         return this;
     }
 
-    public TriggerEntity cancel(Exception e) {
+    public RunningTriggerEntity cancel(Exception e) {
         finishTriggerWithStatus(TriggerStatus.CANCELED, e);
         if (e == null) this.data.setExceptionName("PersistentTask canceled");
         return this;
@@ -92,7 +92,7 @@ public class TriggerEntity implements HasTriggerData {
         }
     }
 
-    public TriggerEntity runOn(String runningOn) {
+    public RunningTriggerEntity runOn(String runningOn) {
         this.data.setStart(OffsetDateTime.now());
         this.data.setEnd(null);
         this.data.setExecutionCount(data.getExecutionCount() + 1);
@@ -103,14 +103,14 @@ public class TriggerEntity implements HasTriggerData {
         return this;
     }
 
-    public TriggerEntity runAt(OffsetDateTime runAt) {
+    public RunningTriggerEntity runAt(OffsetDateTime runAt) {
         data.setStatus(TriggerStatus.WAITING);
         data.setRunAt(runAt);
         setRunningOn(null);
         return this;
     }
 
-    public TriggerEntity withState(byte[] state) {
+    public RunningTriggerEntity withState(byte[] state) {
         this.data.setState(state);
         return this;
     }
@@ -119,7 +119,7 @@ public class TriggerEntity implements HasTriggerData {
         return data.getStatus() == TriggerStatus.WAITING;
     }
     
-    public TriggerData copyData() {
+    public TriggerEntity copyData() {
         if (data == null) return null;
         return this.data.copy();
     }

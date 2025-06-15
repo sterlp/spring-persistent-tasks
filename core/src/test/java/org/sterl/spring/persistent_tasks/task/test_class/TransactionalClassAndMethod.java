@@ -1,5 +1,6 @@
 package org.sterl.spring.persistent_tasks.task.test_class;
 
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -20,7 +21,7 @@ public class TransactionalClassAndMethod implements PersistentTask<String> {
 
     @Transactional(timeout = 6, propagation = Propagation.MANDATORY, isolation = Isolation.REPEATABLE_READ)
     @Override
-    public void accept(String name) {
+    public void accept(@Nullable String name) {
         personRepository.save(new PersonEntity(name));
         asserts.info(name);
     }

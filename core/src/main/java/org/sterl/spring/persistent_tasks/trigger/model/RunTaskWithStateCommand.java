@@ -7,22 +7,22 @@ import java.util.Optional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
 import org.sterl.spring.persistent_tasks.api.task.RunningTrigger;
-import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
+import org.sterl.spring.persistent_tasks.shared.model.HasTrigger;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.component.EditTriggerComponent;
 
 public record RunTaskWithStateCommand (
         PersistentTask<Serializable> task,
         Optional<TransactionTemplate> trx,
         Serializable state,
-        TriggerEntity trigger,
-        RunningTrigger<Serializable> runningTrigger) implements HasTriggerData {
+        RunningTriggerEntity trigger,
+        RunningTrigger<Serializable> runningTrigger) implements HasTrigger {
     
     public RunTaskWithStateCommand(
         PersistentTask<Serializable> task,
         Optional<TransactionTemplate> trx,
         Serializable state,
-        TriggerEntity trigger) {
+        RunningTriggerEntity trigger) {
         
         this(task, trx, state, trigger,
             new RunningTrigger<>(
@@ -33,7 +33,7 @@ public record RunTaskWithStateCommand (
                 ));
     }
 
-    public Optional<TriggerEntity> execute(EditTriggerComponent editTrigger) {
+    public Optional<RunningTriggerEntity> execute(EditTriggerComponent editTrigger) {
         if (trx.isPresent()) {
             return trx.get().execute(t -> runTask(editTrigger));
         } else {
@@ -41,7 +41,7 @@ public record RunTaskWithStateCommand (
         }
     }
 
-    private Optional<TriggerEntity> runTask(EditTriggerComponent editTrigger) {
+    private Optional<RunningTriggerEntity> runTask(EditTriggerComponent editTrigger) {
         editTrigger.triggerIsNowRunning(trigger, state);
 
         task.accept(state);
@@ -56,7 +56,7 @@ public record RunTaskWithStateCommand (
     }
 
     @Override
-    public TriggerData getData() {
+    public TriggerEntity getData() {
         return trigger.getData();
     }
 }

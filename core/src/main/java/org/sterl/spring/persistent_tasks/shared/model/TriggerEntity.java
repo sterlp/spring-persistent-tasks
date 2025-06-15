@@ -19,6 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
@@ -30,8 +31,9 @@ import lombok.ToString;
 @AllArgsConstructor
 @Embeddable
 @ToString(of = {"key", "correlationId", "tag", "status", "priority", "executionCount", "createdTime", "runAt", "start", "end"})
+@EqualsAndHashCode(of = "key")
 @Builder(toBuilder = true)
-public class TriggerData {
+public class TriggerEntity {
     
     public void updateRunningDuration() {
         if (start != null && end != null) {
@@ -93,7 +95,7 @@ public class TriggerData {
     @Lob
     private String lastException;
     
-    public TriggerData copy() {
+    public TriggerEntity copy() {
         return this.toBuilder().build();
     }
 }

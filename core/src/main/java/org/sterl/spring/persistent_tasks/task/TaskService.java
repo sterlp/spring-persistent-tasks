@@ -67,7 +67,6 @@ public class TaskService {
      */
     public TaskId<Serializable> register(String name, Consumer<Serializable> task) {
         return register(name, new PersistentTask<Serializable>() {
-            private static final long serialVersionUID = 1L;
             @Override
             public void accept(@Nullable Serializable state) {
                 task.accept(state);

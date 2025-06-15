@@ -3,8 +3,8 @@ package org.sterl.spring.persistent_tasks.history.model;
 import java.time.OffsetDateTime;
 
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
-import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
+import org.sterl.spring.persistent_tasks.shared.model.HasTrigger;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -22,26 +22,26 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
- * Just a copy of the trigger status but without any data/state.
+ * The history of the {@link TriggerEntity} with the states.
  */
 @Entity
-@Table(name = "pt_trigger_history_details", indexes = {
-        @Index(name = "idx_pt_trigger_history_details_instance_id", columnList = "instance_id"),
-        @Index(name = "idx_pt_trigger_history_details_task_name", columnList = "task_name"),
-        @Index(name = "idx_pt_trigger_history_details_trigger_id", columnList = "trigger_id"),
-        @Index(name = "idx_pt_trigger_history_details_status", columnList = "status"),
+@Table(name = "pt_trigger_history", indexes = {
+        @Index(name = "idx_pt_trigger_history_instance_id", columnList = "instance_id"),
+        @Index(name = "idx_pt_trigger_history_name", columnList = "task_name"),
+        @Index(name = "idx_pt_trigger_history_trigger_id", columnList = "trigger_id"),
+        @Index(name = "idx_pt_trigger_history_status", columnList = "status"),
         @Index(name = "idx_pt_trigger_history_created_time", columnList = "created_time"),
-        @Index(name = "idx_pt_trigger_history_details_correlation_id", columnList = "correlation_id"),
-        @Index(name = "idx_pt_trigger_history_details_tag", columnList = "tag"),
+        @Index(name = "idx_pt_trigger_history_correlation_id", columnList = "correlation_id"),
+        @Index(name = "idx_pt_trigger_history_tag", columnList = "tag"),
 })
 @Data
 @NoArgsConstructor
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class TriggerHistoryDetailEntity implements HasTriggerData {
+public class HistoryTriggerEntity implements HasTrigger {
 
-    @GeneratedValue(generator = "seq_pt_trigger_history_details", strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(generator = "seq_pt_trigger_history", strategy = GenerationType.SEQUENCE)
     @Column(updatable = false)
     @Id
     private Long id;
@@ -54,7 +54,7 @@ public class TriggerHistoryDetailEntity implements HasTriggerData {
 
     @Embedded
     @NotNull
-    private TriggerData data;
+    private TriggerEntity data;
 
     public TriggerKey getKey() {
         return data.getKey();

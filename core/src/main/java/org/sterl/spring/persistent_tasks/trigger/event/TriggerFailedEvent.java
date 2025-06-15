@@ -3,7 +3,7 @@ package org.sterl.spring.persistent_tasks.trigger.event;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 
-import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
 
 /**
  * <p>
@@ -11,7 +11,7 @@ import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
  * </p>
  */
 public record TriggerFailedEvent(long id, 
-        TriggerData data, Serializable state, 
+        TriggerEntity data, Serializable state, 
         Exception exception, 
         OffsetDateTime retryAt) implements TriggerLifeCycleEvent {
 

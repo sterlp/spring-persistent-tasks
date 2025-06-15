@@ -24,8 +24,8 @@ import org.sterl.spring.persistent_tasks.trigger.event.TriggerFailedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerResumedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerRunningEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerSuccessEvent;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
-import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
+import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.repository.RunningTriggerRepository;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 
@@ -42,10 +42,10 @@ public class EditTriggerComponent {
     private final StateSerializer stateSerializer = new StateSerializer();
     private final ToTriggerData toTriggerData = new ToTriggerData(stateSerializer);
     private final ReadTriggerComponent readTrigger;
-    private final TriggerRepository triggerRepository;
+    private final RunningTriggerRepository triggerRepository;
 
-    public Optional<TriggerEntity> completeTaskWithSuccess(TriggerKey key, Serializable state) {
-        final Optional<TriggerEntity> result = readTrigger.get(key);
+    public Optional<RunningTriggerEntity> completeTaskWithSuccess(TriggerKey key, Serializable state) {
+        final Optional<RunningTriggerEntity> result = readTrigger.get(key);
 
         result.ifPresent(t -> {
             t.complete(null);
@@ -60,12 +60,12 @@ public class EditTriggerComponent {
     /**
      * Sets error based on the fact if an exception is given or not.
      */
-    public Optional<TriggerEntity> failTrigger(
+    public Optional<RunningTriggerEntity> failTrigger(
             TriggerKey key, 
             Serializable state, 
             Exception e,
             OffsetDateTime retryAt) {
-        final Optional<TriggerEntity> result = triggerRepository.findByKey(key);
+        final Optional<RunningTriggerEntity> result = triggerRepository.findByKey(key);
 
 
         result.ifPresent(t -> {
@@ -87,13 +87,13 @@ public class EditTriggerComponent {
         return result;
     }
 
-    public Optional<TriggerEntity> cancelTask(TriggerKey id, Exception e) {
+    public Optional<RunningTriggerEntity> cancelTask(TriggerKey id, Exception e) {
         return triggerRepository //
                 .findByKey(id) //
                 .map(t -> cancelTrigger(t, e));
     }
 
-    private TriggerEntity cancelTrigger(TriggerEntity t, Exception e) {
+    private RunningTriggerEntity cancelTrigger(RunningTriggerEntity t, Exception e) {
         t.cancel(e);
 
         publisher.publishEvent(new TriggerCanceledEvent(
@@ -105,9 +105,9 @@ public class EditTriggerComponent {
         return t;
     }
 
-    public <T extends Serializable> TriggerEntity addTrigger(TriggerRequest<T> tigger) {
+    public <T extends Serializable> RunningTriggerEntity addTrigger(TriggerRequest<T> tigger) {
         var result = toTriggerEntity(tigger);
-        final Optional<TriggerEntity> existing;
+        final Optional<RunningTriggerEntity> existing;
 
         if (result.key().getId() == null) {
             existing = Optional.empty();
@@ -133,7 +133,7 @@ public class EditTriggerComponent {
         return result;
     }
     
-    public Page<TriggerEntity> resume(TriggerRequest<?> trigger) {
+    public Page<RunningTriggerEntity> resume(TriggerRequest<?> trigger) {
         var search = TriggerSearch.forTriggerRequest(trigger);
         search.setStatus(TriggerStatus.AWAITING_SIGNAL);
         
@@ -153,7 +153,7 @@ public class EditTriggerComponent {
         return foundTriggers;
     }
     
-    public TriggerEntity expireTrigger(TriggerEntity t) {
+    public RunningTriggerEntity expireTrigger(RunningTriggerEntity t) {
         t.getData().setStatus(TriggerStatus.EXPIRED_SIGNAL);
         t.getData().setStart(null);
         t.getData().setEnd(null);
@@ -166,14 +166,14 @@ public class EditTriggerComponent {
     }
 
     @NonNull
-    public <T extends Serializable> List<TriggerEntity> addTriggers(Collection<TriggerRequest<T>> newTriggers) {
+    public <T extends Serializable> List<RunningTriggerEntity> addTriggers(Collection<TriggerRequest<T>> newTriggers) {
         return newTriggers.stream()
                 .map(this::addTrigger)
                 .toList();
     }
 
-    private <T extends Serializable> TriggerEntity toTriggerEntity(TriggerRequest<T> trigger) {
-        return TriggerEntity.builder()
+    private <T extends Serializable> RunningTriggerEntity toTriggerEntity(TriggerRequest<T> trigger) {
+        return RunningTriggerEntity.builder()
             .data(toTriggerData.convert(trigger))
             .build();
     }
@@ -183,7 +183,7 @@ public class EditTriggerComponent {
         this.triggerRepository.deleteAllInBatch();
     }
 
-    public void deleteTrigger(TriggerEntity trigger) {
+    public void deleteTrigger(RunningTriggerEntity trigger) {
         this.triggerRepository.delete(trigger);
     }
 
@@ -193,7 +193,7 @@ public class EditTriggerComponent {
     }
 
     @Transactional(propagation = Propagation.SUPPORTS)
-    public void triggerIsNowRunning(TriggerEntity trigger, Serializable state) {
+    public void triggerIsNowRunning(RunningTriggerEntity trigger, Serializable state) {
         if (!trigger.isRunning()) trigger.runOn(trigger.getRunningOn());
         publisher.publishEvent(new TriggerRunningEvent(
                 trigger.getId(), trigger.copyData(), state, trigger.getRunningOn()));

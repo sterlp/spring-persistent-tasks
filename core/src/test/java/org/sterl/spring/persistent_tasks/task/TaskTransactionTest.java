@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +35,7 @@ class TaskTransactionTest extends AbstractSpringTest {
                 // this will not work!
                 @Transactional(timeout = 8, propagation = Propagation.REQUIRES_NEW)
                 @Override
-                public void accept(String name) {
+                public void accept(@Nullable String name) {
                     personRepository.save(new PersonEntity(name));
                     asserts.info(name);
                 } 
@@ -46,7 +47,7 @@ class TaskTransactionTest extends AbstractSpringTest {
                 // this will not work!
                 @Transactional(timeout = 9, propagation = Propagation.REQUIRES_NEW)
                 @Override
-                public void accept(String name) {
+                public void accept(@Nullable String name) {
                     personRepository.save(new PersonEntity(name));
                     asserts.info(name);
                 } 

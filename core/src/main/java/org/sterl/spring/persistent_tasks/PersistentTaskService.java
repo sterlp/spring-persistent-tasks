@@ -15,16 +15,16 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
 import org.sterl.spring.persistent_tasks.history.HistoryService;
-import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryLastStateEntity;
+import org.sterl.spring.persistent_tasks.history.model.CompletedTriggerEntity;
 import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
 
 import lombok.RequiredArgsConstructor;
 
@@ -41,14 +41,14 @@ public class PersistentTaskService {
     private final HistoryService historyService;
 
     /**
-     * Returns the last known {@link TriggerData} to a given key. First running triggers are checked.
+     * Returns the last known {@link TriggerEntity} to a given key. First running triggers are checked.
      * Maybe out of the history event from a retry execution of the very same id.
      *
      * @param key the {@link TriggerKey} to look for
-     * @return the {@link TriggerData} to the {@link TriggerKey}
+     * @return the {@link TriggerEntity} to the {@link TriggerKey}
      */
-    public Optional<TriggerData> getLastTriggerData(TriggerKey key) {
-        final Optional<TriggerEntity> trigger = triggerService.get(key);
+    public Optional<TriggerEntity> getLastTriggerData(TriggerKey key) {
+        final Optional<RunningTriggerEntity> trigger = triggerService.get(key);
         if (trigger.isEmpty()) {
             var history = historyService.findLastKnownStatus(key);
             if (history.isPresent()) {
@@ -60,7 +60,7 @@ public class PersistentTaskService {
         }
     }
 
-    public Optional<TriggerData> getLastDetailData(TriggerKey key) {
+    public Optional<TriggerEntity> getLastDetailData(TriggerKey key) {
         var data = historyService.findAllDetailsForKey(key, Pageable.ofSize(1));
         if (data.isEmpty()) {
             return Optional.empty();
@@ -93,7 +93,7 @@ public class PersistentTaskService {
 
         return triggers.stream() //
             .map(t -> triggerService.queue(t)) //
-            .map(TriggerEntity::getKey) //
+            .map(RunningTriggerEntity::getKey) //
             .toList();
     }
     /**
@@ -129,40 +129,40 @@ public class PersistentTaskService {
      * Data is limited to overall 300 elements.
      * 
      * @param correlationId the id to search for
-     * @return the found {@link TriggerData} sorted by create time ASC
+     * @return the found {@link TriggerEntity} sorted by create time ASC
      */
     @Transactional(readOnly = true, timeout = 5)
-    public List<TriggerData> findAllTriggerByCorrelationId(String correlationId) {
+    public List<TriggerEntity> findAllTriggerByCorrelationId(String correlationId) {
         if (StringUtils.isAllBlank(correlationId)) return Collections.emptyList();
         
         final var search = TriggerSearch.byCorrelationId(correlationId);
 
         final var running = triggerService.searchTriggers(search, PageRequest.of(0, 100, TriggerSearch.DEFAULT_SORT))
-                .stream().map(TriggerEntity::getData)
+                .stream().map(RunningTriggerEntity::getData)
                 .toList();
 
         final var done = historyService.searchTriggers(search, PageRequest.of(0, 200, TriggerSearch.DEFAULT_SORT))
-            .stream().map(TriggerHistoryLastStateEntity::getData)
+            .stream().map(CompletedTriggerEntity::getData)
             .toList();
 
-        final var result = new ArrayList<TriggerData>(running.size() + done.size());
+        final var result = new ArrayList<TriggerEntity>(running.size() + done.size());
         result.addAll(done);
         result.addAll(running);
         return result;
     }
 
     @Transactional(readOnly = true, timeout = 5)
-    public Optional<TriggerData> findLastTriggerByCorrelationId(String correlationId) {
+    public Optional<TriggerEntity> findLastTriggerByCorrelationId(String correlationId) {
         final var page = PageRequest.of(0, 1, TriggerSearch.sortByCreatedTime(Direction.DESC));
         final var search = TriggerSearch.byCorrelationId(correlationId);
         
         var result = triggerService.searchTriggers(search, page)
-                                   .stream().map(TriggerEntity::getData)
+                                   .stream().map(RunningTriggerEntity::getData)
                                    .toList();
 
         if (result.isEmpty()) {
             result = historyService.searchTriggers(search, page)
-                                   .stream().map(TriggerHistoryLastStateEntity::getData)
+                                   .stream().map(CompletedTriggerEntity::getData)
                                    .toList();
         }
         return result.isEmpty() ? Optional.empty() : Optional.of(result.getFirst());

@@ -3,8 +3,8 @@ package org.sterl.spring.persistent_tasks.history.model;
 import java.time.OffsetDateTime;
 
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
-import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
+import org.sterl.spring.persistent_tasks.shared.model.HasTrigger;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -20,7 +20,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "pt_trigger_history_last_states", indexes = {
+@Table(name = "pt_completed_triggers", indexes = {
         @Index(name = "idx_pt_trigger_history_last_states_task_name", columnList = "task_name"),
         @Index(name = "idx_pt_trigger_history_last_states_trigger_id", columnList = "trigger_id"),
         @Index(name = "idx_pt_trigger_history_last_states_status", columnList = "status"),
@@ -33,7 +33,7 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class TriggerHistoryLastStateEntity implements HasTriggerData {
+public class CompletedTriggerEntity implements HasTrigger {
 
     @Column(updatable = false)
     @Id
@@ -41,7 +41,7 @@ public class TriggerHistoryLastStateEntity implements HasTriggerData {
 
     @Embedded
     @NotNull
-    private TriggerData data;
+    private TriggerEntity data;
 
     public TriggerKey getKey() {
         return data.getKey();

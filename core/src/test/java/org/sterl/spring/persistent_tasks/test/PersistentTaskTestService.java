@@ -19,7 +19,7 @@ import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +41,7 @@ public class PersistentTaskTestService {
      * 
      * @return next {@link TriggerKey} if found
      */
-    public Optional<TriggerEntity> runNextTrigger() {
+    public Optional<RunningTriggerEntity> runNextTrigger() {
         return triggerService.run(triggerService.lockNextTrigger("test"));
     }
     
@@ -51,9 +51,9 @@ public class PersistentTaskTestService {
      * @param dueUntil date to also check for trigger in the future
      * @return the triggers executed, to directly check if they have been successful
      */
-    public List<TriggerEntity> runAllDueTrigger(OffsetDateTime dueUntil) {
-        var result = new ArrayList<TriggerEntity>();
-        List<TriggerEntity> trigger; 
+    public List<RunningTriggerEntity> runAllDueTrigger(OffsetDateTime dueUntil) {
+        var result = new ArrayList<RunningTriggerEntity>();
+        List<RunningTriggerEntity> trigger; 
         while ( (trigger = triggerService.lockNextTrigger("test", 1, dueUntil)).size() > 0 ) {
             var key = triggerService.run(trigger.getFirst());
             if (key.isPresent()) result.add(key.get());

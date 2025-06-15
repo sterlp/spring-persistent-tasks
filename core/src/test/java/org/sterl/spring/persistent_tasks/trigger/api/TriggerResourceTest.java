@@ -20,16 +20,16 @@ import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
-import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.repository.RunningTriggerRepository;
 
 class TriggerResourceTest extends AbstractSpringTest {
 
     @LocalServerPort
     private int port;
     @Autowired
-    private TriggerRepository triggerRepository;
+    private RunningTriggerRepository triggerRepository;
     private String baseUrl;
     private final RestTemplate template = new RestTemplate();
 
@@ -182,12 +182,12 @@ class TriggerResourceTest extends AbstractSpringTest {
         assertThat(response.getBody().getKey()).isEqualTo(triggerKey);
     }
     
-    private TriggerEntity createStatus(TriggerKey key, TriggerStatus status) {
+    private RunningTriggerEntity createStatus(TriggerKey key, TriggerStatus status) {
         final var now = OffsetDateTime.now();
         final var isCancel = status == TriggerStatus.CANCELED;
 
-        TriggerEntity result = new TriggerEntity();
-        result.setData(TriggerData
+        RunningTriggerEntity result = new RunningTriggerEntity();
+        result.setData(TriggerEntity
                 .builder()
                 .correlationId(UUID.randomUUID().toString())
                 .start(isCancel ? null : now.minusMinutes(1))

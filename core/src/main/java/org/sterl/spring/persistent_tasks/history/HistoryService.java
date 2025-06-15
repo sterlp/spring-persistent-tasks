@@ -16,11 +16,11 @@ import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
-import org.sterl.spring.persistent_tasks.history.model.QTriggerHistoryLastStateEntity;
-import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryDetailEntity;
-import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryLastStateEntity;
+import org.sterl.spring.persistent_tasks.history.model.CompletedTriggerEntity;
+import org.sterl.spring.persistent_tasks.history.model.HistoryTriggerEntity;
+import org.sterl.spring.persistent_tasks.history.model.QCompletedTriggerEntity;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryDetailRepository;
-import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryLastStateRepository;
+import org.sterl.spring.persistent_tasks.history.repository.CompletedTriggerRepository;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
 
 import lombok.RequiredArgsConstructor;
@@ -28,27 +28,27 @@ import lombok.RequiredArgsConstructor;
 @TransactionalService
 @RequiredArgsConstructor
 public class HistoryService {
-    private final TriggerHistoryLastStateRepository triggerHistoryLastStateRepository;
+    private final CompletedTriggerRepository completedTriggerRepository;
     private final TriggerHistoryDetailRepository triggerHistoryDetailRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
     
-    public Optional<TriggerHistoryLastStateEntity> findStatus(long triggerId) {
-        return triggerHistoryLastStateRepository.findById(triggerId);
+    public Optional<CompletedTriggerEntity> findStatus(long triggerId) {
+        return completedTriggerRepository.findById(triggerId);
     }
     
-    public Optional<TriggerHistoryLastStateEntity> findLastKnownStatus(TriggerKey triggerKey) {
+    public Optional<CompletedTriggerEntity> findLastKnownStatus(TriggerKey triggerKey) {
         final var page = PageRequest.of(0, 1).withSort(Direction.DESC, "data.createdTime", "id");
-        final var result = triggerHistoryLastStateRepository.listKnownStatusFor(triggerKey, page);
+        final var result = completedTriggerRepository.listKnownStatusFor(triggerKey, page);
         return result.isEmpty() ? Optional.empty() : Optional.of(result.getContent().get(0));
     }
 
     public void deleteAll() {
-        triggerHistoryLastStateRepository.deleteAllInBatch();
+        completedTriggerRepository.deleteAllInBatch();
         triggerHistoryDetailRepository.deleteAllInBatch();
     }
     
     public void deleteAllOlderThan(OffsetDateTime age) {
-        triggerHistoryLastStateRepository.deleteOlderThan(age);
+        completedTriggerRepository.deleteOlderThan(age);
         triggerHistoryDetailRepository.deleteOlderThan(age);
     }
 
@@ -59,20 +59,20 @@ public class HistoryService {
         return triggerHistoryDetailRepository.countByStatus(status);
     }
 
-    public List<TriggerHistoryDetailEntity> findAllDetailsForInstance(long instanceId) {
+    public List<HistoryTriggerEntity> findAllDetailsForInstance(long instanceId) {
         return triggerHistoryDetailRepository.findAllByInstanceId(instanceId);
     }
     
-    public Page<TriggerHistoryDetailEntity> findAllDetailsForKey(TriggerKey key) {
+    public Page<HistoryTriggerEntity> findAllDetailsForKey(TriggerKey key) {
         return findAllDetailsForKey(key, PageRequest.of(0, 100));
     }
-    public Page<TriggerHistoryDetailEntity> findAllDetailsForKey(TriggerKey key, Pageable page) {
+    public Page<HistoryTriggerEntity> findAllDetailsForKey(TriggerKey key, Pageable page) {
         page = applyDefaultSortIfNeeded(page);
         return triggerHistoryDetailRepository.listKnownStatusFor(key, page);
     }
 
     public Optional<TriggerKey> reQueue(Long id, OffsetDateTime runAt) {
-        final var lastState = triggerHistoryLastStateRepository.findById(id);
+        final var lastState = completedTriggerRepository.findById(id);
         if (lastState.isEmpty()) return Optional.empty();
 
         final var data = lastState.get().getData();
@@ -88,7 +88,7 @@ public class HistoryService {
     }
 
     public long countTriggers(TriggerKey key) {
-        return triggerHistoryLastStateRepository.countByKey(key);
+        return completedTriggerRepository.countByKey(key);
     }
 
     /**
@@ -98,19 +98,19 @@ public class HistoryService {
      * @param page page informations
      * @return the found data, looking only the last states
      */
-    public Page<TriggerHistoryLastStateEntity> searchTriggers(
+    public Page<CompletedTriggerEntity> searchTriggers(
             @Nullable TriggerSearch search, Pageable page) {
 
         page = applyDefaultSortIfNeeded(page);
-        Page<TriggerHistoryLastStateEntity> result;
+        Page<CompletedTriggerEntity> result;
 
         if (search != null && search.hasValue()) {
-            var p = triggerHistoryLastStateRepository.buildSearch(
-                    QTriggerHistoryLastStateEntity.triggerHistoryLastStateEntity.data, 
+            var p = completedTriggerRepository.buildSearch(
+                    QCompletedTriggerEntity.completedTriggerEntity.data, 
                     search);
-            result = triggerHistoryLastStateRepository.findAll(p, page);
+            result = completedTriggerRepository.findAll(p, page);
         } else {
-            result = triggerHistoryLastStateRepository.findAll(page);
+            result = completedTriggerRepository.findAll(page);
         }
         return result;
     }
@@ -124,6 +124,6 @@ public class HistoryService {
     }
 
     public List<TaskStatusHistoryOverview> taskStatusHistory() {
-        return triggerHistoryLastStateRepository.listTriggerStatus();
+        return completedTriggerRepository.listTriggerStatus();
     }
 }

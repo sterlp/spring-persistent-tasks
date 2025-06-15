@@ -21,7 +21,7 @@ import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
-import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryLastStateRepository;
+import org.sterl.spring.persistent_tasks.history.repository.CompletedTriggerRepository;
 import org.sterl.spring.persistent_tasks.task.exception.CancelTaskException;
 import org.sterl.spring.persistent_tasks.task.exception.FailTaskNoRetryException;
 import org.sterl.spring.persistent_tasks.task.repository.TaskRepository;
@@ -32,8 +32,8 @@ import org.sterl.spring.persistent_tasks.trigger.event.TriggerExpiredEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerFailedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerResumedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerSuccessEvent;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
-import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
+import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.repository.RunningTriggerRepository;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 
@@ -45,11 +45,11 @@ class TriggerServiceTest extends AbstractSpringTest {
     @Autowired
     private TriggerService subject;
     @Autowired
-    private TriggerRepository triggerRepository;
+    private RunningTriggerRepository triggerRepository;
     @Autowired
     private TaskRepository taskRepository;
     @Autowired
-    private TriggerHistoryLastStateRepository triggerHistoryLastStateRepository;
+    private CompletedTriggerRepository completedTriggerRepository;
     
     @Autowired
     private ApplicationEvents events;
@@ -83,7 +83,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         // one for the trigger and just one for the history
         hibernateAsserts.assertInsertCount(2);
         // AND
-        assertThat(triggerHistoryLastStateRepository.count()).isZero();
+        assertThat(completedTriggerRepository.count()).isZero();
         // AND
         assertThat(events.stream(TriggerAddedEvent.class).count()).isOne();
         // AND
@@ -274,7 +274,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         
         var keys = triggers.stream() //
             .map(t -> subject.queue(t)) //
-            .map(TriggerEntity::getKey) //
+            .map(RunningTriggerEntity::getKey) //
             .toList();
 
         // WHEN
@@ -345,7 +345,7 @@ class TriggerServiceTest extends AbstractSpringTest {
             }
 
             // WHEN
-            ArrayList<Callable<Optional<TriggerEntity> >> lockInvocations = new ArrayList<>();
+            ArrayList<Callable<Optional<RunningTriggerEntity> >> lockInvocations = new ArrayList<>();
             for (int i = 1; i <= 100; ++i) {
                 lockInvocations.add(() -> triggerService.run(triggerService.lockNextTrigger("test")));
             }
@@ -392,12 +392,12 @@ class TriggerServiceTest extends AbstractSpringTest {
     void testRescheduleAbandonedTasks() {
         // GIVEN
         var now = OffsetDateTime.now();
-        var t1 = new TriggerEntity(new TriggerKey(UuidCreator.getTimeOrdered().toString(), "fooTask"))
+        var t1 = new RunningTriggerEntity(new TriggerKey(UuidCreator.getTimeOrdered().toString(), "fooTask"))
                         .runOn("fooScheduler");
         t1.setLastPing(now.minusSeconds(60));
         triggerRepository.save(t1);
         
-        var t2 = new TriggerEntity(new TriggerKey(UuidCreator.getTimeOrdered().toString(), "barTask"))
+        var t2 = new RunningTriggerEntity(new TriggerKey(UuidCreator.getTimeOrdered().toString(), "barTask"))
                 .runOn("barScheduler");
         t2.setLastPing(now.minusSeconds(58));
         triggerRepository.save(t2);
@@ -414,7 +414,7 @@ class TriggerServiceTest extends AbstractSpringTest {
     void testUnknownTriggersNoRetry() {
         // GIVEN
         var t = triggerRepository.save(
-                new TriggerEntity(new TriggerKey(UuidCreator.getTimeOrdered().toString(), "fooTask-unknown")));
+                new RunningTriggerEntity(new TriggerKey(UuidCreator.getTimeOrdered().toString(), "fooTask-unknown")));
         
         // WHEN
         persistentTaskTestService.runNextTrigger();
@@ -427,7 +427,7 @@ class TriggerServiceTest extends AbstractSpringTest {
     
     @Test
     void testBadStateNoRetry() {
-        var t = triggerRepository.save(new TriggerEntity(
+        var t = triggerRepository.save(new RunningTriggerEntity(
                 new TriggerKey(UuidCreator.getTimeOrdered().toString(), "slowTask")
             ).withState(new byte[] {12, 54})
         );
