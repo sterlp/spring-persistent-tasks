@@ -156,7 +156,10 @@ class TaskTransactionTest extends AbstractSpringTest {
         
         // THEN
         asserts.awaitValue(task + "test");
+        // AND
+        awaitHistoryThreads();
         hibernateAsserts.assertTrxCount(3);
+        // AND
         assertThat(personRepository.count()).isEqualTo(1);
     }
 

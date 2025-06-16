@@ -197,6 +197,9 @@ public class AbstractSpringTest {
     public void afterEach() throws Exception {
         schedulerA.shutdownNow();
         schedulerB.shutdownNow();
+
+        awaitHistoryThreads();
+        
         triggerService.deleteAll();
         historyService.deleteAll();
     }
