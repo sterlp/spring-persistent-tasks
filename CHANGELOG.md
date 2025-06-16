@@ -1,5 +1,20 @@
 # Changelog
 
+## v2.0.0 - (2025-06-16)
+
+### New features:
+
+-   Better naming for all trigger classes
+-   Rename of all tables
+-   Rename of all indexes
+-   Rename of all pk index
+-   NO RENAME OF THE SEQUENCES - not suppoered by all dbs
+-   Added suspendable triggers
+-   Added resume for triggers
+-   Added tag for triggers
+-   Added a far better search for triggers
+-   Add querydsl
+
 ## v1.7.0 - (2025-06-01)
 
 ### New features:

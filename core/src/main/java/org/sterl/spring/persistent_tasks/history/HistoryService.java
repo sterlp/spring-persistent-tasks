@@ -94,7 +94,7 @@ public class HistoryService {
     /**
      * Checks for the last known state in the history.
      * 
-     * @param key the {@link TriggerKey}, can be partly <code>null</code>
+     * @param search the trigger search, can partly <code>null</code>
      * @param page page informations
      * @return the found data, looking only the last states
      */
