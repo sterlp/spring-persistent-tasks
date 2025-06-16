@@ -11,7 +11,7 @@ echo "Releasing version: $RELEASE_VERSION"
 # Set the new release version and tag it in Git
 mvn versions:set -DnewVersion="$RELEASE_VERSION" -DgenerateBackupPoms=false
 # Deploy the project
-mvn clean source:jar deploy -Prelease
+mvn deploy -Prelease
 
 # update test project
 cp core/src/test/java/org/sterl/spring/persistent_tasks/test/* test/src/main/java/org/sterl/spring/persistent_tasks/test/
