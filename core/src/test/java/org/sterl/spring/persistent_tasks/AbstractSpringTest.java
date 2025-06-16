@@ -4,6 +4,7 @@ import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.Optional;
 
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.lang.Nullable;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.event.RecordApplicationEvents;
@@ -65,6 +67,8 @@ public class AbstractSpringTest {
 
     @Autowired
     protected HistoryService historyService;
+    @Autowired
+    private ThreadPoolTaskExecutor triggerHistoryExecutor;
 
     @Autowired
     protected TransactionTemplate trx;
@@ -166,6 +170,10 @@ public class AbstractSpringTest {
                 }
             };
         }
+    }
+    
+    protected void awaidHistoryThreads() {
+        Awaitility.await().until(() -> triggerHistoryExecutor.getActiveCount() == 0);
     }
 
     @Deprecated

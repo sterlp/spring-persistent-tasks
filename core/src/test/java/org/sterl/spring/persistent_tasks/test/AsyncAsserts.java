@@ -131,7 +131,7 @@ public class AsyncAsserts {
     }
     
     public ListAssert<String> assertValue(String value) {
-        return assertThat(new ArrayList<>(values)).contains(value);
+        return assertThat(values).contains(value);
     }
     
     public void assertMissing(String value) {

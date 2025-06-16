@@ -164,17 +164,23 @@ class TaskTransactionTest extends AbstractSpringTest {
     @ValueSource(strings = {"transactionalClass", "transactionalClassAndMethod", "transactionalClosure"})
     void testTransactionalTask(String task) throws InterruptedException {
         // GIVEN
+        personRepository.deleteAllInBatch();
         var t = triggerService.queue(TriggerBuilder
                 .newTrigger(task, task).build());
 
         // WHEN
-        personRepository.deleteAllInBatch();
         hibernateAsserts.reset();
         triggerService.run(t).get();
 
         // THEN
         asserts.awaitValue(task);
-        hibernateAsserts.assertTrxCount(2);
+        awaidHistoryThreads();
+        hibernateAsserts
+            // running trigger
+            //.assertDeletedCount(1)
+            // 1 running trigger, 3 history, 1 trigger completed
+            .assertInsertCount(4)
+            .assertTrxCount(2);
         assertThat(personRepository.count()).isEqualTo(1);
     }
 }
