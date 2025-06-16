@@ -23,6 +23,6 @@ public interface SchedulerThreadFactory {
     };
     
     SchedulerThreadFactory VIRTUAL_THREAD_POOL_FACTORY = (maxThreads) -> {
-        return Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("vpt-", 0) .factory());
+        return Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("v-spt-", 0) .factory());
     };
 }

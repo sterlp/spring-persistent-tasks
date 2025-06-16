@@ -80,7 +80,6 @@ jobs:
         services:
             postgres:
                 image: postgres
-                options: --name pg-container
                 env:
                     POSTGRES_USER: sa
                     POSTGRES_PASSWORD: veryStrong123

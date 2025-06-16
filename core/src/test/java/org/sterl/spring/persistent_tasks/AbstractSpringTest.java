@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -26,6 +27,7 @@ import org.sterl.spring.persistent_tasks.history.HistoryService;
 import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
 import org.sterl.spring.persistent_tasks.scheduler.config.SchedulerConfig;
+import org.sterl.spring.persistent_tasks.scheduler.config.SchedulerThreadFactory;
 import org.sterl.spring.persistent_tasks.task.TaskService;
 import org.sterl.spring.persistent_tasks.test.AsyncAsserts;
 import org.sterl.spring.persistent_tasks.test.PersistentTaskTestService;
@@ -38,7 +40,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
-//@ActiveProfiles("mssql") // postgres mssql mariadb mysql
+@ActiveProfiles({"virtual-thread"}) // postgres mssql mariadb mysql
 @SpringBootTest(classes = SampleApp.class, webEnvironment = WebEnvironment.RANDOM_PORT)
 @RecordApplicationEvents
 public class AbstractSpringTest {
@@ -92,25 +94,26 @@ public class AbstractSpringTest {
 
         @Primary
         @Bean("schedulerA")
-        @SuppressWarnings("resource")
-        SchedulerService schedulerA(TriggerService triggerService,
+        SchedulerService schedulerA(
+                TriggerService triggerService,
                 MeterRegistry meterRegistry,
                 EditSchedulerStatusComponent editSchedulerStatus,
+                SchedulerThreadFactory threadFactory,
                 TransactionTemplate trx) throws UnknownHostException {
 
             final var name = "schedulerA";
-            return SchedulerConfig.newSchedulerService(name, meterRegistry, triggerService, editSchedulerStatus, 10, Duration.ZERO, trx);
+            return SchedulerConfig.newSchedulerService(name, meterRegistry, triggerService, editSchedulerStatus, threadFactory, 10, Duration.ZERO, trx);
         }
 
         @Bean
-        @SuppressWarnings("resource")
         SchedulerService schedulerB(TriggerService triggerService,
                 MeterRegistry meterRegistry,
                 EditSchedulerStatusComponent editSchedulerStatus,
+                SchedulerThreadFactory threadFactory,
                 TransactionTemplate trx) throws UnknownHostException {
 
             final var name = "schedulerB";
-            return SchedulerConfig.newSchedulerService(name, meterRegistry, triggerService, editSchedulerStatus, 20, Duration.ZERO, trx);
+            return SchedulerConfig.newSchedulerService(name, meterRegistry, triggerService, editSchedulerStatus, threadFactory, 20, Duration.ZERO, trx);
         }
 
         /**

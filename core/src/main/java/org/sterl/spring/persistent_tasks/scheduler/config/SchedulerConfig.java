@@ -77,6 +77,7 @@ public class SchedulerConfig {
                 maxShutdownWaitTime, trx);
     }
 
+    @Deprecated
     public static SchedulerService newSchedulerService(
             String name,
             MeterRegistry meterRegistry,
