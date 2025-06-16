@@ -160,8 +160,8 @@ class TaskTransactionTest extends AbstractSpringTest {
         assertThat(personRepository.count()).isEqualTo(1);
     }
 
-    //@ParameterizedTest
-    //@ValueSource(strings = {"transactionalClass", "transactionalClassAndMethod", "transactionalClosure"})
+    @ParameterizedTest
+    @ValueSource(strings = {"transactionalClass", "transactionalClassAndMethod", "transactionalClosure"})
     void testTransactionalTask(String task) throws InterruptedException {
         // GIVEN
         personRepository.deleteAllInBatch();
@@ -174,7 +174,7 @@ class TaskTransactionTest extends AbstractSpringTest {
 
         // THEN
         asserts.awaitValue(task);
-        awaidHistoryThreads();
+        awaitHistoryThreads();
         hibernateAsserts
             // running trigger
             //.assertDeletedCount(1)

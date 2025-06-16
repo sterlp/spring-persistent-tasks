@@ -172,7 +172,7 @@ public class AbstractSpringTest {
         }
     }
     
-    protected void awaidHistoryThreads() {
+    protected void awaitHistoryThreads() {
         Awaitility.await().until(() -> triggerHistoryExecutor.getActiveCount() == 0);
     }
 

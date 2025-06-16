@@ -185,7 +185,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         var k1 = subject.runOrQueue(TriggerBuilder.newTrigger("savePersonInTrx").state("Paul").build());
 
         // THEN 1 to save and 1 to start it and 1 for the history
-        awaidHistoryThreads();
+        awaitHistoryThreads();
         hibernateAsserts.assertTrxCount(3);
         assertThat(persistentTaskService.getLastTriggerData(k1).get().getStatus())
             .isEqualTo(TriggerStatus.RUNNING);
@@ -194,7 +194,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         hibernateAsserts.reset();
         COUNTDOWN.countDown();
         Awaitility.await().until(() -> hibernateAsserts.getStatistics().getTransactionCount() >= 1);
-        awaidHistoryThreads();
+        awaitHistoryThreads();
         hibernateAsserts.assertTrxCount(1);
 
         // THEN
