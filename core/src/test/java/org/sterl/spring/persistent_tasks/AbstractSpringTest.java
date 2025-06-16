@@ -42,7 +42,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
-@ActiveProfiles({"virtual-thread"}) // postgres mssql mariadb mysql
+@ActiveProfiles // postgres mssql mariadb mysql
 @SpringBootTest(classes = SampleApp.class, webEnvironment = WebEnvironment.RANDOM_PORT)
 @RecordApplicationEvents
 public class AbstractSpringTest {
