@@ -10,11 +10,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.lang.Nullable;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
-import org.sterl.spring.persistent_tasks.shared.StringHelper;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalCompontant;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
-import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
+import org.sterl.spring.persistent_tasks.trigger.model.QRunningTriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.repository.RunningTriggerRepository;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @TransactionalCompontant
 @RequiredArgsConstructor
 public class ReadTriggerComponent {
-    private final TriggerRepository triggerRepository;
+    private final RunningTriggerRepository triggerRepository;
 
     public long countByTaskName(@NotNull String name) {
         return triggerRepository.countByTaskName(name);
@@ -33,8 +34,8 @@ public class ReadTriggerComponent {
         return triggerRepository.countByStatus(status);
     }
 
-    public Optional<TriggerEntity> get(TriggerKey id) {
-        return triggerRepository.findByKey(id);
+    public Optional<RunningTriggerEntity> get(TriggerKey key) {
+        return triggerRepository.findByKey(key);
     }
 
     /**
@@ -47,24 +48,30 @@ public class ReadTriggerComponent {
         return false;
     }
     
-    public List<TriggerEntity> findTriggersLastPingAfter(OffsetDateTime dateTime) {
+    public List<RunningTriggerEntity> findTriggersLastPingAfter(OffsetDateTime dateTime) {
         return triggerRepository.findTriggersLastPingAfter(dateTime);
     }
 
-    public Page<TriggerEntity> listTriggers(@Nullable TriggerKey key,
-            @Nullable TriggerStatus status, Pageable page) {
-        if (key == null && status == null) return triggerRepository.findAll(page);
-        final var id = StringHelper.applySearchWildCard(key);
-        final var name = key == null ? null : key.getTaskName();
-        return triggerRepository.findAll(id, name, status, page);
+    public Page<RunningTriggerEntity> searchTriggers(@Nullable TriggerSearch search, Pageable page) {
+        page = TriggerSearch.applyDefaultSortIfNeeded(page);
+        if (search != null && search.hasValue()) {
+            var p = triggerRepository.buildSearch(QRunningTriggerEntity.runningTriggerEntity.data, search);
+            return triggerRepository.findAll(p, page);
+        } else {
+            return triggerRepository.findAll(page);
+        }
+        
     }
 
-    public Page<TriggerEntity> listTriggers(TaskId<? extends Serializable> task, Pageable page) {
+    public Page<RunningTriggerEntity> listTriggers(TaskId<? extends Serializable> task, Pageable page) {
         if (task == null) return triggerRepository.findAll(page);
         return triggerRepository.findAll(task.name(), page);
     }
-
-    public List<TriggerEntity> findTriggerByCorrelationId(String correlationId, Pageable page) {
-        return triggerRepository.findByCorrelationId(correlationId, triggerRepository.applyDefaultSortIfNeeded(page));
+    
+    public List<RunningTriggerEntity> findTriggersTimeoutOut(int max) {
+        return triggerRepository.findByStatusAndRunAtAfter(
+                TriggerStatus.AWAITING_SIGNAL,
+                OffsetDateTime.now(),
+                Pageable.ofSize(max));
     }
 }

@@ -10,7 +10,7 @@ import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
 import org.sterl.spring.persistent_tasks.task.exception.CancelTaskException;
 import org.sterl.spring.persistent_tasks.task.exception.FailTaskNoRetryException;
 import org.sterl.spring.persistent_tasks.trigger.model.RunTaskWithStateCommand;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ public class FailTriggerComponent {
 
     private final EditTriggerComponent editTrigger;
     
-    public Optional<TriggerEntity> execute(RunTaskWithStateCommand runTaskWithStateCommand, Exception e) {
+    public Optional<RunningTriggerEntity> execute(RunTaskWithStateCommand runTaskWithStateCommand, Exception e) {
 
         var trigger = runTaskWithStateCommand.trigger();
         var task = runTaskWithStateCommand.task();
@@ -33,16 +33,16 @@ public class FailTriggerComponent {
     /**
      * Fails the given trigger, no retry will be applied!
      */
-    public <T extends Serializable> Optional<TriggerEntity> execute(TriggerEntity trigger, Exception e) {
+    public <T extends Serializable> Optional<RunningTriggerEntity> execute(RunningTriggerEntity trigger, Exception e) {
         return execute(null, trigger, null, e);
     }
-    public <T extends Serializable> Optional<TriggerEntity> execute(
+    public <T extends Serializable> Optional<RunningTriggerEntity> execute(
             @Nullable PersistentTask<T> task, 
-            TriggerEntity trigger, 
+            RunningTriggerEntity trigger, 
             @Nullable T state,
             Exception e) {
 
-        Optional<TriggerEntity> result;
+        Optional<RunningTriggerEntity> result;
 
         if (e instanceof CancelTaskException) {
             log.info("Cancel of a running trigger={} requested", trigger.getKey());

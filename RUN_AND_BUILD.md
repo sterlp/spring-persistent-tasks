@@ -5,7 +5,7 @@ mvn versions:set -DnewVersion=1.6.0-SNAPSHOT -DgenerateBackupPoms=false
 
 ## postgres
 
-docker run --name pg-container -e POSTGRES_USER=sa -e POSTGRES_PASSWORD=veryStrong123 -p 5432:5432 -d postgres
+docker run -e POSTGRES_USER=sa -e POSTGRES_PASSWORD=veryStrong123 -p 5432:5432 -d postgres
 
 ## azure-sql-edge
 

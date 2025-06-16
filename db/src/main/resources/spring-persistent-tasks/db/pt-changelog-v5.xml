@@ -1,0 +1,185 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet author="sterlp" id="2025-06-08-drop-pt_task_triggers-indexes">
+        <dropIndex indexName="unq_pt_triggers_key" tableName="pt_task_triggers" />
+        <dropIndex indexName="idx_pt_triggers_priority" tableName="pt_task_triggers" />
+        <dropIndex indexName="idx_pt_triggers_run_at" tableName="pt_task_triggers" />
+        <dropIndex indexName="idx_pt_triggers_status" tableName="pt_task_triggers" />
+        <dropIndex indexName="idx_pt_triggers_ping" tableName="pt_task_triggers" />
+        <dropIndex indexName="idx_pt_triggers_correlation_id" tableName="pt_task_triggers" />
+    </changeSet>
+
+    <changeSet author="sterlp" id="2025-06-08-drop-pt_trigger_history_details-indexes">
+        <dropIndex
+            indexName="idx_pt_triggers_history_instance_id"
+            tableName="pt_trigger_history_details" />
+        <dropIndex
+            indexName="idx_pt_triggers_history_task_name"
+            tableName="pt_trigger_history_details" />
+        <dropIndex
+            indexName="idx_pt_triggers_history_trigger_id"
+            tableName="pt_trigger_history_details" />
+        <dropIndex
+            indexName="idx_pt_triggers_history_status"
+            tableName="pt_trigger_history_details" />
+        <dropIndex
+            indexName="idx_pt_triggers_history_created_time"
+            tableName="pt_trigger_history_details" />
+        <dropIndex
+            indexName="idx_pt_trigger_history_details_correlation_id"
+            tableName="pt_trigger_history_details" />
+    </changeSet>
+
+    <changeSet author="sterlp" id="2025-06-08-drop-pt_trigger_history_last_states-indexes">
+        <dropIndex
+            indexName="idx_pt_trigger_history_last_states_task_name"
+            tableName="pt_trigger_history_last_states" />
+        <dropIndex
+            indexName="idx_pt_trigger_history_last_states_trigger_id"
+            tableName="pt_trigger_history_last_states" />
+        <dropIndex
+            indexName="idx_pt_trigger_history_last_states_status"
+            tableName="pt_trigger_history_last_states" />
+        <dropIndex
+            indexName="idx_pt_trigger_history_last_states_created_time"
+            tableName="pt_trigger_history_last_states" />
+        <dropIndex
+            indexName="idx_pt_trigger_history_last_states_correlation_id"
+            tableName="pt_trigger_history_last_states" />
+    </changeSet>
+
+    <changeSet author="sterlp" id="2025-06-08-rename-db-tables">
+        <renameTable
+            oldTableName="pt_task_triggers"
+            newTableName="pt_running_triggers" />
+
+        <renameTable
+            oldTableName="pt_trigger_history_last_states"
+            newTableName="pt_completed_triggers" />
+
+        <renameTable
+            oldTableName="pt_trigger_history_details"
+            newTableName="pt_trigger_history" />
+    </changeSet>
+
+    <changeSet author="sterlp" id="2025-06-08-add-pt_running_triggers-indexes">
+        <dropPrimaryKey tableName="pt_running_triggers" />
+        <addPrimaryKey tableName="pt_running_triggers"
+            columnNames="id" constraintName="pk_pt_running_triggers_id" />
+
+        <createIndex indexName="unq_pt_running_triggers_key"
+            tableName="pt_running_triggers"
+            unique="true">
+            <column name="trigger_id" />
+            <column name="task_name" />
+        </createIndex>
+        <createIndex
+            indexName="idx_pt_running_triggers_priority" tableName="pt_running_triggers">
+            <column name="priority" />
+        </createIndex>
+        <createIndex
+            indexName="idx_pt_running_triggers_run_at" tableName="pt_running_triggers">
+            <column name="run_at" />
+        </createIndex>
+        <createIndex
+            indexName="idx_pt_running_triggers_status" tableName="pt_running_triggers">
+            <column name="status" />
+        </createIndex>
+        <createIndex
+            indexName="idx_pt_running_triggers_last_ping" tableName="pt_running_triggers">
+            <column name="last_ping" />
+        </createIndex>
+        <createIndex
+            indexName="idx_pt_running_triggers_correlation_id"
+            tableName="pt_running_triggers">
+            <column name="correlation_id" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="sterlp" id="2025-06-08-add-pt_trigger_history-indexes">
+        <dropPrimaryKey tableName="pt_trigger_history" />
+        <addPrimaryKey tableName="pt_trigger_history"
+            columnNames="id" constraintName="pk_pt_trigger_history_id" />
+
+        <createIndex indexName="idx_pt_trigger_history_instance_id" tableName="pt_trigger_history">
+            <column name="instance_id" />
+        </createIndex>
+        <createIndex indexName="idx_pt_trigger_history_task_name" tableName="pt_trigger_history">
+            <column name="task_name" />
+        </createIndex>
+        <createIndex indexName="idx_pt_trigger_history_trigger_id" tableName="pt_trigger_history">
+            <column name="trigger_id" />
+        </createIndex>
+        <createIndex indexName="idx_pt_trigger_history_status" tableName="pt_trigger_history">
+            <column name="status" />
+        </createIndex>
+        <createIndex indexName="idx_pt_trigger_history_created_time" tableName="pt_trigger_history">
+            <column name="created_time" />
+        </createIndex>
+        <createIndex indexName="idx_pt_trigger_history_correlation_id"
+            tableName="pt_trigger_history">
+            <column name="correlation_id" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="sterlp" id="2025-06-08-add-pt_completed_triggers">
+        <dropPrimaryKey tableName="pt_completed_triggers" />
+        <addPrimaryKey tableName="pt_completed_triggers"
+            columnNames="id" constraintName="pk_pt_completed_triggers_id" />
+
+        <createIndex indexName="idx_pt_completed_triggers_task_name"
+            tableName="pt_completed_triggers">
+            <column name="task_name" />
+        </createIndex>
+        <createIndex indexName="idx_pt_completed_triggers_trigger_id"
+            tableName="pt_completed_triggers">
+            <column name="trigger_id" />
+        </createIndex>
+        <createIndex indexName="idx_pt_completed_triggers_status" tableName="pt_completed_triggers">
+            <column name="status" />
+        </createIndex>
+        <createIndex indexName="idx_pt_completed_triggers_created_time"
+            tableName="pt_completed_triggers">
+            <column name="created_time" />
+        </createIndex>
+        <createIndex indexName="idx_pt_completed_triggers_correlation_id"
+            tableName="pt_completed_triggers">
+            <column name="correlation_id" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="sterlp" id="2025-06-08-tag">
+        <addColumn tableName="pt_running_triggers">
+            <column name="tag" type="varchar(200)" />
+        </addColumn>
+
+        <addColumn tableName="pt_completed_triggers">
+            <column name="tag" type="varchar(200)" />
+        </addColumn>
+
+        <addColumn tableName="pt_trigger_history">
+            <column name="tag" type="varchar(200)" />
+        </addColumn>
+
+        <createIndex indexName="idx_pt_running_triggers_tag" tableName="pt_running_triggers">
+            <column name="tag" />
+        </createIndex>
+
+        <createIndex indexName="idx_pt_completed_triggers_tag" tableName="pt_completed_triggers">
+            <column name="tag" />
+        </createIndex>
+
+        <createIndex indexName="idx_pt_trigger_history_tag" tableName="pt_trigger_history">
+            <column name="tag" />
+        </createIndex>
+    </changeSet>
+
+
+</databaseChangeLog>

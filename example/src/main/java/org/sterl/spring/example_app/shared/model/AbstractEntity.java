@@ -5,6 +5,7 @@ import java.io.Serializable;
 import jakarta.persistence.Transient;
 
 public abstract class AbstractEntity<T> implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     public abstract T getId();
     

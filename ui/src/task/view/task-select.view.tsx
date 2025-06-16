@@ -34,10 +34,10 @@ function TaskSelect({ value = "", onTaskChange }: TaskSelectProps) {
 
     return (
         <Form.Group as={Row}>
-            <Form.Label column sm="2">
+            <Form.Label column sm="3">
                 Task
             </Form.Label>
-            <Col sm="10">
+            <Col sm="9">
                 <Form.Select
                     aria-label="Select task"
                     value={value}

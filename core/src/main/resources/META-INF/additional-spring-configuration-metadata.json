@@ -3,22 +3,38 @@
     {
       "name": "spring.persistent-tasks.poll-rate",
       "type": "java.lang.Integer",
-      "description": "The interval at which the scheduler checks for new tasks in seconds."
+      "description": "The interval at which the scheduler checks for new tasks in seconds.",
+      "defaultValue": 60
+    },
+    {
+      "name": "spring.persistent-tasks.poll-abandoned-triggers",
+      "type": "java.lang.Integer",
+      "description": "The interval at which to check for abandoned triggers in seconds.",
+      "defaultValue": 300
+    },
+    {
+      "name": "spring.persistent-tasks.timers-enabled",
+      "type": "java.lang.Boolean",
+      "description": "If the times are enabled or not. Default true.",
+      "defaultValue": true
     },
     {
       "name": "spring.persistent-tasks.max-threads",
       "type": "java.lang.Integer",
-      "description": "The number of threads to use; default 10; set to 0 to disable task processing."
+      "description": "The number of threads to use; set to 0 to disable task processing.",
+      "defaultValue": 10
     },
     {
-      "name": "spring.persistent-tasks.task-timeout",
+      "name": "spring.persistent-tasks.trigger-timeout",
       "type": "java.time.Duration",
-      "description": "The maximum time allowed for a task and scheduler to complete a task. Defaults to 5 minutes."
+      "description": "The maximum time allowed for a task and scheduler to complete a task. Defaults to 5 minutes.",
+      "defaultValue": "PT5M"
     },
     {
-      "name": "spring.persistent-tasks.poll-task-timeout",
+      "name": "spring.persistent-tasks.poll-awaiting-trigger-timeout",
       "type": "java.lang.Integer",
-      "description": "The interval at which the system checks for abandoned tasks, in seconds. Defaults to every 5 minutes."
+      "description": "The interval at which the system checks for abandoned tasks, in seconds. Defaults to every 5 minutes.",
+      "defaultValue": 300
     },
     {
       "name": "spring.persistent-tasks.scheduler-enabled",

@@ -11,14 +11,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
-import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryLastStateEntity;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
+import org.sterl.spring.persistent_tasks.history.model.CompletedTriggerEntity;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
 
-class TriggerHistoryLastStateRepositoryTest extends AbstractSpringTest {
+class CompletedTriggerRepositoryTest extends AbstractSpringTest {
 
     final AtomicLong idGenerator = new AtomicLong(0);
     @Autowired 
-    private TriggerHistoryLastStateRepository subject;
+    private CompletedTriggerRepository subject;
     
     @Test
     void testListTriggerStatus() {
@@ -53,13 +53,13 @@ class TriggerHistoryLastStateRepositoryTest extends AbstractSpringTest {
         assertThat(result.get(i).executionCount()).isEqualTo(1L);
     }
     
-    private TriggerHistoryLastStateEntity createStatus(TriggerKey key, TriggerStatus status) {
+    private CompletedTriggerEntity createStatus(TriggerKey key, TriggerStatus status) {
         final var now = OffsetDateTime.now();
         final var isCancel = status == TriggerStatus.CANCELED;
 
-        TriggerHistoryLastStateEntity result = new TriggerHistoryLastStateEntity();
+        CompletedTriggerEntity result = new CompletedTriggerEntity();
         result.setId(idGenerator.incrementAndGet());
-        result.setData(TriggerData
+        result.setData(TriggerEntity
                 .builder()
                 .start(isCancel ? null : now.minusMinutes(1))
                 .end(isCancel ? null : now)

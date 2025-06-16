@@ -8,7 +8,8 @@ import TriggerStatusSelect from "@src/shared/view/triger-status-select.view";
 import TaskSelect from "@src/task/view/task-select.view";
 import { useQuery } from "crossroad";
 import { Accordion, Col, Form, Row, Stack } from "react-bootstrap";
-import TriggerItemView from "./trigger-list-item.view";
+import TriggerListItemView from "./trigger-list-item.view";
+import { useEffect, useState } from "react";
 
 interface Props {
     url: string;
@@ -21,13 +22,26 @@ const TriggersSearchView = ({
     showReRunButton,
 }: Props) => {
     const [query, setQuery] = useQuery();
+    const [search, setSearch] = useState(query.search || "");
     const triggers = useServerObject<PagedModel<Trigger>>(url);
+
+    useEffect(() => {
+        setSearch(query.search || "");
+    }, [query]);
 
     const doReload = () => {
         return triggers.doGet(
             "?size=10&" + new URLSearchParams(query).toString()
         );
     };
+    const doUpdateQuery = (search: object) => {
+        setQuery((prev) => ({
+            ...prev,
+            page: 0 + "",
+            ...search,
+        }));
+    };
+
     useAutoRefresh(10000, doReload, [query]);
 
     return (
@@ -36,29 +50,19 @@ const TriggersSearchView = ({
             <Row>
                 <Col>
                     <Form.Control
-                        defaultValue={query.id || ""}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
                         type="text"
                         placeholder="ID search, '*' any string, '_' any character ..."
                         onKeyUp={(e) =>
-                            e.key == "Enter"
-                                ? setQuery((prev) => ({
-                                      ...prev,
-                                      page: 0 + "",
-                                      id: (e.target as HTMLInputElement).value,
-                                  }))
-                                : null
+                            e.key == "Enter" ? doUpdateQuery({ search }) : null
                         }
                     />
                 </Col>
                 <Col>
                     <TriggerStatusSelect
                         value={query.status}
-                        onTaskChange={(status) =>
-                            setQuery((prev) => ({
-                                ...prev,
-                                status,
-                            }))
-                        }
+                        onTaskChange={(status) => doUpdateQuery({ status })}
                     />
                 </Col>
             </Row>
@@ -66,12 +70,7 @@ const TriggersSearchView = ({
                 <Col>
                     <TaskSelect
                         value={query.taskName}
-                        onTaskChange={(taskName) =>
-                            setQuery((prev) => ({
-                                ...prev,
-                                taskName: taskName,
-                            }))
-                        }
+                        onTaskChange={(taskName) => doUpdateQuery({ taskName })}
                     />
                 </Col>
                 <Col className="align-items-center">
@@ -95,13 +94,14 @@ const TriggersSearchView = ({
             </Row>
             <Accordion>
                 {triggers.data?.content.map((t) => (
-                    <TriggerItemView
+                    <TriggerListItemView
                         key={t.id + "-" + t.key.id}
                         trigger={t}
                         showReRunButton={showReRunButton}
                         afterTriggerChanged={
                             allowUpdateAnCancel ? doReload : undefined
                         }
+                        onFieldClick={(k, v) => doUpdateQuery({ [k]: v })}
                     />
                 ))}
             </Accordion>

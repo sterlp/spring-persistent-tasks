@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.task.RunningTriggerContextHolder;
 import org.sterl.spring.persistent_tasks.task.TaskService;
 import org.sterl.spring.persistent_tasks.trigger.model.RunTaskWithStateCommand;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,10 +25,10 @@ public class RunTriggerComponent {
     private final StateSerializer serializer = new StateSerializer();
 
     /**
-     * Will execute the given {@link TriggerEntity} and handle any errors etc.
+     * Will execute the given {@link RunningTriggerEntity} and handle any errors etc.
      */
     @Transactional(propagation = Propagation.NEVER)
-    public Optional<TriggerEntity> execute(TriggerEntity trigger) {
+    public Optional<RunningTriggerEntity> execute(RunningTriggerEntity trigger) {
         if (trigger == null) {
             return Optional.empty();
         }
@@ -48,10 +48,10 @@ public class RunTriggerComponent {
     }
 
     @Nullable
-    private RunTaskWithStateCommand buildTaskWithStateFor(TriggerEntity trigger) {
+    private RunTaskWithStateCommand buildTaskWithStateFor(RunningTriggerEntity trigger) {
         try {
             final var task = taskService.assertIsKnown(trigger.newTaskId());
-            final var trx = taskService.getTransactionTemplate(task);
+            final var trx = taskService.getTransactionTemplateIfJoinable(task);
             final var state = serializer.deserialize(trigger.getData().getState());
             return new RunTaskWithStateCommand(task, trx, state, trigger);
         } catch (Exception e) {

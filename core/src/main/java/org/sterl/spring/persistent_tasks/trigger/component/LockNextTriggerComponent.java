@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
-import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
+import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.repository.RunningTriggerRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,9 +23,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class LockNextTriggerComponent {
 
-    private final TriggerRepository triggerRepository;
+    private final RunningTriggerRepository triggerRepository;
 
-    public List<TriggerEntity> loadNext(String runningOn, int count, OffsetDateTime timeDueAt) {
+    public List<RunningTriggerEntity> loadNext(String runningOn, int count, OffsetDateTime timeDueAt) {
         final var tasks = triggerRepository.loadNextTasks(
                 timeDueAt, TriggerStatus.WAITING, PageRequest.of(0, count));
 
@@ -35,8 +35,8 @@ public class LockNextTriggerComponent {
         return tasks;
     }
 
-    public TriggerEntity lock(TriggerKey id, String runningOn) {
-        final TriggerEntity result = triggerRepository.lockByKey(id);
+    public RunningTriggerEntity lock(TriggerKey id, String runningOn) {
+        final RunningTriggerEntity result = triggerRepository.lockByKey(id);
         if (result != null) {
             result.runOn(runningOn);
         }

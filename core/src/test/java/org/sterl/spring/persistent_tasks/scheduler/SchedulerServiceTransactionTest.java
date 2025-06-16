@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.Nullable;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.PersistentTaskService;
@@ -43,7 +44,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         TransactionalTask<String> savePersonInTrx(PersonRepository personRepository) {
             return new TransactionalTask<String>() {
                 @Override
-                public void accept(String name) {
+                public void accept(@Nullable String name) {
                     personRepository.save(new PersonEntity(name));
                     COUNTDOWN.await();
                     if (sendError.get()) {
@@ -61,7 +62,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
                 PersonRepository personRepository) {
             return new PersistentTask<>() {
                 @Override
-                public void accept(String name) {
+                public void accept(@Nullable String name) {
                     trx.executeWithoutResult(t -> {
                         personRepository.save(new PersonEntity(name));
                         COUNTDOWN.await();
@@ -106,10 +107,9 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         // THEN
         // 1. get the trigger 
         // 2. one the event running 
-        // 3. for the work
-        // 4. for success status
-        // 5. the history
-        hibernateAsserts.assertTrxCount(5);
+        // 3. for the work & for success status
+        // 4. the history
+        hibernateAsserts.assertTrxCount(4);
         assertThat(personRepository.count()).isOne();
         // AND
         var data = persistentTaskService.getLastDetailData(trigger.key());
@@ -185,8 +185,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         var k1 = subject.runOrQueue(TriggerBuilder.newTrigger("savePersonInTrx").state("Paul").build());
 
         // THEN 1 to save and 1 to start it and 1 for the history
-        Awaitility.await().until(() -> hibernateAsserts.getStatistics().getTransactionCount() > 2);
-        Thread.sleep(250); // wait for the history async events
+        awaitHistoryThreads();
         hibernateAsserts.assertTrxCount(3);
         assertThat(persistentTaskService.getLastTriggerData(k1).get().getStatus())
             .isEqualTo(TriggerStatus.RUNNING);
@@ -195,6 +194,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         hibernateAsserts.reset();
         COUNTDOWN.countDown();
         Awaitility.await().until(() -> hibernateAsserts.getStatistics().getTransactionCount() >= 1);
+        awaitHistoryThreads();
         hibernateAsserts.assertTrxCount(1);
 
         // THEN

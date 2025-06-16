@@ -7,11 +7,11 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryDetailEntity;
-import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryLastStateEntity;
+import org.sterl.spring.persistent_tasks.history.model.CompletedTriggerEntity;
+import org.sterl.spring.persistent_tasks.history.model.HistoryTriggerEntity;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryDetailRepository;
-import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryLastStateRepository;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
+import org.sterl.spring.persistent_tasks.history.repository.CompletedTriggerRepository;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalCompontant;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerLifeCycleEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerRunningEvent;
@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TriggerHistoryComponent {
 
-    private final TriggerHistoryLastStateRepository triggerHistoryLastStateRepository;
+    private final CompletedTriggerRepository completedTriggerRepository;
     private final TriggerHistoryDetailRepository triggerHistoryDetailRepository;
 
     // we have to ensure to run in an own transaction
@@ -53,15 +53,15 @@ public class TriggerHistoryComponent {
         execute(e.id(), e.data(), e.isDone());
     }
 
-    public void execute(final long triggerId, final TriggerData data, boolean isDone) {
+    public void execute(final long triggerId, final TriggerEntity data, boolean isDone) {
         if (isDone) {
-            final var state = new TriggerHistoryLastStateEntity();
+            final var state = new CompletedTriggerEntity();
             state.setId(triggerId);
             state.setData(data.copy());
-            triggerHistoryLastStateRepository.save(state);
+            completedTriggerRepository.save(state);
         }
 
-        var detail = new TriggerHistoryDetailEntity();
+        var detail = new HistoryTriggerEntity();
         detail.setInstanceId(triggerId);
         detail.setData(data.toBuilder()
                 .state(null)

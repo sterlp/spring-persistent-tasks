@@ -6,11 +6,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.query.Param;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
-import org.sterl.spring.persistent_tasks.shared.model.HasTriggerData;
-import org.sterl.spring.persistent_tasks.shared.repository.TriggerDataRepository;
+import org.sterl.spring.persistent_tasks.shared.model.HasTrigger;
+import org.sterl.spring.persistent_tasks.shared.repository.TriggerRepository;
 
 @NoRepositoryBean
-public interface HistoryTriggerRepository<T extends HasTriggerData> extends TriggerDataRepository<T> {
+public interface HistoryTriggerRepository<T extends HasTrigger> extends TriggerRepository<T> {
 
     @Query("""
             SELECT e FROM #{#entityName} e 

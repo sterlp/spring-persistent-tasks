@@ -9,7 +9,7 @@ spring:
 
   persistent-tasks:
     scheduler-enabled: false
-
+    timers-enabled: false
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
 

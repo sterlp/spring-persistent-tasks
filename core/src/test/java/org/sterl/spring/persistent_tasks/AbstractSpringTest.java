@@ -4,6 +4,7 @@ import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.Optional;
 
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.lang.Nullable;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -25,11 +29,12 @@ import org.sterl.spring.persistent_tasks.history.HistoryService;
 import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
 import org.sterl.spring.persistent_tasks.scheduler.config.SchedulerConfig;
+import org.sterl.spring.persistent_tasks.scheduler.config.SchedulerThreadFactory;
 import org.sterl.spring.persistent_tasks.task.TaskService;
 import org.sterl.spring.persistent_tasks.test.AsyncAsserts;
 import org.sterl.spring.persistent_tasks.test.PersistentTaskTestService;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
 import org.sterl.spring.sample_app.SampleApp;
 import org.sterl.test.hibernate_asserts.HibernateAsserts;
 
@@ -37,7 +42,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
-//@ActiveProfiles("mssql") // postgres mssql mariadb mysql
+@ActiveProfiles // postgres mssql mariadb mysql
 @SpringBootTest(classes = SampleApp.class, webEnvironment = WebEnvironment.RANDOM_PORT)
 @RecordApplicationEvents
 public class AbstractSpringTest {
@@ -62,6 +67,8 @@ public class AbstractSpringTest {
 
     @Autowired
     protected HistoryService historyService;
+    @Autowired
+    private ThreadPoolTaskExecutor triggerHistoryExecutor;
 
     @Autowired
     protected TransactionTemplate trx;
@@ -91,25 +98,26 @@ public class AbstractSpringTest {
 
         @Primary
         @Bean("schedulerA")
-        @SuppressWarnings("resource")
-        SchedulerService schedulerA(TriggerService triggerService,
+        SchedulerService schedulerA(
+                TriggerService triggerService,
                 MeterRegistry meterRegistry,
                 EditSchedulerStatusComponent editSchedulerStatus,
+                SchedulerThreadFactory threadFactory,
                 TransactionTemplate trx) throws UnknownHostException {
 
             final var name = "schedulerA";
-            return SchedulerConfig.newSchedulerService(name, meterRegistry, triggerService, editSchedulerStatus, 10, Duration.ZERO, trx);
+            return SchedulerConfig.newSchedulerService(name, meterRegistry, triggerService, editSchedulerStatus, threadFactory, 10, Duration.ZERO, trx);
         }
 
         @Bean
-        @SuppressWarnings("resource")
         SchedulerService schedulerB(TriggerService triggerService,
                 MeterRegistry meterRegistry,
                 EditSchedulerStatusComponent editSchedulerStatus,
+                SchedulerThreadFactory threadFactory,
                 TransactionTemplate trx) throws UnknownHostException {
 
             final var name = "schedulerB";
-            return SchedulerConfig.newSchedulerService(name, meterRegistry, triggerService, editSchedulerStatus, 20, Duration.ZERO, trx);
+            return SchedulerConfig.newSchedulerService(name, meterRegistry, triggerService, editSchedulerStatus, threadFactory, 20, Duration.ZERO, trx);
         }
 
         /**
@@ -137,7 +145,7 @@ public class AbstractSpringTest {
             private final AsyncAsserts asserts;
 
             @Override
-            public void accept(String state) {
+            public void accept(@Nullable String state) {
                 try {
                     Thread.sleep(1);
                 } catch (InterruptedException e) {
@@ -163,9 +171,13 @@ public class AbstractSpringTest {
             };
         }
     }
+    
+    protected void awaitHistoryThreads() {
+        Awaitility.await().until(() -> triggerHistoryExecutor.getActiveCount() == 0);
+    }
 
     @Deprecated
-    protected Optional<TriggerEntity> runNextTrigger() {
+    protected Optional<RunningTriggerEntity> runNextTrigger() {
         return persistentTaskTestService.runNextTrigger();
     }
 
@@ -185,6 +197,9 @@ public class AbstractSpringTest {
     public void afterEach() throws Exception {
         schedulerA.shutdownNow();
         schedulerB.shutdownNow();
+
+        awaitHistoryThreads();
+        
         triggerService.deleteAll();
         historyService.deleteAll();
     }

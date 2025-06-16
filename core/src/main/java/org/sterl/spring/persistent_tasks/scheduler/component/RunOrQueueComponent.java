@@ -6,10 +6,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
-import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +25,7 @@ public class RunOrQueueComponent {
     private final String schedulerName;
     private final TriggerService triggerService;
     private final TaskExecutorComponent taskExecutor;
-    private final Map<Long, TriggerEntity> shouldRun = new ConcurrentHashMap<>();
+    private final Map<Long, RunningTriggerEntity> shouldRun = new ConcurrentHashMap<>();
 
     /**
      * Runs the given trigger if a free threads are available and the runAt time is
@@ -34,7 +34,7 @@ public class RunOrQueueComponent {
      * @return the reference to the {@link Future} with the key, if no threads are
      *         available it is resolved
      */
-    public <T extends Serializable> TriggerKey execute(AddTriggerRequest<T> triggerRequest) {
+    public <T extends Serializable> TriggerKey execute(TriggerRequest<T> triggerRequest) {
         var trigger = triggerService.queue(triggerRequest);
 
         trigger = offerToRun(trigger);
@@ -42,7 +42,7 @@ public class RunOrQueueComponent {
         return trigger.getKey();
     }
 
-    private TriggerEntity offerToRun(TriggerEntity trigger) {
+    private RunningTriggerEntity offerToRun(RunningTriggerEntity trigger) {
         if (!trigger.shouldRunInFuture()) {
             if (taskExecutor.getFreeThreads() > 0) {
                 trigger = triggerService.markTriggersAsRunning(trigger, schedulerName);

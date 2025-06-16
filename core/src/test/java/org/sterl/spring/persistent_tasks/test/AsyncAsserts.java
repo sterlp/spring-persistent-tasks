@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.assertj.core.api.ListAssert;
 
@@ -25,14 +27,28 @@ public class AsyncAsserts {
     @Getter @Setter
     private Duration defaultTimeout = Duration.ofSeconds(3);
     
-    public synchronized void clear() {
-        values.clear();
-        counts.clear();
+    private final Lock lock = new ReentrantLock(true);
+    
+    public void clear() {
+        lock.lock();
+        try {
+            values.clear();
+            counts.clear();
+        } finally {
+            lock.unlock();
+        }
     }
-    public synchronized int add(String value) {
+    public int add(String value) {
         values.add(value);
-        final int count = getCount(value) + 1;
-        counts.put(value, count);
+        
+        lock.lock();
+        int count;
+        try {
+            count = getCount(value) + 1;
+            counts.put(value, count);
+        } finally {
+            lock.unlock();
+        }
         if (values.size() > maxStepCount) {
             throw new IllegalStateException("Flow has already more than " + maxStepCount + " steps, assuming error!");
         }
@@ -42,14 +58,15 @@ public class AsyncAsserts {
      * @return how often this value has been already added ...
      */
     public int info(String value) {
-        if (value == null) {
-            value= "[null]";
-        }
+        if (value == null) value= "[null]";
         int count;
         int size;
-        synchronized (values) {
+        lock.lock();
+        try {
             count = this.add(value);
             size = values.size();
+        } finally {
+            lock.unlock();
         }
         System.err.println(size + ". " + value);
         return count;
@@ -114,7 +131,7 @@ public class AsyncAsserts {
     }
     
     public ListAssert<String> assertValue(String value) {
-        return assertThat(new ArrayList<>(values)).contains(value);
+        return assertThat(values).contains(value);
     }
     
     public void assertMissing(String value) {

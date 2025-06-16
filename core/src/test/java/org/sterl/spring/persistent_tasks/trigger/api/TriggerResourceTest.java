@@ -20,16 +20,16 @@ import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
-import org.sterl.spring.persistent_tasks.trigger.repository.TriggerRepository;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.repository.RunningTriggerRepository;
 
 class TriggerResourceTest extends AbstractSpringTest {
 
     @LocalServerPort
     private int port;
     @Autowired
-    private TriggerRepository triggerRepository;
+    private RunningTriggerRepository triggerRepository;
     private String baseUrl;
     private final RestTemplate template = new RestTemplate();
 
@@ -75,7 +75,7 @@ class TriggerResourceTest extends AbstractSpringTest {
         
         // WHEN
         var response = template.exchange(
-                baseUrl + "?id=*" + key2.getId().substring(5, 30) + "*",
+                baseUrl + "?search=*" + key2.getId().substring(5, 30) + "*",
                 HttpMethod.GET,
                 null,
                 String.class);
@@ -85,7 +85,7 @@ class TriggerResourceTest extends AbstractSpringTest {
         
         // WHEN
         response = template.exchange(
-                baseUrl + "?id=" + key1.getId().substring(0, 30) + "*",
+                baseUrl + "?search=" + key1.getId().substring(0, 30) + "*",
                 HttpMethod.GET,
                 null,
                 String.class);
@@ -100,13 +100,13 @@ class TriggerResourceTest extends AbstractSpringTest {
     @Test
     void testSearchByCorrelationId() {
         // GIVEN
-        var t1 = triggerService.queue(TriggerBuilder.newTrigger("task1").correlationId(UUID.randomUUID().toString()).build());
+        var t1 = triggerService.queue(TriggerBuilder.newTrigger("task1").correlationId("correlationId" + UUID.randomUUID().toString()).build());
         var t2 = triggerService.queue(TriggerBuilder.newTrigger("task1").build()); // null
-        var t3 = triggerService.queue(TriggerBuilder.newTrigger("task2").correlationId(UUID.randomUUID().toString()).build());
+        var t3 = triggerService.queue(TriggerBuilder.newTrigger("task2").correlationId("correlationId" + UUID.randomUUID().toString()).build());
         
         // WHEN
         var response = template.exchange(
-                baseUrl + "?id=" + t3.getData().getCorrelationId().substring(0, 28) + "*",
+                baseUrl + "?search=" + t3.getData().getCorrelationId().substring(0, 30) + "*",
                 HttpMethod.GET,
                 null,
                 String.class);
@@ -182,12 +182,12 @@ class TriggerResourceTest extends AbstractSpringTest {
         assertThat(response.getBody().getKey()).isEqualTo(triggerKey);
     }
     
-    private TriggerEntity createStatus(TriggerKey key, TriggerStatus status) {
+    private RunningTriggerEntity createStatus(TriggerKey key, TriggerStatus status) {
         final var now = OffsetDateTime.now();
         final var isCancel = status == TriggerStatus.CANCELED;
 
-        TriggerEntity result = new TriggerEntity();
-        result.setData(TriggerData
+        RunningTriggerEntity result = new RunningTriggerEntity();
+        result.setData(TriggerEntity
                 .builder()
                 .correlationId(UUID.randomUUID().toString())
                 .start(isCancel ? null : now.minusMinutes(1))

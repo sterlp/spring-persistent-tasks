@@ -7,23 +7,24 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.sterl.spring.persistent_tasks.api.AddTriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
+import org.sterl.spring.persistent_tasks.api.TriggerRequest;
+import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
 import org.sterl.spring.persistent_tasks.history.HistoryService;
-import org.sterl.spring.persistent_tasks.history.model.TriggerHistoryLastStateEntity;
+import org.sterl.spring.persistent_tasks.history.model.CompletedTriggerEntity;
 import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
-import org.sterl.spring.persistent_tasks.shared.model.TriggerData;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,14 +41,14 @@ public class PersistentTaskService {
     private final HistoryService historyService;
 
     /**
-     * Returns the last known {@link TriggerData} to a given key. First running triggers are checked.
+     * Returns the last known {@link TriggerEntity} to a given key. First running triggers are checked.
      * Maybe out of the history event from a retry execution of the very same id.
      *
      * @param key the {@link TriggerKey} to look for
-     * @return the {@link TriggerData} to the {@link TriggerKey}
+     * @return the {@link TriggerEntity} to the {@link TriggerKey}
      */
-    public Optional<TriggerData> getLastTriggerData(TriggerKey key) {
-        final Optional<TriggerEntity> trigger = triggerService.get(key);
+    public Optional<TriggerEntity> getLastTriggerData(TriggerKey key) {
+        final Optional<RunningTriggerEntity> trigger = triggerService.get(key);
         if (trigger.isEmpty()) {
             var history = historyService.findLastKnownStatus(key);
             if (history.isPresent()) {
@@ -59,7 +60,7 @@ public class PersistentTaskService {
         }
     }
 
-    public Optional<TriggerData> getLastDetailData(TriggerKey key) {
+    public Optional<TriggerEntity> getLastDetailData(TriggerKey key) {
         var data = historyService.findAllDetailsForKey(key, Pageable.ofSize(1));
         if (data.isEmpty()) {
             return Optional.empty();
@@ -85,14 +86,14 @@ public class PersistentTaskService {
      */
     @Transactional(timeout = 10)
     @NonNull
-    public <T extends Serializable> List<TriggerKey> queue(Collection<AddTriggerRequest<T>> triggers) {
+    public <T extends Serializable> List<TriggerKey> queue(Collection<TriggerRequest<T>> triggers) {
         if (triggers == null || triggers.isEmpty()) {
             return Collections.emptyList();
         }
 
         return triggers.stream() //
             .map(t -> triggerService.queue(t)) //
-            .map(TriggerEntity::getKey) //
+            .map(RunningTriggerEntity::getKey) //
             .toList();
     }
     /**
@@ -104,7 +105,7 @@ public class PersistentTaskService {
      */
     @Transactional(timeout = 5)
     @NonNull
-    public <T extends Serializable> TriggerKey queue(AddTriggerRequest<T> trigger) {
+    public <T extends Serializable> TriggerKey queue(TriggerRequest<T> trigger) {
         return triggerService.queue(trigger).getKey();
     }
 
@@ -114,7 +115,7 @@ public class PersistentTaskService {
      * @return the reference to the {@link TriggerKey}
      */
     public <T extends Serializable> TriggerKey runOrQueue(
-            AddTriggerRequest<T> triggerRequest) {
+            TriggerRequest<T> triggerRequest) {
         if (schedulerService.isPresent()) {
             schedulerService.get().runOrQueue(triggerRequest);
         } else {
@@ -128,42 +129,41 @@ public class PersistentTaskService {
      * Data is limited to overall 300 elements.
      * 
      * @param correlationId the id to search for
-     * @return the found {@link TriggerData} sorted by create time ASC
+     * @return the found {@link TriggerEntity} sorted by create time ASC
      */
     @Transactional(readOnly = true, timeout = 5)
-    public List<TriggerData> findAllTriggerByCorrelationId(String correlationId) {
+    public List<TriggerEntity> findAllTriggerByCorrelationId(String correlationId) {
+        if (StringUtils.isAllBlank(correlationId)) return Collections.emptyList();
+        
+        final var search = TriggerSearch.byCorrelationId(correlationId);
 
-        var running = triggerService.findTriggerByCorrelationId(correlationId, Pageable.ofSize(100))
-                .stream().map(TriggerEntity::getData)
+        final var running = triggerService.searchTriggers(search, PageRequest.of(0, 100, TriggerSearch.DEFAULT_SORT))
+                .stream().map(RunningTriggerEntity::getData)
                 .toList();
 
-        var done = historyService.findTriggerByCorrelationId(correlationId, Pageable.ofSize(200))
-            .stream().map(TriggerHistoryLastStateEntity::getData)
+        final var done = historyService.searchTriggers(search, PageRequest.of(0, 200, TriggerSearch.DEFAULT_SORT))
+            .stream().map(CompletedTriggerEntity::getData)
             .toList();
 
-        var result = new ArrayList<TriggerData>(running.size() + done.size());
+        final var result = new ArrayList<TriggerEntity>(running.size() + done.size());
         result.addAll(done);
         result.addAll(running);
         return result;
     }
-    
-    /**
-     * Returns the first info to a trigger based on the correlationId.
-     * 
-     * @param correlationId the id to search for
-     * @return the found {@link TriggerData}
-     */
+
     @Transactional(readOnly = true, timeout = 5)
-    public Optional<TriggerData> findLastTriggerByCorrelationId(String correlationId) {
-        final var page = PageRequest.of(0, 1, Sort.by(Direction.DESC, "data.createdTime"));
-        var result = triggerService.findTriggerByCorrelationId(correlationId, page)
-                .stream().map(TriggerEntity::getData)
-                .toList();
+    public Optional<TriggerEntity> findLastTriggerByCorrelationId(String correlationId) {
+        final var page = PageRequest.of(0, 1, TriggerSearch.sortByCreatedTime(Direction.DESC));
+        final var search = TriggerSearch.byCorrelationId(correlationId);
+        
+        var result = triggerService.searchTriggers(search, page)
+                                   .stream().map(RunningTriggerEntity::getData)
+                                   .toList();
 
         if (result.isEmpty()) {
-            result = historyService.findTriggerByCorrelationId(correlationId, page)
-                    .stream().map(TriggerHistoryLastStateEntity::getData)
-                    .toList();
+            result = historyService.searchTriggers(search, page)
+                                   .stream().map(CompletedTriggerEntity::getData)
+                                   .toList();
         }
         return result.isEmpty() ? Optional.empty() : Optional.of(result.getFirst());
     }

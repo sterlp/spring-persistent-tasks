@@ -16,31 +16,11 @@ export interface SchedulerEntity {
     lastPing: string;
 }
 
-export interface AddTriggerRequest<T> {
-    key: TriggerKey;
-    state: T;
-    runtAt: string;
-    priority: number;
-    correlationId: string;
-}
-
 export interface RetryStrategy {
 }
 
-export interface FixedIntervalRetryStrategy extends RetryStrategy {
-}
-
-export interface LinearRetryStrategy extends RetryStrategy {
-}
-
-export interface MultiplicativeRetryStrategy extends RetryStrategy {
-}
-
-export interface TaskId<T> extends Serializable {
+export interface TaskId<T> {
     name: string;
-}
-
-export interface TriggerBuilder<T> {
 }
 
 export interface TaskStatusHistoryOverview {
@@ -59,6 +39,7 @@ export interface Trigger {
     id: number;
     instanceId: number;
     key: TriggerKey;
+    tag: string;
     correlationId: string;
     runningOn: string;
     createdTime: string;
@@ -75,36 +56,28 @@ export interface Trigger {
     lastException: string;
 }
 
-export interface TriggerKey extends Serializable {
+export interface TriggerKey {
     id: string;
     taskName: string;
 }
 
-export interface TriggerKeyBuilder {
-}
-
-export interface PersistentTasksEvent {
-}
-
-export interface TriggerTaskCommand<T> extends PersistentTasksEvent {
-    triggers: AddTriggerRequest<T>[];
-}
-
-export interface PersistentTask<T> {
-    transactional: boolean;
-}
-
-export interface RunningTrigger<T> {
+export interface TriggerRequest<T> {
     key: TriggerKey;
+    status: TriggerStatus;
+    state: T;
+    runtAt: string;
+    priority: number;
     correlationId: string;
-    executionCount: number;
-    data: T;
+    tag: string;
 }
 
-export interface RunningTriggerContextHolder {
-}
-
-export interface TransactionalTask<T> extends PersistentTask<T> {
+export interface TriggerSearch {
+    search: string;
+    keyId: string;
+    taskName: string;
+    correlationId: string;
+    status: TriggerStatus;
+    tag: string;
 }
 
 export interface PageMetadata {
@@ -114,7 +87,4 @@ export interface PageMetadata {
     totalPages: number;
 }
 
-export interface Serializable {
-}
-
-export type TriggerStatus = "WAITING" | "RUNNING" | "SUCCESS" | "FAILED" | "CANCELED";
+export type TriggerStatus = "AWAITING_SIGNAL" | "WAITING" | "RUNNING" | "SUCCESS" | "FAILED" | "CANCELED" | "EXPIRED_SIGNAL";

@@ -15,15 +15,16 @@ import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
-import org.sterl.spring.persistent_tasks.shared.repository.TriggerDataRepository;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
+import org.sterl.spring.persistent_tasks.shared.repository.TriggerRepository;
+import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
 
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
 
-public interface TriggerRepository extends TriggerDataRepository<TriggerEntity> {
+public interface RunningTriggerRepository extends TriggerRepository<RunningTriggerEntity> {
+
     @Query("SELECT e FROM #{#entityName} e WHERE e.data.key = :key")
-    Optional<TriggerEntity> findByKey(@Param("key") TriggerKey key);
+    Optional<RunningTriggerEntity> findByKey(@Param("key") TriggerKey key);
 
     // https://jakarta.ee/specifications/persistence/3.0/jakarta-persistence-spec-3.0.html#a2132
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -37,7 +38,7 @@ public interface TriggerRepository extends TriggerDataRepository<TriggerEntity> 
            AND      e.data.status = :status
            ORDER BY e.data.priority DESC, e.data.executionCount ASC
            """)
-    List<TriggerEntity> loadNextTasks(
+    List<RunningTriggerEntity> loadNextTasks(
             @Param("runAt") OffsetDateTime runAt,
             @Param("status") TriggerStatus status,
             Pageable page);
@@ -51,10 +52,10 @@ public interface TriggerRepository extends TriggerDataRepository<TriggerEntity> 
            SELECT e FROM #{#entityName} e
            WHERE  e.data.key = :key
            """)
-    TriggerEntity lockByKey(@Param("key") TriggerKey key);
+    RunningTriggerEntity lockByKey(@Param("key") TriggerKey key);
     
     @Query("""
-            UPDATE TriggerEntity
+            UPDATE RunningTriggerEntity
             SET lastPing = :lastPing, runningOn = :runningOn, data.status = :status
             WHERE data.key IN ( :keys )
             """)
@@ -70,6 +71,16 @@ public interface TriggerRepository extends TriggerDataRepository<TriggerEntity> 
             SELECT e FROM #{#entityName} e
             WHERE  e.lastPing < :lastPing
             """)
-    List<TriggerEntity> findTriggersLastPingAfter(
+    List<RunningTriggerEntity> findTriggersLastPingAfter(
             @Param("lastPing") OffsetDateTime lastPing);
+    
+    @Query("""
+            SELECT e FROM #{#entityName} e
+            WHERE  e.data.status = :status
+            AND    e.data.runAt <= :runAt
+            """)
+    List<RunningTriggerEntity> findByStatusAndRunAtAfter(
+            @Param("status") TriggerStatus status,
+            @Param("runAt") OffsetDateTime runAt,
+            Pageable page);
 }

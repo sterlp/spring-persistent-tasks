@@ -20,7 +20,7 @@ import org.springframework.lang.Nullable;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.scheduler.config.SchedulerThreadFactory;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
-import org.sterl.spring.persistent_tasks.trigger.model.TriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -44,7 +44,7 @@ public class TaskExecutorComponent {
     private Duration maxShutdownWaitTime = Duration.ofSeconds(10);
     @Nullable
     private ExecutorService executor;
-    private final ConcurrentHashMap<TriggerEntity, Future<TriggerKey>> runningTasks = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<RunningTriggerEntity, Future<TriggerKey>> runningTasks = new ConcurrentHashMap<>();
     private final AtomicBoolean stopped = new AtomicBoolean(true);
     private final Lock lock = new ReentrantLock(true);
 
@@ -58,19 +58,19 @@ public class TaskExecutorComponent {
     }
 
     @NonNull
-    public List<Future<TriggerKey>> submit(List<TriggerEntity> trigger) {
+    public List<Future<TriggerKey>> submit(List<RunningTriggerEntity> trigger) {
         if (trigger == null || trigger.isEmpty())
             return Collections.emptyList();
 
         final List<Future<TriggerKey>> result = new ArrayList<>(trigger.size());
-        for (TriggerEntity triggerEntity : trigger) {
+        for (RunningTriggerEntity triggerEntity : trigger) {
             result.add(submit(triggerEntity));
         }
         return result;
     }
 
     @NonNull
-    public Future<TriggerKey> submit(@Nullable TriggerEntity trigger) {
+    public Future<TriggerKey> submit(@Nullable RunningTriggerEntity trigger) {
         if (trigger == null) {
             return CompletableFuture.completedFuture(null);
         }
@@ -95,7 +95,7 @@ public class TaskExecutorComponent {
         }
     }
 
-    private TriggerKey runTrigger(TriggerEntity trigger) {
+    private TriggerKey runTrigger(RunningTriggerEntity trigger) {
         try {
             triggerService.run(trigger);
             return trigger.getKey();
@@ -103,7 +103,7 @@ public class TaskExecutorComponent {
             lock.lock();
             try {
                 if (runningTasks.remove(trigger) == null && runningTasks.size() > 0) {
-                    var runningKeys = runningTasks.keySet().stream().map(TriggerEntity::key).toList();
+                    var runningKeys = runningTasks.keySet().stream().map(RunningTriggerEntity::key).toList();
                     log.error("Failed to remove trigger with {} - {}", trigger.key(), runningKeys);
                 }
             } finally {
@@ -186,7 +186,7 @@ public class TaskExecutorComponent {
         return runningTasks.values();
     }
 
-    public List<TriggerEntity> getRunningTriggers() {
+    public List<RunningTriggerEntity> getRunningTriggers() {
         var doneAndNotRemovedFutures = this.runningTasks.entrySet().stream().filter(e -> e.getValue().isDone())
                 .toList();
 
@@ -213,7 +213,7 @@ public class TaskExecutorComponent {
         return this.maxThreads.get();
     }
 
-    public boolean isRunning(TriggerEntity trigger) {
+    public boolean isRunning(RunningTriggerEntity trigger) {
         return runningTasks.containsKey(trigger);
     }
 }
