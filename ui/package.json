@@ -1,8 +1,9 @@
 {
   "name": "spring-persistent-tasks-ui",
-  "private": true,
-  "version": "0.0.0",
+  "private": false,
+  "version": "0.1.0",
   "type": "module",
+  "main": "src/main.tsx",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -31,7 +32,7 @@
     "@types/node": "^22.13.9",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
-    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-react-swc": "^3.10.2",
     "eslint": "^9.21.0",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.2.0",
