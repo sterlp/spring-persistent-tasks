@@ -77,7 +77,10 @@ const TriggerListItemView = ({
                             <Button
                                 onClick={() => {
                                     editTrigger
-                                        .doCall("/run-at", "POST", new Date())
+                                        .doCall("/run-at", {
+                                            method: "POST",
+                                            dataToSend: new Date(),
+                                        })
                                         .then(afterTriggerChanged)
                                         .catch((e) => console.info(e));
                                 }}
@@ -90,7 +93,7 @@ const TriggerListItemView = ({
                         variant="danger"
                         onClick={() => {
                             editTrigger
-                                .doCall("", "DELETE")
+                                .doCall("", { method: "DELETE" })
                                 .then(afterTriggerChanged)
                                 .catch((e) => console.info(e));
                         }}
@@ -102,7 +105,7 @@ const TriggerListItemView = ({
                             variant="warning"
                             onClick={() => {
                                 reRunTrigger
-                                    .doCall("", "POST")
+                                    .doCall("", { method: "POST" })
                                     .catch((e) => console.info(e));
                             }}
                         >
