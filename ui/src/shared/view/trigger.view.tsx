@@ -4,7 +4,7 @@ import JsonView from "@uiw/react-json-view";
 import { Col, Row } from "react-bootstrap";
 import { formatMs, formatShortDateTime, runningSince } from "../date.util";
 import LabeledText from "./labled-text.view";
-import StackTraceView from "./stacktrace-view";
+import StackTraceView from "./stacktrace.view";
 
 const TriggerView = ({
     trigger,

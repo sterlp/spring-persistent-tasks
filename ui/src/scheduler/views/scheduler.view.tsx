@@ -47,7 +47,7 @@ const SchedulerStatusView = ({ scheduler }: Props) => {
             }
             return prev; // No update if lastPing hasn't changed
         });
-    }, [scheduler.lastPing]); // Depend only on lastPing
+    }, [scheduler.lastPing]); // Depends only on lastPing
 
     return (
         <Card className="shadow-sm rounded border-0">

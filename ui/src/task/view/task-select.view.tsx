@@ -10,7 +10,7 @@ interface TaskSelectProps {
 function TaskSelect({ value = "", onTaskChange }: TaskSelectProps) {
     const tasksState = useServerObject<string[]>("/spring-tasks-api/tasks");
 
-    useEffect(tasksState.doGet, []);
+    useEffect(() => tasksState.doGet(), []);
 
     const handleTaskChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const newTask = event.target.value ?? "";

@@ -1,6 +1,6 @@
 import { isAxiosError } from "axios";
 import { Alert } from "react-bootstrap";
-import StackTraceView from "./stacktrace-view";
+import StackTraceView from "./stacktrace.view";
 
 interface SpringError {
     error: string;

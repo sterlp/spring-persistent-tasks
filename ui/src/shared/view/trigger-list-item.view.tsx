@@ -30,7 +30,7 @@ const TriggerListItemView = ({
     onFieldClick,
 }: TriggerProps) => {
     // className="d-flex justify-content-between align-items-center"
-    const [url, setUrl] = useUrl();
+    const [_, setUrl] = useUrl();
 
     const triggerHistory = useServerObject<Trigger[]>(
         "/spring-tasks-api/history/instance/" + trigger.instanceId
