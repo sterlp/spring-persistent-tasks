@@ -1,7 +1,7 @@
-import { Trigger } from "@src/server-api";
-import { formatDateTime, formatMs } from "@src/shared/date.util";
-import TriggerStatusView from "@src/trigger/views/trigger-staus.view";
+import { formatDateTime, formatMs } from "@lib/shared/date.util";
 import { Col, ListGroup, Row, Spinner } from "react-bootstrap";
+import TriggerStatusView from "./trigger-staus.view";
+import { type Trigger } from "@lib/server-api";
 
 const TriggerHistoryListView = ({ triggers }: { triggers?: Trigger[] }) => {
     if (!triggers) return <Spinner />;

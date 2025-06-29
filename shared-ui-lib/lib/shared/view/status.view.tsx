@@ -1,4 +1,4 @@
-import { TriggerStatus } from "@src/server-api";
+import { type TriggerStatus } from "@lib/server-api";
 import { Badge } from "react-bootstrap";
 
 interface Props {

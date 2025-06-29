@@ -1,4 +1,4 @@
-import { PagedModel } from "@src/server-api";
+import type { PagedModel } from "@lib/server-api";
 import React from "react";
 import { Pagination } from "react-bootstrap";
 

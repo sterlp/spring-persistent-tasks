@@ -1,6 +1,6 @@
 import { Badge } from "react-bootstrap";
-import { Trigger } from "@src/server-api";
-import StatusView from "@src/task/view/staus.view";
+import type { Trigger } from "@lib/server-api";
+import StatusView from "./status.view";
 
 interface Props {
     data?: Trigger;

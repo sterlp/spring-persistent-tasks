@@ -208,8 +208,9 @@
                         <class>org.sterl.spring.persistent_tasks.api.QTriggerKey</class>
                         <class>java.io.Serializable</class>
                     </excludeClasses>
-                    <outputFile>../ui/src/server-api.d.ts</outputFile>
+                    <outputFile>../ui-lib/lib/server-api.ts</outputFile>
                     <outputKind>module</outputKind>
+                    <outputFileType>implementationFile</outputFileType>
                 </configuration>
             </plugin>
         </plugins>

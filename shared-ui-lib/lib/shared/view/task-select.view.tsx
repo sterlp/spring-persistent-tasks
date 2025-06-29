@@ -1,4 +1,4 @@
-import { useServerObject } from "@src/shared/http-request";
+import { useServerObject } from "@lib/shared/http-request";
 import { useEffect } from "react";
 import { Col, Form, Row, Spinner } from "react-bootstrap";
 

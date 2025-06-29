@@ -1,10 +1,10 @@
-import TriggerHistoryListView from "@src/history/view/trigger-history.view";
-import { Trigger } from "@src/server-api";
 import JsonView from "@uiw/react-json-view";
 import { Col, Row } from "react-bootstrap";
 import { formatMs, formatShortDateTime, runningSince } from "../date.util";
 import LabeledText from "./labled-text.view";
 import StackTraceView from "./stacktrace.view";
+import type { Trigger } from "@lib/server-api";
+import TriggerHistoryListView from "./trigger-history-list.view";
 
 const TriggerView = ({
     trigger,
@@ -122,7 +122,7 @@ const TriggerView = ({
 
 export default TriggerView;
 
-function isObject(value: any): boolean {
+function isObject(value: unknown): boolean {
     if (value === undefined || value === null) return false;
     return typeof value === "object" || Array.isArray(value);
 }

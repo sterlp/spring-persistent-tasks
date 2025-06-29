@@ -1,4 +1,4 @@
-import { TriggerStatus } from "@src/server-api";
+import type { TriggerStatus } from "@lib/server-api";
 import { Form } from "react-bootstrap";
 
 interface TaskSelectProps {

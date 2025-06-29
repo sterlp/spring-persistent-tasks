@@ -1,15 +1,15 @@
-import { PagedModel, Trigger } from "@src/server-api";
-import { useServerObject } from "@src/shared/http-request";
-import useAutoRefresh from "@src/shared/use-auto-refresh";
-import HttpErrorView from "@src/shared/view/http-error.view";
-import PageView from "@src/shared/view/page.view";
-import ReloadButton from "@src/shared/view/reload-button.view";
-import TriggerStatusSelect from "@src/shared/view/triger-status-select.view";
-import TaskSelect from "@src/task/view/task-select.view";
+import { useServerObject } from "@lib/shared/http-request";
+import useAutoRefresh from "@lib/shared/use-auto-refresh";
+import HttpErrorView from "@lib/shared/view/http-error.view";
+import PageView from "@lib/shared/view/page.view";
+import ReloadButton from "@lib/shared/view/reload-button.view";
+import TriggerStatusSelect from "@lib/shared/view/trigger-status-select.view";
 import { useQuery } from "crossroad";
 import { Accordion, Col, Form, Row, Stack } from "react-bootstrap";
 import TriggerListItemView from "./trigger-list-item.view";
 import { useEffect, useState } from "react";
+import type { PagedModel, Trigger } from "@lib/server-api";
+import TaskSelect from "./task-select.view";
 
 interface Props {
     url: string;

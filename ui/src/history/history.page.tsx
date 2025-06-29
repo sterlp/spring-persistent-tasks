@@ -1,4 +1,3 @@
-import TriggersSearchView from "@src/shared/view/trigger-search.view";
 
 const HistoryPage = () => {
     return (

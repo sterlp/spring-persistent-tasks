@@ -1,9 +1,8 @@
 {
   "name": "spring-persistent-tasks-ui",
-  "private": false,
-  "version": "0.1.6",
+  "private": true,
+  "version": "0.1.7",
   "type": "module",
-  "main": "src/index.ts",
   "scripts": {
     "dev": "vite",
     "btsc": "tsc",
@@ -22,7 +21,7 @@
     "react-bootstrap": "^2.10.9",
     "react-bootstrap-icons": "^1.11.5",
     "react-dom": "^19.0.0",
-    "recharts": "^3.0.2"
+    "recharts": "^3.0.2",
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
@@ -44,5 +43,6 @@
     "typescript-eslint": "^8.26.0",
     "vite": "^7.0.0",
     "vitest": "^3.2.4"
-  }
+  },
+  "packageManager": "pnpm@10.9.0+sha512.0486e394640d3c1fb3c9d43d49cf92879ff74f8516959c235308f5a8f62e2e19528a65cdc2a3058f587cde71eba3d5b56327c8c33a97e4c4051ca48a10ca2d5f"
 }

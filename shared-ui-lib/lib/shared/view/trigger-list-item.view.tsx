@@ -1,5 +1,4 @@
-import { Trigger } from "@src/server-api";
-import LabeledText from "@src/shared/view/labled-text.view";
+import LabeledText from "@lib/shared/view/labled-text.view";
 import { useUrl } from "crossroad";
 import { useEffect } from "react";
 import {
@@ -11,11 +10,13 @@ import {
     Form,
     Row,
 } from "react-bootstrap";
-import TriggerStatusView from "../../trigger/views/trigger-staus.view";
 import { formatMs, formatShortDateTime, runningSince } from "../date.util";
 import { useServerObject } from "../http-request";
 import HttpErrorView from "./http-error.view";
 import TriggerView from "./trigger.view";
+import type { Trigger } from "@lib/server-api";
+import TriggerStatusView from "./trigger-staus.view";
+
 interface TriggerProps {
     trigger: Trigger;
     afterTriggerChanged?: () => void;

@@ -1,4 +1,4 @@
-import { SchedulerEntity } from "@src/server-api";
+import { SchedulerEntity } from "../../../../shared-ui-lib/lib/server-api";
 import { DateTime } from "luxon";
 import { useEffect, useState } from "react";
 import {

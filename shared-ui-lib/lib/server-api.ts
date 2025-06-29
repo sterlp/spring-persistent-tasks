@@ -16,10 +16,9 @@ export interface SchedulerEntity {
     lastPing: string;
 }
 
-export interface RetryStrategy {
-}
+export interface RetryStrategy {}
 
-export interface TaskId<T> {
+export interface TaskId {
     name: string;
 }
 
@@ -87,4 +86,11 @@ export interface PageMetadata {
     totalPages: number;
 }
 
-export type TriggerStatus = "AWAITING_SIGNAL" | "WAITING" | "RUNNING" | "SUCCESS" | "FAILED" | "CANCELED" | "EXPIRED_SIGNAL";
+export type TriggerStatus =
+    | "AWAITING_SIGNAL"
+    | "WAITING"
+    | "RUNNING"
+    | "SUCCESS"
+    | "FAILED"
+    | "CANCELED"
+    | "EXPIRED_SIGNAL";

@@ -1,4 +1,4 @@
-import TriggersSearchView from "@src/shared/view/trigger-search.view";
+import TriggersSearchView from "@lib/shared/view/trigger-search.view";
 
 const TriggersPage = () => {
     return (
