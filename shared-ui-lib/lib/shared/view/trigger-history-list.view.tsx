@@ -1,6 +1,6 @@
 import { formatDateTime, formatMs } from "@lib/shared/date.util";
 import { Col, ListGroup, Row, Spinner } from "react-bootstrap";
-import TriggerStatusView from "./trigger-staus.view";
+import TriggerStatusView from "./running-trigger-status.view";
 import { type Trigger } from "@lib/server-api";
 
 const TriggerHistoryListView = ({ triggers }: { triggers?: Trigger[] }) => {

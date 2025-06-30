@@ -1,9 +1,13 @@
+import TriggerSearchView from "@src/trigger/views/trigger-search.view";
+import { useUrl } from "crossroad";
 
 const HistoryPage = () => {
+    const [_, setUrl] = useUrl();
+
     return (
-        <TriggersSearchView
-            allowUpdateAnCancel={false}
-            showReRunButton={true}
+        <TriggerSearchView
+            afterTriggerReRun={() => setUrl("/task-ui/triggers")}
+            allowUpdateAndCancel={false}
             url="/spring-tasks-api/history"
         />
     );

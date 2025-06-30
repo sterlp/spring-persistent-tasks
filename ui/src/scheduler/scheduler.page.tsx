@@ -1,12 +1,15 @@
 import SchedulerStatusView from "@src/scheduler/views/scheduler.view";
-import { SchedulerEntity, TaskStatusHistoryOverview } from "@src/server-api";
-import { formatMs } from "@src/shared/date.util";
-import { useServerObject } from "@src/shared/http-request";
-import useAutoRefresh from "@src/shared/use-auto-refresh";
-import HttpErrorView from "@src/shared/view/http-error.view";
-import StatusView from "@src/task/view/staus.view";
 import { useEffect } from "react";
 import { Card, Col, ListGroup, Row } from "react-bootstrap";
+import {
+    formatMs,
+    HttpErrorView,
+    SchedulerEntity,
+    TaskStatusHistoryOverview,
+    TriggerStatusView,
+    useAutoRefresh,
+    useServerObject,
+} from "spring-persistent-tasks-ui";
 
 const SchedulersPage = () => {
     const schedulers = useServerObject<SchedulerEntity[]>(
@@ -74,7 +77,7 @@ const TaskStatusHistoryOverviewView = ({
                     <ListGroup.Item key={s.taskName + s.status}>
                         <Row className="align-items-center">
                             <Col>
-                                <StatusView
+                                <TriggerStatusView
                                     status={s.status}
                                     suffix={`: ${s.executionCount}`}
                                 />

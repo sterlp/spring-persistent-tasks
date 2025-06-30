@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 // https://vite.dev/config/
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
@@ -19,6 +20,12 @@ export default defineConfig({
             "@src": path.resolve(__dirname, "./src"),
             "@lib": path.resolve(__dirname, "./lib"),
         },
+    },
+    test: {
+        environment: "jsdom",
+        globals: true,
+        setupFiles: "./test/setup.ts",
+        css: true,
     },
     build: {
         copyPublicDir: false,

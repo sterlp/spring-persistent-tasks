@@ -15,9 +15,6 @@
         "noEmit": true,
         "jsx": "react-jsx",
 
-        "declaration": true,
-        "declarationMap": true,
-
         /* Linting */
         "strict": true,
         "noUnusedLocals": true,
@@ -31,5 +28,5 @@
             "@lib/*": ["./lib/*"]
         }
     },
-    "include": ["src", "lib"]
+    "include": ["src", "lib", "test"]
 }

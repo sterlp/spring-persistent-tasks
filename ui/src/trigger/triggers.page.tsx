@@ -1,10 +1,9 @@
-import TriggersSearchView from "@lib/shared/view/trigger-search.view";
+import TriggerSearchView from "./views/trigger-search.view";
 
 const TriggersPage = () => {
     return (
-        <TriggersSearchView
-            allowUpdateAnCancel={true}
-            showReRunButton={false}
+        <TriggerSearchView
+            allowUpdateAndCancel={true}
             url="/spring-tasks-api/triggers"
         />
     );

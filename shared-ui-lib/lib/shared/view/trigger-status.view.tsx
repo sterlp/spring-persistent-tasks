@@ -6,7 +6,7 @@ interface Props {
     suffix?: string;
     pill?: boolean;
 }
-const StatusView = ({ status, pill = false, suffix }: Props) => {
+const TriggerStatusView = ({ status, pill = false, suffix }: Props) => {
     if (status === "SUCCESS") {
         return (
             <Badge pill={pill} bg="success">
@@ -40,4 +40,4 @@ const StatusView = ({ status, pill = false, suffix }: Props) => {
     return <Badge pill={pill}>{status}</Badge>;
 };
 
-export default StatusView;
+export default TriggerStatusView;

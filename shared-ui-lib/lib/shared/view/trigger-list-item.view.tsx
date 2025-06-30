@@ -1,6 +1,5 @@
+import type { Trigger } from "@lib/server-api";
 import LabeledText from "@lib/shared/view/labled-text.view";
-import { useUrl } from "crossroad";
-import { useEffect } from "react";
 import {
     Accordion,
     Badge,
@@ -13,26 +12,22 @@ import {
 import { formatMs, formatShortDateTime, runningSince } from "../date.util";
 import { useServerObject } from "../http-request";
 import HttpErrorView from "./http-error.view";
+import TriggerStatusView from "./running-trigger-status.view";
 import TriggerView from "./trigger.view";
-import type { Trigger } from "@lib/server-api";
-import TriggerStatusView from "./trigger-staus.view";
 
 interface TriggerProps {
     trigger: Trigger;
     afterTriggerChanged?: () => void;
-    showReRunButton: boolean;
+    afterTriggerReRun?: () => void;
     onFieldClick: (key: string, value?: string) => void;
 }
 
 const TriggerListItemView = ({
     trigger,
     afterTriggerChanged,
-    showReRunButton,
+    afterTriggerReRun,
     onFieldClick,
 }: TriggerProps) => {
-    // className="d-flex justify-content-between align-items-center"
-    const [_, setUrl] = useUrl();
-
     const triggerHistory = useServerObject<Trigger[]>(
         "/spring-tasks-api/history/instance/" + trigger.instanceId
     );
@@ -47,12 +42,6 @@ const TriggerListItemView = ({
             "/" +
             trigger.key.id
     );
-
-    useEffect(() => {
-        if (reRunTrigger.data && reRunTrigger.data.id) {
-            setUrl("/task-ui/triggers");
-        }
-    }, [setUrl, reRunTrigger.data]);
 
     return (
         <Accordion.Item eventKey={trigger.id + ""}>
@@ -101,12 +90,13 @@ const TriggerListItemView = ({
                     >
                         Cancel Trigger
                     </Button>
-                    {showReRunButton ? (
+                    {afterTriggerReRun ? (
                         <Button
                             variant="warning"
                             onClick={() => {
                                 reRunTrigger
                                     .doCall("", { method: "POST" })
+                                    .then(afterTriggerReRun)
                                     .catch((e) => console.info(e));
                             }}
                         >

@@ -1,7 +1,7 @@
+import type { PagedModel } from "@lib/server-api";
+import { PageView } from "@lib/shared";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import PageView from "@src/shared/view/page.view";
-import { PagedModel } from "@src/server-api";
 
 const mockOnPage = vi.fn();
 

@@ -1,4 +1,3 @@
-import { SchedulerEntity } from "../../../../shared-ui-lib/lib/server-api";
 import { DateTime } from "luxon";
 import { useEffect, useState } from "react";
 import {
@@ -18,6 +17,7 @@ import {
     XAxis,
     YAxis,
 } from "recharts";
+import { SchedulerEntity } from "spring-persistent-tasks-ui";
 
 interface Props {
     scheduler: SchedulerEntity;

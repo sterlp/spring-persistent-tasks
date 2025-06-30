@@ -1,29 +1,35 @@
-import { useServerObject } from "@lib/shared/http-request";
-import useAutoRefresh from "@lib/shared/use-auto-refresh";
-import HttpErrorView from "@lib/shared/view/http-error.view";
-import PageView from "@lib/shared/view/page.view";
-import ReloadButton from "@lib/shared/view/reload-button.view";
-import TriggerStatusSelect from "@lib/shared/view/trigger-status-select.view";
-import { useQuery } from "crossroad";
 import { Accordion, Col, Form, Row, Stack } from "react-bootstrap";
-import TriggerListItemView from "./trigger-list-item.view";
 import { useEffect, useState } from "react";
-import type { PagedModel, Trigger } from "@lib/server-api";
-import TaskSelect from "./task-select.view";
+import {
+    HttpErrorView,
+    PagedModel,
+    PageView,
+    ReloadButton,
+    TaskSelect,
+    Trigger,
+    TriggerListItemView,
+    TriggerStatusSelect,
+    useAutoRefresh,
+    useServerObject,
+} from "spring-persistent-tasks-ui";
+import { useQuery } from "crossroad";
 
 interface Props {
     url: string;
-    allowUpdateAnCancel: boolean;
-    showReRunButton: boolean;
+    afterTriggerReRun?: () => void;
+    allowUpdateAndCancel: boolean;
 }
-const TriggersSearchView = ({
+const TriggerSearchView = ({
     url,
-    allowUpdateAnCancel,
-    showReRunButton,
+    afterTriggerReRun,
+    allowUpdateAndCancel,
 }: Props) => {
     const [query, setQuery] = useQuery();
     const [search, setSearch] = useState(query.search || "");
-    const triggers = useServerObject<PagedModel<Trigger>>(url);
+    const triggers = useServerObject<PagedModel<Trigger>>(url, {
+        page: { number: 0, size: 0, totalElements: 0, totalPages: 0 },
+        content: [],
+    });
 
     useEffect(() => {
         setSearch(query.search || "");
@@ -76,7 +82,7 @@ const TriggersSearchView = ({
                 <Col className="align-items-center">
                     <PageView
                         onPage={(page) =>
-                            setQuery((prev) => ({
+                            setQuery((prev: any) => ({
                                 ...prev,
                                 page: page + "",
                             }))
@@ -97,9 +103,9 @@ const TriggersSearchView = ({
                     <TriggerListItemView
                         key={t.id + "-" + t.key.id}
                         trigger={t}
-                        showReRunButton={showReRunButton}
+                        afterTriggerReRun={afterTriggerReRun}
                         afterTriggerChanged={
-                            allowUpdateAnCancel ? doReload : undefined
+                            allowUpdateAndCancel ? doReload : undefined
                         }
                         onFieldClick={(k, v) => doUpdateQuery({ [k]: v })}
                     />
@@ -109,4 +115,4 @@ const TriggersSearchView = ({
     );
 };
 
-export default TriggersSearchView;
+export default TriggerSearchView;

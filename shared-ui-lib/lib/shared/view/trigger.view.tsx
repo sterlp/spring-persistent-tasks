@@ -3,8 +3,8 @@ import { Col, Row } from "react-bootstrap";
 import { formatMs, formatShortDateTime, runningSince } from "../date.util";
 import LabeledText from "./labled-text.view";
 import StackTraceView from "./stacktrace.view";
-import type { Trigger } from "@lib/server-api";
 import TriggerHistoryListView from "./trigger-history-list.view";
+import type { Trigger } from "@lib/server-api";
 
 const TriggerView = ({
     trigger,
