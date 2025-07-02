@@ -1,15 +1,15 @@
 import { formatDateTime, formatMs } from "@lib/shared/date.util";
 import { Col, ListGroup, Row, Spinner } from "react-bootstrap";
-import TriggerStatusView from "./running-trigger-status.view";
+import RunningTriggerStatusView from "./running-trigger-status.view";
 import { type Trigger } from "@lib/server-api";
 
 const TriggerHistoryListView = ({ triggers }: { triggers?: Trigger[] }) => {
     if (!triggers) return <Spinner />;
     if (triggers.length === 0) return undefined;
     return (
-        <ListGroup>
+        <ListGroup variant="flush">
             <ListGroup.Item
-                active
+                variant="dark"
                 key={"header-" + triggers.length + "" + triggers[0].id}
             >
                 History ({triggers.length})
@@ -18,7 +18,7 @@ const TriggerHistoryListView = ({ triggers }: { triggers?: Trigger[] }) => {
                 <ListGroup.Item key={t.id}>
                     <Row>
                         <Col>
-                            <TriggerStatusView data={t} />
+                            <RunningTriggerStatusView data={t} />
                         </Col>
                         <Col>
                             <strong>{formatDateTime(t.createdTime)}</strong>

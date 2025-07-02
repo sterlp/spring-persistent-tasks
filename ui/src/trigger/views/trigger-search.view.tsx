@@ -1,5 +1,6 @@
-import { Accordion, Col, Form, Row, Stack } from "react-bootstrap";
+import { useQuery } from "crossroad";
 import { useEffect, useState } from "react";
+import { Col, Form, Row, Stack } from "react-bootstrap";
 import {
     HttpErrorView,
     PagedModel,
@@ -7,12 +8,11 @@ import {
     ReloadButton,
     TaskSelect,
     Trigger,
-    TriggerListItemView,
+    TriggerListView,
     TriggerStatusSelect,
     useAutoRefresh,
     useServerObject,
 } from "spring-persistent-tasks-ui";
-import { useQuery } from "crossroad";
 
 interface Props {
     url: string;
@@ -45,6 +45,12 @@ const TriggerSearchView = ({
             ...prev,
             page: 0 + "",
             ...search,
+        }));
+    };
+    const doSetPage = (page: number) => {
+        setQuery((prev) => ({
+            ...prev,
+            page: page + "",
         }));
     };
 
@@ -80,15 +86,7 @@ const TriggerSearchView = ({
                     />
                 </Col>
                 <Col className="align-items-center">
-                    <PageView
-                        onPage={(page) =>
-                            setQuery((prev: any) => ({
-                                ...prev,
-                                page: page + "",
-                            }))
-                        }
-                        data={triggers.data}
-                    />
+                    <PageView onPage={doSetPage} data={triggers.data} />
                 </Col>
                 <Col>
                     <ReloadButton
@@ -98,19 +96,14 @@ const TriggerSearchView = ({
                     />
                 </Col>
             </Row>
-            <Accordion>
-                {triggers.data?.content.map((t) => (
-                    <TriggerListItemView
-                        key={t.id + "-" + t.key.id}
-                        trigger={t}
-                        afterTriggerReRun={afterTriggerReRun}
-                        afterTriggerChanged={
-                            allowUpdateAndCancel ? doReload : undefined
-                        }
-                        onFieldClick={(k, v) => doUpdateQuery({ [k]: v })}
-                    />
-                ))}
-            </Accordion>
+            <TriggerListView
+                triggers={triggers.data?.content}
+                afterTriggerReRun={afterTriggerReRun}
+                afterTriggerChanged={
+                    allowUpdateAndCancel ? doReload : undefined
+                }
+                onFieldClick={(k, v) => doUpdateQuery({ [k]: v })}
+            />
         </Stack>
     );
 };

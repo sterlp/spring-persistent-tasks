@@ -1,15 +1,15 @@
-import axios, { type AxiosResponse } from "axios";
+import axios, { AxiosError, type AxiosResponse } from "axios";
 import { useCallback, useMemo, useRef, useState } from "react";
 
 export interface ServerObject<T> {
     isLoading: boolean;
     data: T | undefined;
-    error: any;
+    error: Error | AxiosError | unknown;
     doGet(id?: string, options?: GetOptions): void;
     doCall(
         urlPart?: string,
         options?: Options
-    ): Promise<void | AxiosResponse<T, any>>;
+    ): Promise<void | AxiosResponse<T, AxiosError | unknown>>;
 }
 export interface GetOptions extends Options {
     cache?: boolean;
@@ -28,7 +28,7 @@ export const useServerObject = <T>(
 ): ServerObject<T> => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [data, setData] = useState<T | undefined>(startValue);
-    const [error, setError] = useState<any>(undefined);
+    const [error, setError] = useState<AxiosError | unknown>(undefined);
 
     const cache = useRef<Record<string, T>>({}); // In-memory cache
 
@@ -90,7 +90,7 @@ export const useServerObject = <T>(
     );
 };
 
-export function isAxiosResponse<T = any>(
+export function isAxiosResponse<T = unknown>(
     value: unknown
 ): value is AxiosResponse<T> {
     return (
