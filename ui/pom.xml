@@ -28,7 +28,7 @@
     <build>
         <resources>
             <resource>
-                <directory>dist</directory>
+                <directory>web-app/dist</directory>
             </resource>
         </resources>
 

@@ -1,4 +1,6 @@
-# UI Project of spring persistent tasks
+# Spring Persistent Tasks UI Lib
+
+## UI Project of spring persistent tasks
 
 https://github.com/sterlp/spring-persistent-tasks
 

@@ -43,14 +43,14 @@ const TriggerView = ({
                     <LabeledText
                         label="Correlation Id"
                         value={trigger.correlationId}
-                        onClick={() => onClick("search", trigger.key.id)}
+                        onClick={() => onClick("search", trigger.correlationId)}
                     />
                 </Col>
                 <Col md="6" xl="4">
                     <LabeledText
                         label="Tag"
                         value={trigger.tag}
-                        onClick={() => onClick("search", trigger.key.id)}
+                        onClick={() => onClick("search", trigger.tag)}
                     />
                 </Col>
                 <Col md="6" xl="4">

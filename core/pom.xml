@@ -120,6 +120,44 @@
 
     <build>
         <plugins>
+        <plugin>
+                <groupId>cz.habarta.typescript-generator</groupId>
+                <artifactId>typescript-generator-maven-plugin</artifactId>
+                <version>3.2.1263</version>
+                <executions>
+                    <execution>
+                        <id>generate</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>process-classes</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <jsonLibrary>jackson2</jsonLibrary>
+                    <noFileComment>true</noFileComment>
+                    <customTypeMappings>
+                        <mapping>java.time.OffsetDateTime:string</mapping>
+                    </customTypeMappings>
+                    <classes>
+                        <class>org.springframework.data.web.PagedModel</class>
+                        <class>org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity</class>
+                    </classes>
+                    <classPatterns>
+                        <pattern>org.sterl.spring.persistent_tasks.api.*</pattern>
+                    </classPatterns>
+                    <excludeClasses>
+                        <class>java.lang.Class</class>
+                        <class>org.sterl.spring.persistent_tasks.api.QTriggerKey</class>
+                        <class>java.io.Serializable</class>
+                        <class>org.sterl.spring.persistent_tasks.api.TaskId</class>
+                        <class>org.sterl.spring.persistent_tasks.api.RetryStrategy</class>
+                    </excludeClasses>
+                    <outputFile>../ui/spt-ui-lib/lib/server-api.ts</outputFile>
+                    <outputKind>module</outputKind>
+                    <outputFileType>implementationFile</outputFileType>
+                </configuration>
+            </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.3.1</version>
@@ -176,44 +214,6 @@
                         <version>${pmd.version}</version>
                     </dependency>
                 </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>cz.habarta.typescript-generator</groupId>
-                <artifactId>typescript-generator-maven-plugin</artifactId>
-                <version>3.2.1263</version>
-                <executions>
-                    <execution>
-                        <id>generate</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <phase>process-classes</phase>
-                    </execution>
-                </executions>
-                <configuration>
-                    <jsonLibrary>jackson2</jsonLibrary>
-                    <noFileComment>true</noFileComment>
-                    <customTypeMappings>
-                        <mapping>java.time.OffsetDateTime:string</mapping>
-                    </customTypeMappings>
-                    <classes>
-                        <class>org.springframework.data.web.PagedModel</class>
-                        <class>org.sterl.spring.persistent_tasks.scheduler.entity.SchedulerEntity</class>
-                    </classes>
-                    <classPatterns>
-                        <pattern>org.sterl.spring.persistent_tasks.api.*</pattern>
-                    </classPatterns>
-                    <excludeClasses>
-                        <class>java.lang.Class</class>
-                        <class>org.sterl.spring.persistent_tasks.api.QTriggerKey</class>
-                        <class>java.io.Serializable</class>
-                        <class>org.sterl.spring.persistent_tasks.api.TaskId</class>
-                        <class>org.sterl.spring.persistent_tasks.api.RetryStrategy</class>
-                    </excludeClasses>
-                    <outputFile>../shared-ui-lib/lib/server-api.ts</outputFile>
-                    <outputKind>module</outputKind>
-                    <outputFileType>implementationFile</outputFileType>
-                </configuration>
             </plugin>
         </plugins>
     </build>

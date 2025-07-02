@@ -26,6 +26,7 @@ const TriggerSearchView = ({
 }: Props) => {
     const [query, setQuery] = useQuery();
     const [search, setSearch] = useState(query.search || "");
+
     const triggers = useServerObject<PagedModel<Trigger>>(url, {
         page: { number: 0, size: 0, totalElements: 0, totalPages: 0 },
         content: [],
