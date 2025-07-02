@@ -62,101 +62,51 @@
                 <version>3.5.0</version>
                 <executions>
                     <execution>
-                        <id>npm install ui-lib</id>
+                        <id>pnpm install</id>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <executable>npm</executable>
+                            <executable>pnpm</executable>
                             <arguments>
-                                <argument>ci</argument>
+                                <argument>install</argument>
                             </arguments>
-                            <workingDirectory>${project.basedir}/ui-lib</workingDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>npm install web-app</id>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <phase>generate-resources</phase>
-                        <configuration>
-                            <executable>npm</executable>
-                            <arguments>
-                                <argument>ci</argument>
-                            </arguments>
-                            <workingDirectory>${project.basedir}/web-app</workingDirectory>
                         </configuration>
                     </execution>
 
                     <execution>
-                        <id>npm build ui-lib</id>
+                        <id>pnpm build</id>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <executable>npm</executable>
+                            <executable>pnpm</executable>
                             <arguments>
+                                <argument>recursive</argument>
                                 <argument>run</argument>
                                 <argument>build</argument>
                             </arguments>
-                            <workingDirectory>${project.basedir}/ui-lib</workingDirectory>
                         </configuration>
                     </execution>
 
                     <execution>
-                        <id>npm build web-app</id>
+                        <id>pnpm test</id>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <executable>npm</executable>
+                            <executable>pnpm</executable>
                             <arguments>
-                                <argument>run</argument>
-                                <argument>build</argument>
-                            </arguments>
-                            <workingDirectory>${project.basedir}/web-app</workingDirectory>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>npm test ui-lib</id>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <phase>test</phase>
-                        <configuration>
-                            <executable>npm</executable>
-                            <arguments>
+                                <argument>recursive</argument>
                                 <argument>run</argument>
                                 <argument>test</argument>
                                 <argument>--</argument>
-                                <argument>--run</argument>
-                            </arguments>
-                            <skip>${skipTests}</skip>
-                            <workingDirectory>${project.basedir}/ui-lib</workingDirectory>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>npm test web-app</id>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <phase>test</phase>
-                        <configuration>
-                            <executable>npm</executable>
-                            <arguments>
                                 <argument>run</argument>
-                                <argument>test</argument>
-                                <argument>--</argument>
-                                <argument>--run</argument>
                             </arguments>
                             <skip>${skipTests}</skip>
-                            <workingDirectory>${project.basedir}/web-app</workingDirectory>
                         </configuration>
                     </execution>
                 </executions>
