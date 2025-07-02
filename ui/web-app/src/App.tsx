@@ -1,8 +1,11 @@
 import Router, { Route, Switch, usePath } from "crossroad";
+import { lazy, Suspense } from "react";
 import { Container, Nav, Navbar } from "react-bootstrap";
-import SchedulersPage from "./scheduler/scheduler.page";
-import TriggersPage from "./trigger/triggers.page";
-import HistoryPage from "./history/history.page";
+import { LoadingView } from "spring-persistent-tasks-ui";
+
+const SchedulersPage = lazy(() => import("./scheduler/scheduler.page"));
+const TriggersPage = lazy(() => import("./trigger/triggers.page"));
+const HistoryPage = lazy(() => import("./history/history.page"));
 
 const routes: MenuItem[] = [
     { label: "Home", path: "", component: SchedulersPage },
@@ -29,15 +32,17 @@ const App = () => {
             </Navbar>
 
             <Container as="main" className="mt-3">
-                <Switch>
-                    {routes.map((i) => (
-                        <Route
-                            key={BASE + i.path}
-                            path={BASE + i.path}
-                            component={i.component}
-                        />
-                    ))}
-                </Switch>
+                <Suspense fallback={<LoadingView />}>
+                    <Switch>
+                        {routes.map((i) => (
+                            <Route
+                                key={BASE + i.path}
+                                path={BASE + i.path}
+                                component={i.component}
+                            />
+                        ))}
+                    </Switch>
+                </Suspense>
             </Container>
         </Router>
     );
@@ -50,7 +55,6 @@ interface MenuItem {
 }
 
 const MenuLink = ({ item }: { item: MenuItem }) => {
-    const BASE = "/task-ui";
     const [path] = usePath();
     const pagePath = BASE + item.path;
     const active = pagePath == path;

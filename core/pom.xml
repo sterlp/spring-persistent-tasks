@@ -120,7 +120,7 @@
 
     <build>
         <plugins>
-        <plugin>
+            <plugin>
                 <groupId>cz.habarta.typescript-generator</groupId>
                 <artifactId>typescript-generator-maven-plugin</artifactId>
                 <version>3.2.1263</version>
