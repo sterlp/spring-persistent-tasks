@@ -40,10 +40,17 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>${project.basedir}/node_modules</directory>
+                            <directory>${project.basedir}/ui-lib/node_modules</directory>
                         </fileset>
                         <fileset>
-                            <directory>${project.basedir}/dist</directory>
+                            <directory>${project.basedir}/ui-lib/dist</directory>
+                        </fileset>
+
+                        <fileset>
+                            <directory>${project.basedir}/web-app/node_modules</directory>
+                        </fileset>
+                        <fileset>
+                            <directory>${project.basedir}/web-app/dist</directory>
                         </fileset>
                     </filesets>
                 </configuration>
@@ -55,7 +62,7 @@
                 <version>3.5.0</version>
                 <executions>
                     <execution>
-                        <id>npm install</id>
+                        <id>npm install ui-lib</id>
                         <goals>
                             <goal>exec</goal>
                         </goals>
@@ -65,11 +72,26 @@
                             <arguments>
                                 <argument>ci</argument>
                             </arguments>
+                            <workingDirectory>${project.basedir}/ui-lib</workingDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>npm install web-app</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <executable>npm</executable>
+                            <arguments>
+                                <argument>ci</argument>
+                            </arguments>
+                            <workingDirectory>${project.basedir}/web-app</workingDirectory>
                         </configuration>
                     </execution>
 
                     <execution>
-                        <id>npm build</id>
+                        <id>npm build ui-lib</id>
                         <goals>
                             <goal>exec</goal>
                         </goals>
@@ -80,11 +102,28 @@
                                 <argument>run</argument>
                                 <argument>build</argument>
                             </arguments>
+                            <workingDirectory>${project.basedir}/ui-lib</workingDirectory>
                         </configuration>
                     </execution>
 
                     <execution>
-                        <id>npm test</id>
+                        <id>npm build web-app</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <executable>npm</executable>
+                            <arguments>
+                                <argument>run</argument>
+                                <argument>build</argument>
+                            </arguments>
+                            <workingDirectory>${project.basedir}/web-app</workingDirectory>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>npm test ui-lib</id>
                         <goals>
                             <goal>exec</goal>
                         </goals>
@@ -97,7 +136,27 @@
                                 <argument>--</argument>
                                 <argument>--run</argument>
                             </arguments>
-                        <skip>${skipTests}</skip>
+                            <skip>${skipTests}</skip>
+                            <workingDirectory>${project.basedir}/ui-lib</workingDirectory>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>npm test web-app</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <phase>test</phase>
+                        <configuration>
+                            <executable>npm</executable>
+                            <arguments>
+                                <argument>run</argument>
+                                <argument>test</argument>
+                                <argument>--</argument>
+                                <argument>--run</argument>
+                            </arguments>
+                            <skip>${skipTests}</skip>
+                            <workingDirectory>${project.basedir}/web-app</workingDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -124,6 +183,7 @@
                                     </includes>
                                 </resource>
                             </resources>
+                            <workingDirectory>${project.basedir}/web-app</workingDirectory>
                         </configuration>
                     </execution>
                 </executions>
