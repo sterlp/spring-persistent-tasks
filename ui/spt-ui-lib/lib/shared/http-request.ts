@@ -32,28 +32,6 @@ export const useServerObject = <T>(
 
     const cache = useRef<Record<string, T>>({}); // In-memory cache
 
-    const doGet = useCallback(
-        (id?: string, options?: GetOptions) => {
-            if (!options) options = {};
-            options.controller = new AbortController();
-            const requestUrl = url + (id ?? "");
-
-            if (options?.cache && cache.current[requestUrl]) {
-                setData(cache.current[requestUrl]);
-            } else {
-                doCall(id, options)
-                    .then((r) => {
-                        if (options?.cache && isAxiosResponse(r)) {
-                            cache.current[requestUrl] = r.data;
-                        }
-                    })
-                    .catch((e) => console.error("doGet failed", e));
-            }
-            return () => options.controller?.abort();
-        },
-        [url]
-    );
-
     const doCall = useCallback(
         (urlPart?: string, options?: Options) => {
             setError(undefined);
@@ -84,9 +62,31 @@ export const useServerObject = <T>(
         [url]
     );
 
+    const doGet = useCallback(
+        (id?: string, options?: GetOptions) => {
+            if (!options) options = {};
+            options.controller = new AbortController();
+            const requestUrl = url + (id ?? "");
+
+            if (options?.cache && cache.current[requestUrl]) {
+                setData(cache.current[requestUrl]);
+            } else {
+                doCall(id, options)
+                    .then((r) => {
+                        if (options?.cache && isAxiosResponse(r)) {
+                            cache.current[requestUrl] = r.data;
+                        }
+                    })
+                    .catch((e) => console.error("doGet failed", e));
+            }
+            return () => options.controller?.abort();
+        },
+        [url, doCall]
+    );
+
     return useMemo(
         () => ({ isLoading, data, error, doGet, doCall }),
-        [isLoading, data, error, doCall, url]
+        [isLoading, data, error, doGet, doCall]
     );
 };
 

@@ -1,6 +1,6 @@
 import type { PagedModel, TriggerGroup } from "@lib/server-api";
 import { useEffect } from "react";
-import { Card, Stack } from "react-bootstrap";
+import { Stack } from "react-bootstrap";
 import { useServerObject } from "../http-request";
 import HttpErrorView from "./http-error.view";
 import LoadingView from "./loading.view";
@@ -22,10 +22,10 @@ const TriggerGroupListView = ({
     filter,
 }: TriggerGroupViewProps) => {
     const triggers = useServerObject<PagedModel<TriggerGroup>>(url);
-    useEffect(
-        () => triggers.doGet("?" + new URLSearchParams(filter).toString()),
-        [filter]
-    );
+    const query = "?" + new URLSearchParams(filter).toString();
+    const doGet = triggers.doGet;
+
+    useEffect(() => doGet(query), [query, doGet]);
 
     return (
         <>
@@ -33,15 +33,12 @@ const TriggerGroupListView = ({
             <HttpErrorView error={triggers.error} />
             <Stack gap={2}>
                 {triggers.data?.content?.map((t, i) => (
-                    <Card>
-                        <Card.Body>
-                            <TriggerGroupView
-                                key={t.groupByValue + i}
-                                triggerGroup={t}
-                                onGroupClick={onGroupClick}
-                            />
-                        </Card.Body>
-                    </Card>
+                    <TriggerGroupView
+                        className={i % 2 === 0 ? "bg-light" : ""}
+                        key={t.groupByValue + i}
+                        triggerGroup={t}
+                        onGroupClick={onGroupClick}
+                    />
                 ))}
             </Stack>
         </>

@@ -1,7 +1,7 @@
 {
   "name": "spt-ui-lib",
   "private": false,
-  "version": "0.4.0",
+  "version": "1.1.0",
   "type": "module",
   "composite": true,
   "outDir": "dist",
