@@ -17,7 +17,13 @@ mvn deploy -Prelease
 cp core/src/test/java/org/sterl/spring/persistent_tasks/test/* test/src/main/java/org/sterl/spring/persistent_tasks/test/
 git add test
 
+echo "release spt-ui-lib $RELEASE_VERSION"
+cd ui/spt-ui-lib
+sh release.sh $RELEASE_VERSION
+cd ../..
+
 # update git
+git add '**/*.json'
 git add '**/pom.xml'
 git commit -am "$RELEASE_VERSION release"
 git tag -a "v$RELEASE_VERSION" -m "v$RELEASE_VERSION release"
