@@ -13,6 +13,7 @@ export { default as StackTraceView } from "./view/stacktrace.view";
 export { default as TaskSelect } from "./view/task-select.view";
 export { default as TriggerActionsView } from "./view/trigger-actions.view";
 export { default as TriggerCompactView } from "./view/trigger-compact.view";
+export { default as TriggerGroupView } from "./view/trigger-group.view";
 export { default as TriggerHistoryListView } from "./view/trigger-history-list.view";
 export { default as TriggerListView } from "./view/trigger-list.view";
 export { default as TriggerStatusSelect } from "./view/trigger-status-select.view";

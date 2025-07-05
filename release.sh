@@ -19,7 +19,7 @@ git add test
 
 echo "release spt-ui-lib $RELEASE_VERSION"
 cd ui/spt-ui-lib
-sh release.sh $RELEASE_VERSION
+sh publish.sh $RELEASE_VERSION
 cd ../..
 
 # update git
