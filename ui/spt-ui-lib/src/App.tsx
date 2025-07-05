@@ -1,10 +1,10 @@
+import { TriggerGroupListView } from "@lib/shared";
 import { Tab, Tabs } from "react-bootstrap";
-import TriggerGroupViewProps from "../lib/shared/view/trigger-group.view";
 function App() {
     return (
         <Tabs defaultActiveKey="active" className="mb-3">
             <Tab eventKey="active" title="Active">
-                <TriggerGroupViewProps
+                <TriggerGroupListView
                     url="/spring-tasks-api/triggers-grouped"
                     onGroupClick={(t) => {
                         window.location.href =
@@ -15,7 +15,7 @@ function App() {
             </Tab>
             <Tab eventKey="history" title="History">
                 <h2>check-warehouse</h2>
-                <TriggerGroupViewProps
+                <TriggerGroupListView
                     url="/spring-tasks-api/history-grouped"
                     onGroupClick={(t) => {
                         window.location.href =
