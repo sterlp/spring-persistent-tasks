@@ -29,14 +29,17 @@ public class RunningTriggerContextHolder {
     }
     
     /**
-     * Default method to obtain a new correlation ID taking in account if an ID is set or not.
-     * 
-     * @param newCorrelationId optional desired correlationId
-     * @return either the set correlationId or the desired one or a random build one.
+     * If no new correlation id is provided take either the one from any
+     * currently running trigger or its id.
      */
     public static String buildOrGetCorrelationId(String newCorrelationId) {
-        var correlationId = getCorrelationId();
-        if (correlationId == null) correlationId = newCorrelationId;
-        return correlationId;
+        if (newCorrelationId != null) return newCorrelationId;
+        
+        var c = getContext();
+        if (c != null) {
+            if (c.getCorrelationId() != null) return c.getCorrelationId();
+            if (c.getKey() != null) return c.getKey().getId();
+        }
+        return null;
     }
 }

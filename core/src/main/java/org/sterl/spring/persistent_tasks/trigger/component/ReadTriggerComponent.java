@@ -9,20 +9,26 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.lang.Nullable;
 import org.sterl.spring.persistent_tasks.api.TaskId;
+import org.sterl.spring.persistent_tasks.api.TriggerGroup;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
+import org.sterl.spring.persistent_tasks.shared.model.HasTrigger;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalCompontant;
 import org.sterl.spring.persistent_tasks.trigger.model.QRunningTriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.repository.RunningTriggerRepository;
 
+import com.querydsl.jpa.impl.JPAQuery;
+
+import jakarta.persistence.EntityManager;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
 @TransactionalCompontant
 @RequiredArgsConstructor
 public class ReadTriggerComponent {
+    private final EntityManager em;
     private final RunningTriggerRepository triggerRepository;
 
     public long countByTaskName(@NotNull String name) {
@@ -35,6 +41,7 @@ public class ReadTriggerComponent {
     }
 
     public Optional<RunningTriggerEntity> get(TriggerKey key) {
+        if (key == null || key.getId() == null) return Optional.empty();
         return triggerRepository.findByKey(key);
     }
 
@@ -61,6 +68,15 @@ public class ReadTriggerComponent {
             return triggerRepository.findAll(page);
         }
         
+    }
+    
+    public Page<TriggerGroup> searchGroupedTriggers(@Nullable TriggerSearch search, Pageable page) {
+        return triggerRepository.findByGroup(
+                new JPAQuery<HasTrigger>(em).from(QRunningTriggerEntity.runningTriggerEntity), 
+                QRunningTriggerEntity.runningTriggerEntity.data, 
+                QRunningTriggerEntity.runningTriggerEntity.data.correlationId, 
+                search, 
+                page);
     }
 
     public Page<RunningTriggerEntity> listTriggers(TaskId<? extends Serializable> task, Pageable page) {

@@ -49,6 +49,17 @@ export interface Trigger {
     lastException: string;
 }
 
+export interface TriggerGroup {
+    count: number;
+    groupByValue: string;
+    sumDurationMs: number;
+    sumRunCount: number;
+    minRunAt: string;
+    minCreatedTime: string;
+    minStart: string;
+    maxEnd: string;
+}
+
 export interface TriggerKey {
     id: string;
     taskName: string;

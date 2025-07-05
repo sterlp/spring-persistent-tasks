@@ -11,11 +11,16 @@ interface SpringError {
     trace?: string;
 }
 
-function isSpringError(data: any): data is SpringError {
-    return !!data && !!data.error && !!data.message;
+function isSpringError(data: unknown): data is SpringError {
+    return (
+        !!data &&
+        typeof data === "object" &&
+        "error" in data &&
+        "message" in data
+    );
 }
 
-const HttpErrorView = ({ error }: { error: any }) => {
+const HttpErrorView = ({ error }: { error: unknown }) => {
     if (!error) return undefined;
     console.warn("HttpErrorView", error);
     if (isAxiosError(error) && isSpringError(error.response?.data)) {
@@ -34,7 +39,7 @@ const HttpErrorView = ({ error }: { error: any }) => {
     }
     return (
         <Alert variant="danger">
-            {error.message ? error.message : JSON.stringify(error)}
+            {isAxiosError(error) ? error.message : JSON.stringify(error)}
         </Alert>
     );
 };

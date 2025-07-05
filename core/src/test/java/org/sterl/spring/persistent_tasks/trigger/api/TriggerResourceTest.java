@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.client.RestTemplate;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
+import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
@@ -23,6 +24,9 @@ import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.repository.RunningTriggerRepository;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 class TriggerResourceTest extends AbstractSpringTest {
 
@@ -180,6 +184,24 @@ class TriggerResourceTest extends AbstractSpringTest {
         asserts.assertMissing(Task3.NAME + "::Hallo2");
         assertThat(triggerService.countTriggers(TriggerStatus.WAITING)).isOne();
         assertThat(response.getBody().getKey()).isEqualTo(triggerKey);
+    }
+    
+    @Test
+    void testGroupSearch() throws JsonMappingException, JsonProcessingException {
+        TaskId<String> taskId = taskService.replace("foo", c -> asserts.info("foo"));
+        triggerService.queue(taskId.newTrigger().id("1").correlationId("a1").tag("tag1").build());
+        triggerService.queue(taskId.newTrigger().id("2").correlationId("a1").tag("tag1").build());
+        triggerService.queue(taskId.newTrigger().id("3").correlationId("a1").tag("tag2").build());
+
+        // WHEN
+        var result = template.exchange(
+                baseUrl + "-group?tag=tag1",
+                HttpMethod.GET,
+                null,
+                String.class);
+
+        assertThat(result.getBody()).contains("\"count\":2");
+        assertThat(result.getBody()).contains("\"groupByValue\":\"a1\"");
     }
     
     private RunningTriggerEntity createStatus(TriggerKey key, TriggerStatus status) {

@@ -12,6 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.lang.Nullable;
 import org.sterl.spring.persistent_tasks.api.TaskStatusHistoryOverview;
+import org.sterl.spring.persistent_tasks.api.TriggerGroup;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
@@ -19,15 +20,20 @@ import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
 import org.sterl.spring.persistent_tasks.history.model.CompletedTriggerEntity;
 import org.sterl.spring.persistent_tasks.history.model.HistoryTriggerEntity;
 import org.sterl.spring.persistent_tasks.history.model.QCompletedTriggerEntity;
-import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryDetailRepository;
 import org.sterl.spring.persistent_tasks.history.repository.CompletedTriggerRepository;
+import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryDetailRepository;
+import org.sterl.spring.persistent_tasks.shared.model.HasTrigger;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
 
+import com.querydsl.jpa.impl.JPAQuery;
+
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
 @TransactionalService
 @RequiredArgsConstructor
 public class HistoryService {
+    private final EntityManager em;
     private final CompletedTriggerRepository completedTriggerRepository;
     private final TriggerHistoryDetailRepository triggerHistoryDetailRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
@@ -113,6 +119,15 @@ public class HistoryService {
             result = completedTriggerRepository.findAll(page);
         }
         return result;
+    }
+    
+    public Page<TriggerGroup> searchGroupedTriggers(TriggerSearch search, Pageable page) {
+        return completedTriggerRepository.findByGroup(
+                new JPAQuery<HasTrigger>(em).from(QCompletedTriggerEntity.completedTriggerEntity), 
+                QCompletedTriggerEntity.completedTriggerEntity.data, 
+                QCompletedTriggerEntity.completedTriggerEntity.data.correlationId, 
+                search, 
+                page);
     }
 
     private Pageable applyDefaultSortIfNeeded(Pageable page) {

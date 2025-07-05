@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.sterl.spring.persistent_tasks.api.TaskStatusHistoryOverview;
 import org.sterl.spring.persistent_tasks.api.Trigger;
+import org.sterl.spring.persistent_tasks.api.TriggerGroup;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.history.HistoryService;
@@ -27,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("${spring.persistent-tasks.web.base-path:spring-tasks-api}")
 public class TriggerHistoryResource {
 
+    public static final String PATH_GROUP = "history-grouped";
     private final HistoryService historyService;
 
     @GetMapping("history/instance/{instanceId}")
@@ -39,6 +41,13 @@ public class TriggerHistoryResource {
         return historyService.taskStatusHistory();
     }
 
+    @GetMapping(PATH_GROUP)
+    public PagedModel<TriggerGroup> listGrouped(
+            TriggerSearch search,
+            @PageableDefault(size = 100) Pageable page) {
+        return new PagedModel<TriggerGroup>(historyService.searchGroupedTriggers(search, page));
+    }
+    
     @GetMapping("history")
     public PagedModel<Trigger> list(
             TriggerSearch search,
