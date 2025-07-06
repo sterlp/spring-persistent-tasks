@@ -28,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("${spring.persistent-tasks.web.base-path:spring-tasks-api}")
 public class TriggerResource {
 
+    public static final String PATH_GROUPED = "triggers-grouped";
     private final TriggerService triggerService;
     
     @GetMapping("triggers/count")
@@ -35,7 +36,7 @@ public class TriggerResource {
         return triggerService.countTriggers();
     }
     
-    @GetMapping("triggers-grouped")
+    @GetMapping(PATH_GROUPED)
     public PagedModel<TriggerGroup> listGrouped(
             TriggerSearch search,
             @PageableDefault(size = 100)

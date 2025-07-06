@@ -195,7 +195,7 @@ class TriggerResourceTest extends AbstractSpringTest {
 
         // WHEN
         var result = template.exchange(
-                baseUrl + "-group?tag=tag1",
+                baseUrl + "-grouped?tag=tag1",
                 HttpMethod.GET,
                 null,
                 String.class);
