@@ -208,7 +208,7 @@ class TriggerResourceTest extends AbstractSpringTest {
         final var now = OffsetDateTime.now();
         final var isCancel = status == TriggerStatus.CANCELED;
 
-        RunningTriggerEntity result = new RunningTriggerEntity();
+        var result = new RunningTriggerEntity();
         result.setData(TriggerEntity
                 .builder()
                 .correlationId(UUID.randomUUID().toString())

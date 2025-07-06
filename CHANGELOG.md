@@ -1,6 +1,15 @@
 # Changelog
 
-## v2.0.0 - (2025-06-16)
+## v2.1.0 - (2025-07-07)
+
+### New features:
+
+-   Grouped triggers API
+-   UI elements are published to npmjs.com
+-   Lazy render of pages
+-   Link to github
+
+## v2.0.0 - (2025-06-16)x
 
 ### New features:
 
