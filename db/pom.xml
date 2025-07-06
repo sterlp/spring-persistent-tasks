@@ -11,6 +11,8 @@
     </parent>
 
     <artifactId>spring-persistent-tasks-db</artifactId>
+    <name>DB Module for spring persistent tasks</name>
+    <description>Setup DB using liquibase for spring persistent tasks</description>
 
     <dependencies>
         <dependency>

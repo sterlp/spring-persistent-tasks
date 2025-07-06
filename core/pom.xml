@@ -11,6 +11,8 @@
     </parent>
 
     <artifactId>spring-persistent-tasks-core</artifactId>
+    <name>The spring persistent task backend</name>
+    <description>Contains all needed java classes, without the DB setup, for spring persistent tasks</description>
 
     <dependencies>
         <dependency>

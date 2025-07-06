@@ -11,6 +11,8 @@
     </parent>
 
     <artifactId>spring-persistent-tasks-ui</artifactId>
+    <name>UI for spring persistent tasks</name>
+    <description>React ui lib and the default UI web-app for sprint persistent tasks</description>
 
     <dependencies>
         <dependency>

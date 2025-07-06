@@ -11,6 +11,8 @@
     </parent>
 
     <artifactId>spring-persistent-tasks-test</artifactId>
+    <name>Test Module for spring persistent tasks</name>
+    <description>Contains JUnit test classes to support testing</description>
 
     <dependencies>
         <dependency>
