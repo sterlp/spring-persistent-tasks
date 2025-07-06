@@ -1,6 +1,16 @@
 {
   "name": "spt-ui-lib",
   "private": false,
+  "license": "MIT",
+  "keywords": [
+    "spring boot",
+    "react",
+    "persistent tasks",
+    "jobs ui",
+    "job dashboard",
+    "ui",
+    "lib"
+  ],
   "version": "1.1.0",
   "type": "module",
   "composite": true,

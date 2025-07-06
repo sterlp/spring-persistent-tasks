@@ -8,6 +8,12 @@
 -   UI elements are published to npmjs.com
 -   Lazy render of pages
 -   Link to github
+-   moved ui-lib and web-app into own folders
+-   using pnpm as build tool
+-   exposed TriggerActionsView
+-   added trigger group api
+-   added release of the ui-lib to npmjs
+-   added TriggerGroupListView
 
 ## v2.0.0 - (2025-06-16)x
 
