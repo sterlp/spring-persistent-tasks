@@ -14,6 +14,11 @@
     <name>DB Module for spring persistent tasks</name>
     <description>Setup DB using liquibase for spring persistent tasks</description>
 
+    <url>https://github.com/sterlp/spring-persistent-tasks/wiki/Liquibase-DB-setup</url>
+    <scm>
+        <url>https://github.com/sterlp/spring-persistent-tasks</url>
+    </scm>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>

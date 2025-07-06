@@ -14,6 +14,11 @@
     <name>The spring persistent task backend</name>
     <description>Contains all needed java classes, without the DB setup, for spring persistent tasks</description>
 
+    <url>https://github.com/sterlp/spring-persistent-tasks/wiki</url>
+    <scm>
+        <url>https://github.com/sterlp/spring-persistent-tasks</url>
+    </scm>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -14,6 +14,11 @@
     <name>UI for spring persistent tasks</name>
     <description>React ui lib and the default UI web-app for sprint persistent tasks</description>
 
+    <url>https://github.com/sterlp/spring-persistent-tasks/wiki/Admin-Dashbaord-UI-and-CSRF</url>
+    <scm>
+        <url>https://github.com/sterlp/spring-persistent-tasks</url>
+    </scm>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -12,7 +12,7 @@
 
     <artifactId>spring-persistent-tasks-example</artifactId>
     <description>Sample project for the Spring Persistent Tasks</description>
-    
+
     <properties>
         <!--
         <spt.version>1.6.7</spt.version>

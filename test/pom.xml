@@ -14,6 +14,12 @@
     <name>Test Module for spring persistent tasks</name>
     <description>Contains JUnit test classes to support testing</description>
 
+    <url>https://github.com/sterlp/spring-persistent-tasks/wiki/JUnit-Tests-Triggers-and-Tasks</url>
+
+    <scm>
+        <url>https://github.com/sterlp/spring-persistent-tasks</url>
+    </scm>
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
