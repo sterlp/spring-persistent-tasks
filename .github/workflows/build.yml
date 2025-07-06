@@ -12,6 +12,14 @@ jobs:
         steps:
             - uses: actions/checkout@v4
             - uses: pnpm/action-setup@v4
+              with:
+                  version: 10
+                  run_install: false
+            - name: Install Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: "pnpm"
             - name: Set up JDK 21
               uses: actions/setup-java@v4
               with:
@@ -161,6 +169,14 @@ jobs:
         steps:
             - uses: actions/checkout@v4
             - uses: pnpm/action-setup@v4
+              with:
+                  version: 10
+                  run_install: false
+            - name: Install Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: "pnpm"
             - name: Set up JDK 21
               uses: actions/setup-java@v4
               with:
@@ -183,6 +199,14 @@ jobs:
         steps:
             - uses: actions/checkout@v4
             - uses: pnpm/action-setup@v4
+              with:
+                  version: 10
+                  run_install: false
+            - name: Install Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: "pnpm"
             - name: Set up JDK 21
               uses: actions/setup-java@v4
               with:
