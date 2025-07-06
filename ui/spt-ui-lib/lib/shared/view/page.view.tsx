@@ -1,14 +1,19 @@
 import type { PagedModel } from "@lib/server-api";
 import React from "react";
-import { Pagination } from "react-bootstrap";
+import { Pagination, Spinner } from "react-bootstrap";
 
 interface PageViewProps {
     data?: PagedModel<unknown>;
+    isLoading?: boolean;
     onPage: (page: number) => void;
 }
 
-const PageView: React.FC<PageViewProps> = ({ data, onPage }) => {
-    if (!data) return undefined;
+const PageView: React.FC<PageViewProps> = ({
+    data,
+    isLoading = false,
+    onPage,
+}) => {
+    if (!data || isLoading) return <PageViewLoaing />;
 
     const currentPage = data?.page.number ?? 0;
     const totalPages = data?.page.totalPages ?? 0;
@@ -50,3 +55,11 @@ const PageView: React.FC<PageViewProps> = ({ data, onPage }) => {
 };
 
 export default PageView;
+
+const PageViewLoaing = () => (
+    <Pagination className="mb-0 mt-0 d-felx align-items-center justify-content-center">
+        <Pagination.Prev data-testid="prev" disabled={true} className="me-2" />
+        <Spinner animation="border" variant="primary" title="Loading ..." />
+        <Pagination.Next data-testid="next" disabled={true} className="ms-2" />
+    </Pagination>
+);

@@ -14,11 +14,18 @@ describe("PageView Component", () => {
     });
 
     it("No data: pager should not be rendered", () => {
-        renderComponent(undefined);
+        const { container } = renderComponent(undefined);
 
         expect(screen.queryByText("-")).not.toBeInTheDocument();
-        expect(screen.queryByTestId("next")).not.toBeInTheDocument();
-        expect(screen.queryByTestId("prev")).not.toBeInTheDocument();
+        expect(screen.queryByTestId("next")).toBeInTheDocument();
+        expect(screen.queryByTestId("prev")).toBeInTheDocument();
+        expect(screen.getByTestId("next").closest("li")).toHaveClass(
+            "disabled"
+        );
+        expect(screen.getByTestId("prev").closest("li")).toHaveClass(
+            "disabled"
+        );
+        expect(container.querySelector(".spinner-border")).toBeInTheDocument();
     });
 
     it("Middle page: should enable both Prev and Next", () => {

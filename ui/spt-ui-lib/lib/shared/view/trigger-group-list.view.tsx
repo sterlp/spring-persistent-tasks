@@ -38,11 +38,11 @@ const TriggerGroupListView = ({
             <HttpErrorView error={triggers.error} />
             {triggers.data ? (
                 <Stack gap={2}>
-                    {triggers.isLoading ? (
-                        <LoadingView style={{ height: 38 }} />
-                    ) : (
-                        <PageView data={triggers.data} onPage={setPage} />
-                    )}
+                    <PageView
+                        data={triggers.data}
+                        isLoading={triggers.isLoading}
+                        onPage={setPage}
+                    />
 
                     {triggers.data?.content?.map((t, i) => (
                         <TriggerGroupView
