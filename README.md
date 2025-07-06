@@ -11,6 +11,7 @@ Focus is the usage with spring boot and JPA.
 Secondary goal is to support [Poor mans Workflow](https://github.com/sterlp/pmw)
 
 # Key Features ✨
+
 1. **JPA-Powered Persistence** - Automatically persists tasks to your database
 1. **Spring Boot Auto-Configuration** - Simple setup with @EnableSpringPersistentTasks
 1. **Clustering Support** - Built-in lock management for distributed environments
@@ -18,7 +19,7 @@ Secondary goal is to support [Poor mans Workflow](https://github.com/sterlp/pmw)
 1. **Retry Mechanisms** - Automatic retry policies for failed executions
 1. **Transactional Integration** - Works with Spring's transaction management
 1. **Queue Management** - Intelligent task queuing and prioritization
-1. **Different DB Supports** -- 
+1. **Different DB Supports** - MySQL, azure-sql-edge, PostgreSQL, and H2
 
 # Documentation
 
@@ -27,7 +28,7 @@ The README contains a shorter how to use.
 
 # Known issues
 
-- spring-boot-devtools: cause java.lang.ClassCastException exceptions during the state serialization - this is a java/spring issue
+-   spring-boot-devtools: cause java.lang.ClassCastException exceptions during the state serialization - this is a java/spring issue
 
 # Known limitations
 
@@ -35,17 +36,17 @@ The README contains a shorter how to use.
 
 The framework briefly locks a row or trigger to ensure that each trigger is started only on a single node when a cluster is in use. However, some databases still do not support proper row locking and instead lock the entire table. This is not a critical issue but can slow down task selection in very large clusters.
 
-- mySQL
-- Azure SQL Edge (maybe also MSSQL)
+-   mySQL
+-   Azure SQL Edge (maybe also MSSQL)
 
 # DBs for storage
 
 ## Tested in the pipeline
 
-- [![H2](https://img.shields.io/badge/H2-Database-green.svg)](https://www.h2database.com)
-- [![Azure SQL Edge](https://img.shields.io/badge/Azure_SQL_Edge-2022-0078D4?logo=microsoftsqlserver)](https://azure.microsoft.com/en-us/products/azure-sql/edge/)
-- [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)](https://www.postgresql.org)
-- [![MariaDB](https://img.shields.io/badge/MariaDB-11.1-003545?logo=mariadb)](https://mariadb.org)
+-   [![H2](https://img.shields.io/badge/H2-Database-green.svg)](https://www.h2database.com)
+-   [![Azure SQL Edge](https://img.shields.io/badge/Azure_SQL_Edge-2022-0078D4?logo=microsoftsqlserver)](https://azure.microsoft.com/en-us/products/azure-sql/edge/)
+-   [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)](https://www.postgresql.org)
+-   [![MariaDB](https://img.shields.io/badge/MariaDB-11.1-003545?logo=mariadb)](https://mariadb.org)
 
 ![History](screenshots/supported-dbs.png)
 
@@ -67,12 +68,11 @@ The framework briefly locks a row or trigger to ensure that each trigger is star
 
 ## Setup with Maven
 
-
 ```xml
 <dependency>
     <groupId>org.sterl.spring</groupId>
     <artifactId>spring-persistent-tasks-core</artifactId>
-    <version>1.x.x</version>
+    <version>2.x.x</version>
 </dependency>
 ```
 
@@ -107,7 +107,7 @@ public void triggerTask1(Vehicle vehicle) {
 
 ### JUnit Tests
 
-- [Persistent Task and Testing](https://github.com/sterlp/spring-persistent-tasks/wiki/Triggers-and-Tasks-in-JUnit-Tests)
+-   [Persistent Task and Testing](https://github.com/sterlp/spring-persistent-tasks/wiki/Triggers-and-Tasks-in-JUnit-Tests)
 
 # Setup DB with Liquibase
 
