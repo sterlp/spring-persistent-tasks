@@ -13,16 +13,12 @@ describe("PageView Component", () => {
         mockOnPage.mockClear();
     });
 
-    it("No data: should disable both buttons and display '-'", () => {
+    it("No data: pager should not be rendered", () => {
         renderComponent(undefined);
 
-        expect(screen.getByText("-")).toBeInTheDocument();
-        expect(screen.getByTestId("next").closest("li")).toHaveClass(
-            "disabled"
-        );
-        expect(screen.getByTestId("prev").closest("li")).toHaveClass(
-            "disabled"
-        );
+        expect(screen.queryByText("-")).not.toBeInTheDocument();
+        expect(screen.queryByTestId("next")).not.toBeInTheDocument();
+        expect(screen.queryByTestId("prev")).not.toBeInTheDocument();
     });
 
     it("Middle page: should enable both Prev and Next", () => {
@@ -31,7 +27,7 @@ describe("PageView Component", () => {
             content: new Array(10),
         });
 
-        expect(screen.getByText("20 / 30")).toBeInTheDocument();
+        expect(screen.queryByText("20 / 30")).toBeInTheDocument();
         expect(
             screen.getByRole("button", { name: "Previous" })
         ).not.toBeDisabled();
@@ -50,7 +46,7 @@ describe("PageView Component", () => {
             content: [],
         });
 
-        expect(screen.getByText("0 / 10")).toBeInTheDocument();
+        expect(screen.queryByText("0 / 10")).toBeInTheDocument();
         expect(screen.getByTestId("next").closest("li")).toHaveClass(
             "disabled"
         );
