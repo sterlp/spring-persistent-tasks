@@ -29,7 +29,9 @@ const TriggerGroupView = forwardRef<HTMLDivElement, TriggerGroupViewProps>(
             <Col sm="2">
                 <LabeledText
                     label="Start"
-                    value={formatDateTime(triggerGroup.minStart)}
+                    value={formatDateTime(
+                        triggerGroup.minStart || triggerGroup.minRunAt
+                    )}
                 />
             </Col>
             <Col sm="2">

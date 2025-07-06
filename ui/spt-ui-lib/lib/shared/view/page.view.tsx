@@ -8,6 +8,8 @@ interface PageViewProps {
 }
 
 const PageView: React.FC<PageViewProps> = ({ data, onPage }) => {
+    if (!data) return undefined;
+
     const isDataAvailable = !!data && !!data.content;
     const currentPage = data?.page.number ?? 0;
     const totalPages = data?.page.totalPages ?? 0;
