@@ -1,3 +1,12 @@
+# Build all
+
+`mvn clean install`
+
+# Build web ui only
+
+-   `pnpm install`
+-   `pnpm recursive run build`
+
 # UI Project of spring persistent tasks
 
 https://github.com/sterlp/spring-persistent-tasks

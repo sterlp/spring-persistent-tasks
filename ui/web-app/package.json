@@ -1,0 +1,48 @@
+{
+  "name": "tasks-ui-web-app",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "btsc": "tsc",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "test": "vitest",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@uiw/react-json-view": "^2.0.0-alpha.30",
+    "axios": "^1.8.1",
+    "bootstrap": "^5.3.3",
+    "crossroad": "^1.3.3",
+    "luxon": "^3.5.0",
+    "react": "^19.0.0",
+    "react-bootstrap": "^2.10.9",
+    "react-bootstrap-icons": "^1.11.5",
+    "react-dom": "^19.0.0",
+    "recharts": "^3.0.2",
+    "spring-persistent-tasks-ui": "workspace:spt-ui-lib@*"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.15.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/luxon": "^3.4.2",
+    "@types/node": "^24.0.7",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react-swc": "^3.10.2",
+    "eslint": "^9.21.0",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.2.0",
+    "jsdom": "^26.1.0",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.26.0",
+    "vite": "^7.0.0",
+    "vitest": "^3.2.4"
+  }
+}

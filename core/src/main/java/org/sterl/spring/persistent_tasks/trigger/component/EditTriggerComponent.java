@@ -65,8 +65,8 @@ public class EditTriggerComponent {
             Serializable state, 
             Exception e,
             OffsetDateTime retryAt) {
-        final Optional<RunningTriggerEntity> result = triggerRepository.findByKey(key);
-
+        
+        final var result = readTrigger.get(key);
 
         result.ifPresent(t -> {
             t.complete(e);
@@ -88,9 +88,8 @@ public class EditTriggerComponent {
     }
 
     public Optional<RunningTriggerEntity> cancelTask(TriggerKey id, Exception e) {
-        return triggerRepository //
-                .findByKey(id) //
-                .map(t -> cancelTrigger(t, e));
+        return readTrigger.get(id)
+                          .map(t -> cancelTrigger(t, e));
     }
 
     private RunningTriggerEntity cancelTrigger(RunningTriggerEntity t, Exception e) {
@@ -107,13 +106,7 @@ public class EditTriggerComponent {
 
     public <T extends Serializable> RunningTriggerEntity addTrigger(TriggerRequest<T> tigger) {
         var result = toTriggerEntity(tigger);
-        final Optional<RunningTriggerEntity> existing;
-
-        if (result.key().getId() == null) {
-            existing = Optional.empty();
-            result.getKey().setId(UuidCreator.getTimeOrderedEpochFast().toString());
-        }
-        else existing = triggerRepository.findByKey(result.getKey());
+        final var existing = readTrigger.get(tigger.key());
 
         if (existing.isPresent()) {
             if (existing.get().isRunning()) 
@@ -123,6 +116,9 @@ public class EditTriggerComponent {
             result = existing.get();
             log.debug("Updated trigger={}", result);
         } else {
+            if (result.getKey().getId() == null) {
+                result.getKey().setId(UuidCreator.getTimeOrderedEpochFast().toString());
+            }
             result = triggerRepository.save(result);
             log.debug("Added trigger={}", result);
         }

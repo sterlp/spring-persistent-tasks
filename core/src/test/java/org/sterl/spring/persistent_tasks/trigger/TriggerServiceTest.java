@@ -117,6 +117,24 @@ class TriggerServiceTest extends AbstractSpringTest {
         var t = subject.get(t2.getKey()).get();
         assertThat(t.getData().getState()).isEqualTo(subject.getStateSerializer().serialize("foo"));
     }
+
+    @Test
+    void testReplaceTrigger() {
+        // GIVEN
+        TaskId<String> taskId = taskService.replace("foo", c -> asserts.info("foo"));
+        taskService.<String>replace("bar", c -> asserts.info("bar"));
+
+        // WHEN
+        subject.queue(taskId.newTrigger().id("1").build());
+        subject.queue(taskId.newTrigger().id("2").build());
+        subject.queue(taskId.newTrigger().id("2").build());
+
+        // THEN
+        assertThat(subject.countTriggers(taskId)).isEqualTo(2);
+
+        // AND
+        assertThat(events.stream(TriggerAddedEvent.class).count()).isEqualTo(3);
+    }
     
     @Test
     void testCancelTrigger() {
@@ -322,6 +340,8 @@ class TriggerServiceTest extends AbstractSpringTest {
                 .id("paul@sterl.org")
                 .state("paul@sterl.org") // fixed state
                 .build());
+
+        assertThat(triggerService.countTriggers()).isEqualTo(1);
 
         var e1 = persistentTaskTestService.runNextTrigger();
         var e2 = persistentTaskTestService.runNextTrigger();

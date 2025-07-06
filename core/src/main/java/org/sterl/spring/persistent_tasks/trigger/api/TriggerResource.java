@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.sterl.spring.persistent_tasks.api.Trigger;
+import org.sterl.spring.persistent_tasks.api.TriggerGroup;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
@@ -27,11 +28,20 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("${spring.persistent-tasks.web.base-path:spring-tasks-api}")
 public class TriggerResource {
 
+    public static final String PATH_GROUPED = "triggers-grouped";
     private final TriggerService triggerService;
     
     @GetMapping("triggers/count")
     public long count() {
         return triggerService.countTriggers();
+    }
+    
+    @GetMapping(PATH_GROUPED)
+    public PagedModel<TriggerGroup> listGrouped(
+            TriggerSearch search,
+            @PageableDefault(size = 100)
+            Pageable pageable) {
+        return new PagedModel<TriggerGroup>(triggerService.searchGroupedTriggers(search, pageable));
     }
     
     @GetMapping("triggers")

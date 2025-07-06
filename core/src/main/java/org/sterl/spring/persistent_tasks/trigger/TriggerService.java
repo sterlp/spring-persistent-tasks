@@ -12,6 +12,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.TaskId;
+import org.sterl.spring.persistent_tasks.api.TriggerGroup;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerSearch;
@@ -108,6 +109,11 @@ public class TriggerService {
     @Transactional(readOnly = true , timeout = 10)
     public Page<RunningTriggerEntity> findAllTriggers(TaskId<?> task, Pageable page) {
         return this.readTrigger.listTriggers(task, page);
+    }
+    
+    @Transactional(readOnly = true , timeout = 10)
+    public Page<TriggerGroup> searchGroupedTriggers(@Nullable TriggerSearch search, Pageable page) {
+        return this.readTrigger.searchGroupedTriggers(search, page);
     }
 
     public void deleteAll() {

@@ -28,7 +28,7 @@
     <build>
         <resources>
             <resource>
-                <directory>dist</directory>
+                <directory>web-app/dist</directory>
             </resource>
         </resources>
 
@@ -40,10 +40,17 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>${project.basedir}/node_modules</directory>
+                            <directory>${project.basedir}/ui-lib/node_modules</directory>
                         </fileset>
                         <fileset>
-                            <directory>${project.basedir}/dist</directory>
+                            <directory>${project.basedir}/ui-lib/dist</directory>
+                        </fileset>
+
+                        <fileset>
+                            <directory>${project.basedir}/web-app/node_modules</directory>
+                        </fileset>
+                        <fileset>
+                            <directory>${project.basedir}/web-app/dist</directory>
                         </fileset>
                     </filesets>
                 </configuration>
@@ -55,28 +62,29 @@
                 <version>3.5.0</version>
                 <executions>
                     <execution>
-                        <id>npm install</id>
+                        <id>pnpm install</id>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <executable>npm</executable>
+                            <executable>pnpm</executable>
                             <arguments>
-                                <argument>ci</argument>
+                                <argument>install</argument>
                             </arguments>
                         </configuration>
                     </execution>
 
                     <execution>
-                        <id>npm build</id>
+                        <id>pnpm build</id>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <executable>npm</executable>
+                            <executable>pnpm</executable>
                             <arguments>
+                                <argument>recursive</argument>
                                 <argument>run</argument>
                                 <argument>build</argument>
                             </arguments>
@@ -84,20 +92,21 @@
                     </execution>
 
                     <execution>
-                        <id>npm test</id>
+                        <id>pnpm test</id>
                         <goals>
                             <goal>exec</goal>
                         </goals>
-                        <phase>test</phase>
+                        <phase>generate-resources</phase>
                         <configuration>
-                            <executable>npm</executable>
+                            <executable>pnpm</executable>
                             <arguments>
+                                <argument>recursive</argument>
                                 <argument>run</argument>
                                 <argument>test</argument>
                                 <argument>--</argument>
-                                <argument>--run</argument>
+                                <argument>run</argument>
                             </arguments>
-                        <skip>${skipTests}</skip>
+                            <skip>${skipTests}</skip>
                         </configuration>
                     </execution>
                 </executions>
@@ -115,10 +124,10 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>dist/templates/task-ui</outputDirectory>
+                            <outputDirectory>web-app/dist/templates/task-ui</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>dist/static/task-ui</directory>
+                                    <directory>web-app/dist/static/task-ui</directory>
                                     <includes>
                                         <include>index.html</include>
                                     </includes>

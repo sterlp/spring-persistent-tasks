@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 
+import com.github.f4b6a3.uuid.UuidCreator;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -16,12 +18,22 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
         return new TriggerBuilder<>(this);
     }
     
+    /**
+     * Creates a new trigger, the ID will stay empty and
+     * will receive an UUID later.
+     */
     public TriggerBuilder<T> newTrigger(T state) {
         return new TriggerBuilder<>(this).state(state);
     }
 
+    /**
+     * Creates a new trigger with an UUID.
+     */
     public TriggerRequest<T> newUniqueTrigger(T state) {
-        return new TriggerBuilder<>(this).state(state).build();
+        return new TriggerBuilder<>(this)
+                .state(state)
+                .correlationId(UuidCreator.getTimeOrderedEpochFast().toString())
+                .build();
     }
 
     public static TaskId<Serializable> of(String taskId) {
