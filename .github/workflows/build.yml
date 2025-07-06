@@ -220,7 +220,7 @@ jobs:
                   server-username: MAVEN_USERNAME
                   server-password: MAVEN_PASSWORD
             - name: Deploy Nexus
-              run: mvn -B source:jar deploy --file pom.xml -DskipTests
+              run: mvn -B deploy --file pom.xml -DskipTests -Prelease
               env:
                   MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
                   MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}

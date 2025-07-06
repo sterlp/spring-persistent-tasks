@@ -1,1 +1,1 @@
-mvn clean source:jar javadoc:jar deploy -DskipTests -Prelease
+mvn clean deploy -DskipTests -Prelease
