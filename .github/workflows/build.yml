@@ -20,6 +20,7 @@ jobs:
               with:
                   node-version: 22
                   cache: "pnpm"
+                  cache-dependency-path: ui/pnpm-lock.yaml
             - name: Set up JDK 21
               uses: actions/setup-java@v4
               with:
@@ -177,6 +178,7 @@ jobs:
               with:
                   node-version: 22
                   cache: "pnpm"
+                  cache-dependency-path: ui/pnpm-lock.yaml
             - name: Set up JDK 21
               uses: actions/setup-java@v4
               with:
@@ -207,6 +209,7 @@ jobs:
               with:
                   node-version: 22
                   cache: "pnpm"
+                  cache-dependency-path: ui/pnpm-lock.yaml
             - name: Set up JDK 21
               uses: actions/setup-java@v4
               with:
