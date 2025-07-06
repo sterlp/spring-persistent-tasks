@@ -124,16 +124,15 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>dist/templates/task-ui</outputDirectory>
+                            <outputDirectory>web-app/dist/templates/task-ui</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>dist/static/task-ui</directory>
+                                    <directory>web-app/dist/static/task-ui</directory>
                                     <includes>
                                         <include>index.html</include>
                                     </includes>
                                 </resource>
                             </resources>
-                            <workingDirectory>${project.basedir}/web-app</workingDirectory>
                         </configuration>
                     </execution>
                 </executions>

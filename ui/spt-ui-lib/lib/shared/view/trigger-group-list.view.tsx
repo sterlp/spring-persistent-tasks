@@ -3,9 +3,8 @@ import { useEffect, useState } from "react";
 import { Stack } from "react-bootstrap";
 import { useServerObject } from "../http-request";
 import HttpErrorView from "./http-error.view";
-import LoadingView from "./loading.view";
-import TriggerGroupView from "./trigger-group.view";
 import PageView from "./page.view";
+import TriggerGroupView from "./trigger-group.view";
 
 /**
  * /spring-tasks-api/triggers-grouped

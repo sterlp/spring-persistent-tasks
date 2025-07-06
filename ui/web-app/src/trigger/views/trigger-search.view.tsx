@@ -87,7 +87,11 @@ const TriggerSearchView = ({
                     />
                 </Col>
                 <Col className="align-items-center">
-                    <PageView onPage={doSetPage} data={triggers.data} />
+                    <PageView
+                        onPage={doSetPage}
+                        data={triggers.data}
+                        isLoading={triggers.isLoading}
+                    />
                 </Col>
                 <Col>
                     <ReloadButton
