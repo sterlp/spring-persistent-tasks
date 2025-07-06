@@ -1,7 +1,8 @@
 import Router, { Route, Switch, usePath } from "crossroad";
-import { lazy, Suspense } from "react";
+import { lazy, ReactNode, Suspense } from "react";
 import { Container, Nav, Navbar } from "react-bootstrap";
 import { LoadingView } from "spring-persistent-tasks-ui";
+import * as Icon from "react-bootstrap-icons";
 
 const SchedulersPage = lazy(() => import("./scheduler/scheduler.page"));
 const TriggersPage = lazy(() => import("./trigger/triggers.page"));
@@ -26,6 +27,12 @@ const App = () => {
                             {routes.map((i) => (
                                 <MenuLink key={"link-" + i.path} item={i} />
                             ))}
+                            <Nav.Link
+                                href="https://github.com/sterlp/spring-persistent-tasks"
+                                target="_blank"
+                            >
+                                <Icon.Github />
+                            </Nav.Link>
                         </Nav>
                     </Navbar.Collapse>
                 </Container>
@@ -49,7 +56,7 @@ const App = () => {
 };
 
 interface MenuItem {
-    label: string;
+    label: string | ReactNode;
     path: string;
     component: React.FunctionComponent;
 }
