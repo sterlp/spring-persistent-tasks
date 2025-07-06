@@ -56,13 +56,9 @@ jobs:
                   server-id: central
                   server-username: MAVEN_USERNAME
                   server-password: MAVEN_PASSWORD
-            - id: install-secret-key
-              name: Install gpg secret key
-              run: |
-                  cat <(echo -e "${{ secrets.OSSRH_GPG_SECRET_KEY }}") | gpg --batch --import
-                  gpg --list-secret-keys --keyid-format LONG
+
             - name: Deploy Nexus
-              run: mvn -B deploy --file pom.xml -DskipTests -Prelease
+              run: mvn -B deploy --file pom.xml -DskipTests 
               env:
                   MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
                   MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
