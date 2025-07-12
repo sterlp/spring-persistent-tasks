@@ -4,6 +4,7 @@ export * from "./http-request";
 export { default as useAutoRefresh } from "./use-auto-refresh";
 
 export { default as HttpErrorView } from "./view/http-error.view";
+export { default as HttpRequestView } from "./view/http-request.view";
 export { default as LabeledText } from "./view/labled-text.view";
 export { default as LoadingView } from "./view/loading.view";
 export { default as PageView } from "./view/page.view";

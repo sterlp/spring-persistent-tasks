@@ -1,38 +1,61 @@
 import type { Trigger } from "@lib/server-api";
-import LabeledText from "@lib/shared/view/labled-text.view";
-import { Badge, Col, Form, Row } from "react-bootstrap";
+import { Badge, Col, Row, type ColProps } from "react-bootstrap";
+import LabeledText from "./labled-text.view";
 import { formatMs, formatShortDateTime, runningSince } from "../date.util";
-import TriggerStatusIcon from "./trigger-status-icon.view";
 
-const TriggerCompactView = ({ trigger }: { trigger: Trigger }) => (
-    <Row className="align-items-center">
-        <Col className="col-2">
-            <TriggerStatusIcon trigger={trigger} />
-        </Col>
-        <Col className="col-6">
-            <Form.Text muted role="label">
-                {trigger.key.id}
-            </Form.Text>
-            <div>{trigger.key.taskName}</div>
-        </Col>
-        <Col className="col-2">
-            {isActive(trigger) ? (
+const TriggerSummaryView = ({
+    trigger,
+    col = { md: 3, xs: 6 },
+}: {
+    trigger: Trigger;
+    col?: ColProps;
+}) => {
+    return (
+        <Row>
+            <Col {...col}>
                 <LabeledText
-                    label="Run at"
+                    label="Start"
                     value={formatShortDateTime(trigger.runAt)}
                 />
-            ) : (
+            </Col>
+            <Col {...col}>
+                <LabeledText
+                    label="Started at"
+                    value={formatShortDateTime(trigger.start)}
+                />
+            </Col>
+            <Col {...col}>
                 <LabeledText
                     label="Finished at"
                     value={formatShortDateTime(trigger.end)}
                 />
-            )}
-        </Col>
-        <Col className="col-2">
-            <TriggerExecutiomView trigger={trigger} />
-        </Col>
-    </Row>
-);
+            </Col>
+            <Col {...col}>
+                <TriggerExecutiomView trigger={trigger} />
+            </Col>
+            <Col {...col}>
+                <LabeledText
+                    label="Correlation Id"
+                    value={trigger.correlationId}
+                />
+            </Col>
+            <Col {...col}>
+                <LabeledText label="Tag" value={trigger.tag} />
+            </Col>
+            <Col {...col}>
+                <LabeledText label="Priority" value={trigger.priority} />
+            </Col>
+            <Col {...col}>
+                <LabeledText
+                    label="Last keep alive ping"
+                    value={formatShortDateTime(trigger.lastPing)}
+                />
+            </Col>
+        </Row>
+    );
+};
+
+export default TriggerSummaryView;
 
 const TriggerExecutiomView = ({ trigger }: { trigger: Trigger }) => {
     if (trigger.runningOn) {
@@ -55,7 +78,7 @@ const TriggerExecutiomView = ({ trigger }: { trigger: Trigger }) => {
     }
     return (
         <LabeledText
-            label="Executions"
+            label="Count & Time"
             value={
                 <div className="d-flex justify-content-start align-items-center">
                     <Badge
@@ -71,9 +94,3 @@ const TriggerExecutiomView = ({ trigger }: { trigger: Trigger }) => {
         />
     );
 };
-
-export default TriggerCompactView;
-
-function isActive(trigger: Trigger): boolean {
-    return trigger.status == "RUNNING" || trigger.status == "WAITING";
-}

@@ -10,7 +10,7 @@ interface TriggerListViewProps {
     triggers?: Trigger[];
     afterTriggerChanged?: () => void;
     afterTriggerReRun?: () => void;
-    onFieldClick: (key: string, value?: string) => void;
+    onFieldClick?: (key: string, value?: string) => void;
 }
 
 const TriggerListView = ({
@@ -43,7 +43,7 @@ interface TriggerProps {
     trigger: Trigger;
     afterTriggerChanged?: () => void;
     afterTriggerReRun?: () => void;
-    onFieldClick: (key: string, value?: string) => void;
+    onFieldClick?: (key: string, value?: string) => void;
 }
 
 const TriggerListItemView = ({

@@ -5,7 +5,7 @@ export interface ServerObject<T> {
     isLoading: boolean;
     data: T | undefined;
     error: Error | AxiosError | unknown;
-    doGet(id?: string, options?: GetOptions): void;
+    doGet(id?: string | number, options?: GetOptions): void;
     doCall(
         urlPart?: string,
         options?: Options
@@ -33,7 +33,7 @@ export const useServerObject = <T>(
     const cache = useRef<Record<string, T>>({}); // In-memory cache
 
     const doCall = useCallback(
-        (urlPart?: string, options?: Options) => {
+        (urlPart?: string | number, options?: Options) => {
             setError(undefined);
             setIsLoading(true);
             const requestUrl = url + (urlPart ?? "");
@@ -63,7 +63,7 @@ export const useServerObject = <T>(
     );
 
     const doGet = useCallback(
-        (id?: string, options?: GetOptions) => {
+        (id?: string | number, options?: GetOptions) => {
             if (!options) options = {};
             options.controller = new AbortController();
             const requestUrl = url + (id ?? "");
