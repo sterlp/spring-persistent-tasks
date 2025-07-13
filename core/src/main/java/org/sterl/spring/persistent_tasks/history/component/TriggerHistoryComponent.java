@@ -4,22 +4,23 @@ import java.time.OffsetDateTime;
 
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import org.sterl.spring.persistent_tasks.history.model.CompletedTriggerEntity;
 import org.sterl.spring.persistent_tasks.history.model.HistoryTriggerEntity;
-import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryDetailRepository;
 import org.sterl.spring.persistent_tasks.history.repository.CompletedTriggerRepository;
+import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryDetailRepository;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
-import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalCompontant;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerLifeCycleEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerRunningEvent;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@TransactionalCompontant
+@Component
 @RequiredArgsConstructor
 @Slf4j
 public class TriggerHistoryComponent {
@@ -53,6 +54,7 @@ public class TriggerHistoryComponent {
         execute(e.id(), e.data(), e.isDone());
     }
 
+    @Transactional(propagation = Propagation.MANDATORY)
     public void execute(final long triggerId, final TriggerEntity data, boolean isDone) {
         if (isDone) {
             final var state = new CompletedTriggerEntity();
