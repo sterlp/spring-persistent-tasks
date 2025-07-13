@@ -9,12 +9,10 @@ import TriggerHistoryListView from "./trigger-history-list.view";
 const TriggerView = ({
     trigger,
     col = { md: 3, xs: 6 },
-    history,
     onClick,
 }: {
     trigger: Trigger;
     col?: ColProps;
-    history?: Trigger[];
     onClick?: (key: string, value?: string) => void;
 }) => {
     return (
@@ -54,6 +52,7 @@ const TriggerView = ({
                 <Col {...col}>
                     <LabeledText label="Priority" value={trigger.priority} />
                 </Col>
+
                 <Col {...col}>
                     <LabeledText
                         label="Run at"
@@ -74,7 +73,7 @@ const TriggerView = ({
                 </Col>
                 <Col {...col}>
                     <LabeledText
-                        label="Last keep alive ping"
+                        label="Last keep alive"
                         value={formatShortDateTime(trigger.lastPing)}
                     />
                 </Col>
@@ -82,7 +81,7 @@ const TriggerView = ({
 
             <Row className="mt-2">
                 <Col>
-                    <TriggerHistoryListView triggers={history} />
+                    <TriggerHistoryListView instanceId={trigger.instanceId} />
                 </Col>
             </Row>
             <hr />

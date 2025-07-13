@@ -1,9 +1,8 @@
 import type { Trigger } from "@lib/server-api";
+import { useState } from "react";
 import { Accordion, Container } from "react-bootstrap";
-import { useServerObject } from "../http-request";
-import TriggerCompactView from "./trigger-compact.view";
-import HttpErrorView from "./http-error.view";
 import TriggerActionsView from "./trigger-actions.view";
+import TriggerCompactView from "./trigger-compact.view";
 import TriggerView from "./trigger.view";
 
 interface TriggerListViewProps {
@@ -52,9 +51,7 @@ const TriggerListItemView = ({
     afterTriggerReRun,
     onFieldClick,
 }: TriggerProps) => {
-    const triggerHistory = useServerObject<Trigger[]>(
-        "/spring-tasks-api/history/instance/" + trigger.instanceId
-    );
+    const [body, setBody] = useState(false);
 
     return (
         <Accordion.Item eventKey={"trigger-" + trigger.id}>
@@ -66,21 +63,27 @@ const TriggerListItemView = ({
                     />
                 </Container>
             </Accordion.Header>
-            <Accordion.Body onEnter={() => triggerHistory.doGet()}>
-                <HttpErrorView error={triggerHistory.error} />
+            <Accordion.Body
+                onEnter={() => setBody(true)}
+                onExit={() => setBody(false)}
+            >
+                {body ? (
+                    <>
+                        <TriggerActionsView
+                            trigger={trigger}
+                            afterTriggerChanged={afterTriggerChanged}
+                            afterTriggerReRun={afterTriggerReRun}
+                        />
 
-                <TriggerActionsView
-                    trigger={trigger}
-                    afterTriggerChanged={afterTriggerChanged}
-                    afterTriggerReRun={afterTriggerReRun}
-                />
-
-                <TriggerView
-                    key={trigger.id + "-TriggerDetailsView"}
-                    trigger={trigger}
-                    history={triggerHistory.data}
-                    onClick={onFieldClick}
-                />
+                        <TriggerView
+                            key={trigger.id + "-TriggerDetailsView"}
+                            trigger={trigger}
+                            onClick={onFieldClick}
+                        />
+                    </>
+                ) : (
+                    ""
+                )}
             </Accordion.Body>
         </Accordion.Item>
     );
