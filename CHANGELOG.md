@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.1.2 - (2025-07-07)
+## v2.1.2 - (2025-07-22)
 
 ### Bug fixes:
 - fixed search for exact values
