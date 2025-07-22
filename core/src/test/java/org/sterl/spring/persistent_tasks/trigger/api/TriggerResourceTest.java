@@ -99,6 +99,19 @@ class TriggerResourceTest extends AbstractSpringTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody()).contains(key1.getId());
         assertThat(response.getBody()).doesNotContain(key2.getId());
+        
+        // WHEN exact search, no wild card
+        response = template.exchange(
+                baseUrl + "?search=" + key1.getId(),
+                HttpMethod.GET,
+                null,
+                String.class);
+        
+        // THEN
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).contains(key1.getId());
+        assertThat(response.getBody()).doesNotContain(key2.getId());
     }
     
     @Test

@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.1.2 - (2025-07-07)
+
+### Bug fixes:
+- fixed search for exact values
+- extended resume function interface to modify the state
+
 ## v2.1.0 - (2025-07-07)
 
 ### New features:

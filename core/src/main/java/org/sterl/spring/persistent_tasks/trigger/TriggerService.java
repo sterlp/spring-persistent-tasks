@@ -5,6 +5,7 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -142,9 +143,7 @@ public class TriggerService {
     }
     
     /**
-     * Will resume any found
-     * @param trigger
-     * @return
+     * Will resume any found {@link RunningTriggerEntity} in state {@link TriggerStatus#AWAITING_SIGNAL}
      */
     public Page<RunningTriggerEntity> resume(TriggerRequest<?> trigger) {
         if (trigger.key().getId() == null && trigger.correlationId() == null) {
@@ -152,6 +151,19 @@ public class TriggerService {
         }
         taskService.assertIsKnown(trigger.taskId());
         return editTrigger.resume(trigger);
+    }
+    
+    /**
+     * Will resume first found {@link RunningTriggerEntity} in state {@link TriggerStatus#AWAITING_SIGNAL}
+     * with the given search.
+     */
+    public <T extends Serializable> Optional<RunningTriggerEntity> resumeOne(
+            TriggerSearch search, Function<T, T> stateModifier) {
+        if (search.getKeyId() == null && search.getCorrelationId() == null) {
+            throw new IllegalArgumentException("Trigger ID or correlationId required to resume: " 
+                    + search);
+        }
+        return editTrigger.resumeOne(search, stateModifier);
     }
 
     /**

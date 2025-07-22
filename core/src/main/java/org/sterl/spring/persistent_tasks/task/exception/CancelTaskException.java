@@ -5,6 +5,7 @@ package org.sterl.spring.persistent_tasks.task.exception;
  */
 public class CancelTaskException extends TaskException {
     private static final long serialVersionUID = 1L;
+
     public CancelTaskException(String message, Throwable cause) {
         super(message, cause);
     }

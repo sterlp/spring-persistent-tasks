@@ -5,6 +5,7 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -147,6 +148,29 @@ public class EditTriggerComponent {
             publisher.publishEvent(new TriggerResumedEvent(t.getId(), t.copyData(), trigger.state()));
         });
         return foundTriggers;
+    }
+    
+    /**
+     * Resumes the first found trigger with the given
+     * @param <T> state type
+     * @param search search to run
+     * @param stateModifier updates the state and should return the run 
+     * @return the updated trigger
+     */
+    public <T extends Serializable> Optional<RunningTriggerEntity> resumeOne(
+            TriggerSearch search, Function<T, T> stateModifier) {
+        
+        search.setStatus(TriggerStatus.AWAITING_SIGNAL);
+        var foundTriggers = readTrigger.searchTriggers(search, Pageable.ofSize(1));
+
+        foundTriggers.forEach(t -> {
+            var newStart = stateModifier.apply((T)stateSerializer.deserialize(t.getData().getState()));
+            t.getData().setState(stateSerializer.serialize(newStart));
+            t.runAt(OffsetDateTime.now());
+            publisher.publishEvent(new TriggerResumedEvent(t.getId(), t.copyData(), newStart));
+        });
+
+        return foundTriggers.isEmpty() ? Optional.empty() : Optional.of(foundTriggers.getContent().get(0));
     }
     
     public RunningTriggerEntity expireTrigger(RunningTriggerEntity t) {

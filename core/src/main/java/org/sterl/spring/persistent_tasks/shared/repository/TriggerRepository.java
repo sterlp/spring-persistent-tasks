@@ -40,15 +40,16 @@ public interface TriggerRepository<T extends HasTrigger> extends JpaRepository<T
         final var predicate = new BooleanBuilder();
 
         if (search.getSearch() != null) {
-            final var value = StringHelper.applySearchWildCard(search.getSearch());
             Predicate pId;
-            if (StringHelper.isSqlSearch(value)) {
+            if (StringHelper.isSqlSearch(search.getSearch())) {
+                final var value = StringHelper.applySearchWildCard(search.getSearch());
                 pId = ExpressionUtils.anyOf(
                         qData.key.id.like(value),
                         qData.correlationId.like(value),
                         qData.tag.like(value)
                     );
             } else {
+                final var value = search.getSearch();
                 pId = ExpressionUtils.anyOf(
                         qData.key.id.eq(value),
                         qData.correlationId.eq(value),

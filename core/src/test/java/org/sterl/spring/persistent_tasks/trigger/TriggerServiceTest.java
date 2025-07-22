@@ -20,6 +20,7 @@ import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerRequest;
+import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.history.repository.CompletedTriggerRepository;
 import org.sterl.spring.persistent_tasks.task.exception.CancelTaskException;
@@ -549,6 +550,47 @@ class TriggerServiceTest extends AbstractSpringTest {
         
         // THEN
         asserts.awaitValueOnce("new state");
+        asserts.assertMissing("old state");
+        asserts.assertMissing("foo bar");
+        assertThat(events.stream(TriggerResumedEvent.class).count()).isOne();
+        // AND
+        assertThat(persistentTaskTestService.runNextTrigger()).isEmpty();
+    }
+    
+    @Test
+    void testResumeWaitingTriggerWithFunction() {
+        // GIVEN
+        TaskId<String> taskId = taskService.replace("foo", asserts::info);
+        subject.queue(taskId.newTrigger()
+                .waitForSignal(OffsetDateTime.now().plusDays(1))
+                .state("foo bar")
+                .tag("aaa")
+                .build());
+        var triggerKey = subject.queue(taskId.newTrigger()
+                .waitForSignal(OffsetDateTime.now().plusDays(1))
+                .state("old state")
+                .tag("aaa")
+                .build()).getKey();
+        assertThat(persistentTaskTestService.runNextTrigger()).isEmpty();
+        
+        // WHEN
+        var search = new TriggerSearch();
+        search.setTag("aaa");
+        search.setKeyId(triggerKey.getId());
+        subject.resumeOne(search, s -> {
+            return "Cool new State";
+        });
+        
+        // THEN
+        var t = subject.get(triggerKey).get();
+        assertThat(t.getData().getStatus()).isEqualTo(TriggerStatus.WAITING);
+        assertThat(t.getData().getState()).isEqualTo(subject.getStateSerializer().serialize("Cool new State"));
+        
+        // WHEN
+        assertThat(persistentTaskTestService.runNextTrigger()).isPresent();
+        
+        // THEN
+        asserts.awaitValueOnce("Cool new State");
         asserts.assertMissing("old state");
         asserts.assertMissing("foo bar");
         assertThat(events.stream(TriggerResumedEvent.class).count()).isOne();
