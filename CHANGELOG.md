@@ -1,10 +1,16 @@
 # Changelog
 
+## v2.1.3 - (2025-07-24)
+
+### Bug fixes:
+-   fixed search by correlationId
+-   Extended logging
+
 ## v2.1.2 - (2025-07-22)
 
 ### Bug fixes:
-- fixed search for exact values
-- extended resume function interface to modify the state
+-   fixed search for exact values
+-   extended resume function interface to modify the state
 
 ## v2.1.0 - (2025-07-07)
 

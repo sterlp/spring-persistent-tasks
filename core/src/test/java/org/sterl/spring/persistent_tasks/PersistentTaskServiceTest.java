@@ -1,6 +1,6 @@
 package org.sterl.spring.persistent_tasks;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;

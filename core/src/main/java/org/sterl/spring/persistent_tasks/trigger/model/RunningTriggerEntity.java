@@ -23,6 +23,7 @@ import lombok.Builder.Default;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "pt_running_triggers", indexes = {
@@ -39,6 +40,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 @Builder(toBuilder = true)
+@ToString(of = {"id", "runningOn", "data"})
 public class RunningTriggerEntity implements HasTrigger {
 
     @GeneratedValue(generator = "seq_pt_task_triggers", strategy = GenerationType.SEQUENCE)

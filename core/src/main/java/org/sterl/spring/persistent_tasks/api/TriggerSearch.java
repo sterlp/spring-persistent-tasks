@@ -21,8 +21,9 @@ public class TriggerSearch {
         return StringHelper.hasValue(search)
                 || StringHelper.hasValue(keyId)
                 || StringHelper.hasValue(taskName)
-                || StringHelper.hasValue(tag)
-                || status != null;
+                || StringHelper.hasValue(correlationId)
+                || status != null
+                || StringHelper.hasValue(tag);
     }
     
     

@@ -24,9 +24,11 @@ import com.querydsl.jpa.impl.JPAQuery;
 import jakarta.persistence.EntityManager;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @TransactionalCompontant
 @RequiredArgsConstructor
+@Slf4j
 public class ReadTriggerComponent {
     private final EntityManager em;
     private final RunningTriggerRepository triggerRepository;
@@ -63,8 +65,11 @@ public class ReadTriggerComponent {
         page = TriggerSearch.applyDefaultSortIfNeeded(page);
         if (search != null && search.hasValue()) {
             var p = triggerRepository.buildSearch(QRunningTriggerEntity.runningTriggerEntity.data, search);
-            return triggerRepository.findAll(p, page);
+            var result = triggerRepository.findAll(p, page);
+            log.debug("searchTriggers={} returned size={}", search, result.getContent().size());
+            return result;
         } else {
+            log.debug("Empty search={}, selecting all triggers for page={}", search, page);
             return triggerRepository.findAll(page);
         }
         

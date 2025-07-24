@@ -15,4 +15,4 @@ spring:
 
 logging:
   level:
-    org.sterl.spring.persistent_tasks: info
+    org.sterl.spring.persistent_tasks: debug

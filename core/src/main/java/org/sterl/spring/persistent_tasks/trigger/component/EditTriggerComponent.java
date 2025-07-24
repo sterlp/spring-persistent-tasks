@@ -138,6 +138,7 @@ public class EditTriggerComponent {
         
         log.debug("Resuming {} triggers for given data {}", foundTriggers.getSize(), trigger);
         foundTriggers.forEach(t -> {
+            log.debug("Resuming trigger={} with search={}", t, search);
             var newData = toTriggerEntity(trigger);
             newData.getData().setKey(t.getKey());
             newData.getData().setCorrelationId(t.getData().getCorrelationId());
@@ -164,6 +165,7 @@ public class EditTriggerComponent {
         var foundTriggers = readTrigger.searchTriggers(search, Pageable.ofSize(1));
 
         foundTriggers.forEach(t -> {
+            log.debug("Resuming trigger={} with search={}", t, search);
             var newStart = stateModifier.apply((T)stateSerializer.deserialize(t.getData().getState()));
             t.getData().setState(stateSerializer.serialize(newStart));
             t.runAt(OffsetDateTime.now());

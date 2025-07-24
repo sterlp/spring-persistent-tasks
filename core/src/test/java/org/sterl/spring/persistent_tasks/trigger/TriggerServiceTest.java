@@ -1,6 +1,6 @@
 package org.sterl.spring.persistent_tasks.trigger;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -561,16 +561,18 @@ class TriggerServiceTest extends AbstractSpringTest {
     void testResumeWaitingTriggerWithFunction() {
         // GIVEN
         TaskId<String> taskId = taskService.replace("foo", asserts::info);
-        subject.queue(taskId.newTrigger()
+        var waitingOne = subject.queue(taskId.newTrigger()
                 .waitForSignal(OffsetDateTime.now().plusDays(1))
                 .state("foo bar")
                 .tag("aaa")
-                .build());
+                .build())
+                .getKey();
         var triggerKey = subject.queue(taskId.newTrigger()
                 .waitForSignal(OffsetDateTime.now().plusDays(1))
                 .state("old state")
                 .tag("aaa")
-                .build()).getKey();
+                .build())
+                .getKey();
         assertThat(persistentTaskTestService.runNextTrigger()).isEmpty();
         
         // WHEN
@@ -596,6 +598,8 @@ class TriggerServiceTest extends AbstractSpringTest {
         assertThat(events.stream(TriggerResumedEvent.class).count()).isOne();
         // AND
         assertThat(persistentTaskTestService.runNextTrigger()).isEmpty();
+        assertThat(historyService.findLastKnownStatus(triggerKey).get().status()).isEqualTo(TriggerStatus.SUCCESS);
+        assertThat(triggerService.get(waitingOne).get().status()).isEqualTo(TriggerStatus.AWAITING_SIGNAL);
     }
     
     @Test
