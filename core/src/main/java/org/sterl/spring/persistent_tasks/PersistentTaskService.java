@@ -142,8 +142,8 @@ public class PersistentTaskService {
                 .toList();
 
         final var done = historyService.searchTriggers(search, PageRequest.of(0, 200, TriggerSearch.DEFAULT_SORT))
-            .stream().map(CompletedTriggerEntity::getData)
-            .toList();
+                .stream().map(CompletedTriggerEntity::getData)
+                .toList();
 
         final var result = new ArrayList<TriggerEntity>(running.size() + done.size());
         result.addAll(done);

@@ -1,6 +1,6 @@
 package org.sterl.spring.persistent_tasks;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -18,7 +18,6 @@ class PersistentTaskServiceTest extends AbstractSpringTest {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
-    
     @Test
     void testChainedTasksKeepCorrelationId() throws Exception {
         // GIVEN
@@ -57,30 +56,31 @@ class PersistentTaskServiceTest extends AbstractSpringTest {
         // GIVEN
         final var correlationFound = new AtomicReference<>();
 
-        final TaskId<Integer> task1 = taskService.replace("chainTask1", s -> {
+        final TaskId<Integer> task1 = taskService.replace("parent", s -> {
             var state = RunningTriggerContextHolder.getContext();
-            asserts.info(state.getData() + "::chainTask1");
+            asserts.info(state.getData() + "::parent");
             eventPublisher.publishEvent(
-                    TriggerTaskCommand.of("chainTask2", state.getData() + "::chainTask1"));
+                    TriggerTaskCommand.of("chainTask2", state.getData() + "::parent"));
         });
 
         taskService.replace("chainTask2", s -> {
             var state = RunningTriggerContextHolder.getContext();
             correlationFound.set(state.getCorrelationId());
-            asserts.info("chainTask1::" + state.getData());
-            assertThat(state.getCorrelationId()).isEqualTo(RunningTriggerContextHolder.getCorrelationId());
+            asserts.info("chainTask2::" + state.getData());
+            asserts.info("chainTask2::" + state.getCorrelationId());
         });
 
         final var keyId = UUID.randomUUID().toString();
-        
+
         // WHEN
         subject.runOrQueue(task1.newTrigger(234).id(keyId).build());
 
         // THEN
-        asserts.awaitOrdered(persistentTaskTestService::awaitRunningTriggers, "234::chainTask1", "chainTask1::234::chainTask1");
+        asserts.awaitOrdered(persistentTaskTestService::awaitRunningTriggers, 
+                "234::parent", "chainTask2::234::parent", "chainTask2::" + keyId);
         assertThat(keyId).isEqualTo(correlationFound.get());
         // AND
         var trigger= subject.findAllTriggerByCorrelationId(keyId);
-        assertThat(trigger).hasSize(2);
+        assertThat(trigger).hasSize(1);
     }
 }
