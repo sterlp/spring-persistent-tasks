@@ -24,6 +24,7 @@ import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
 import org.sterl.spring.persistent_tasks.scheduler.config.SchedulerConfig;
 import org.sterl.spring.persistent_tasks.scheduler.config.SchedulerConfig.SchedulerCustomizer;
+import org.sterl.spring.persistent_tasks.scheduler.config.SchedulerThreadFactory;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks_ui.EnableSpringPersistentTasksUI;
 
@@ -76,8 +77,12 @@ public class ExampleApplication {
 
         return SchedulerConfig.newSchedulerService("schedulerB",
                 meterRegistry,
-                triggerService, 
-                editSchedulerStatus, 7, Duration.ofSeconds(1), trx);
+                triggerService,
+                editSchedulerStatus, 
+                SchedulerThreadFactory.VIRTUAL_THREAD_POOL_FACTORY,
+                7, 
+                Duration.ofSeconds(1), 
+                trx);
     }
     
     @Bean
