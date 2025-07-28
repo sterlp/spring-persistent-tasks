@@ -23,7 +23,7 @@ Secondary goal is to support [Poor mans Workflow](https://github.com/sterlp/pmw)
 
 # Documentation
 
-Use for more advanced doc the [WIKI](https://github.com/sterlp/spring-persistent-tasks/wiki).
+Use [the doc](https://spring-persistent-task.sterl.org/) for more advanced examples.
 The README contains a shorter how to use.
 
 # Known issues
@@ -139,7 +139,7 @@ Liquibase is supported. Either import all or just the required versions.
 <dependency>
     <groupId>org.sterl.spring</groupId>
     <artifactId>spring-persistent-tasks-ui</artifactId>
-    <version>1.x.x</version>
+    <version>x.x.x</version>
 </dependency>
 ```
 
