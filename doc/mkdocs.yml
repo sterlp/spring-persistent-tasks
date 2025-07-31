@@ -6,6 +6,8 @@ theme:
       - content.code.annotate
 plugins:
   - search
+  - sitemap:
+      site_url: https://spring-persistent-task.sterl.org
   - tags
   - glightbox
 markdown_extensions:
