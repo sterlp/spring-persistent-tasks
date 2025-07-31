@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.2.0 - (2025-07-31)
+
+### New features:
+
+-    added the ability to listen for an error in the trigger itself
+
 ## v2.1.3 - (2025-07-24)
 
 ### Bug fixes:
