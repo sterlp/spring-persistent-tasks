@@ -71,6 +71,7 @@ public class EditTriggerComponent {
 
         result.ifPresent(t -> {
             t.complete(e);
+
             publisher.publishEvent(new TriggerFailedEvent(t.getId(), t.copyData(), state, e, retryAt));
 
             if (retryAt == null) {
@@ -78,6 +79,7 @@ public class EditTriggerComponent {
             } else {
                 t.runAt(retryAt);
             }
+
         });
 
         if (result.isEmpty()) {

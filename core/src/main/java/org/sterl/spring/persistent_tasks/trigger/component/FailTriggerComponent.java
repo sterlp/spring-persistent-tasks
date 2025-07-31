@@ -36,6 +36,7 @@ public class FailTriggerComponent {
     public <T extends Serializable> Optional<RunningTriggerEntity> execute(RunningTriggerEntity trigger, Exception e) {
         return execute(null, trigger, null, e);
     }
+
     public <T extends Serializable> Optional<RunningTriggerEntity> execute(
             @Nullable PersistentTask<T> task, 
             RunningTriggerEntity trigger, 
@@ -47,23 +48,58 @@ public class FailTriggerComponent {
         if (e instanceof CancelTaskException) {
             log.info("Cancel of a running trigger={} requested", trigger.getKey());
             result = editTrigger.cancelTask(trigger.getKey(), e);
-        } else if (e instanceof FailTaskNoRetryException) {
-            log.warn("Fail no retry of a running trigger={} requested", trigger.getKey(), e);
-            result = editTrigger.failTrigger(trigger.getKey(), state, e, null);
-        } else if (task == null 
-                || !task.retryStrategy().shouldRetry(trigger.getData().getExecutionCount(), e)) {
-
-            log.error("Failed trigger={}, no further retries!", trigger.getKey(), e);
-            result = editTrigger.failTrigger(trigger.getKey(), state, e, null);
         } else {
-            final OffsetDateTime retryAt = task.retryStrategy().retryAt(trigger.getData().getExecutionCount(), e);
-            if (retryAt == null) {
-                log.error("Failed trigger={}, no further retries!", trigger.getKey(), e);
-            } else {
-                log.warn("Failed trigger={} with retryAt={}", trigger.getKey(), retryAt, e);
-            }
-            result = editTrigger.failTrigger(trigger.getKey(), state, e, retryAt);
+            result = triggerFailed(task, trigger, state, e);
         }
         return result;
+    }
+
+    private <T extends Serializable> Optional<RunningTriggerEntity> triggerFailed(
+            @Nullable PersistentTask<T> task,
+            RunningTriggerEntity trigger, 
+            @Nullable T state, Exception e) {
+        
+        final var retryAt = determineWhenToRetry(task, trigger, e);
+        var result = editTrigger.failTrigger(trigger.getKey(), state, e, retryAt);
+
+        if (task != null && retryAt == null) {
+            try {
+                task.afterTriggerFailed(state, e);
+            } catch (Exception ex) {
+                log.error("Failed to invoke afterTriggerFailed on {}", task.getClass(), e);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * @return <code>null</code> no retry, otherwise the time when to retry
+     */
+    private <T extends Serializable> OffsetDateTime determineWhenToRetry(
+            @Nullable PersistentTask<T> task,
+            RunningTriggerEntity trigger, Exception e) {
+
+        final OffsetDateTime retryAt;
+        if (task == null) {
+            retryAt = null;
+            log.warn("No task found for trigger key={}", trigger.key());
+        } else if (e instanceof FailTaskNoRetryException) {
+            log.info("No retry for trigger={} requested", trigger.getKey(), e);
+            retryAt = null;
+        } else {
+            var failCount = trigger.getData().getExecutionCount();
+            var shouldRetry = task.retryStrategy().shouldRetry(failCount, e);
+            retryAt = shouldRetry ? task.retryStrategy().retryAt(failCount, e) : null;
+
+            if (retryAt == null) {
+                log.error("Failed={} trigger={}, no further retries!", failCount,
+                        trigger.getKey(), e);
+            } else {
+                log.warn("Failed={} trigger={} with retryAt={}", failCount,
+                        trigger.getKey(), retryAt, e);
+            }
+        }
+        return retryAt;
     }
 }

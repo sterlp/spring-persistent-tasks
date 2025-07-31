@@ -5,6 +5,7 @@ import java.io.Serializable;
 import org.springframework.lang.Nullable;
 import org.sterl.spring.persistent_tasks.api.RetryStrategy;
 import org.sterl.spring.persistent_tasks.api.Trigger;
+import org.sterl.spring.persistent_tasks.task.exception.FailTaskNoRetryException;
 
 /**
  * A Spring persistent task whose state is saved in a {@link Trigger}.
@@ -50,5 +51,21 @@ public interface PersistentTask<T extends Serializable> {
      */
     default boolean isTransactional() {
         return false;
+    }
+
+    /**
+     * Callback handler which is invoked once <b>after</b>:
+     * <ul>
+     * <li> if the trigger is finally failed
+     * <li> or the trigger is abandoned
+     * </ul>
+     * <br>
+     * This method is not invoked for expired triggers waiting for an signal.
+     * 
+     * @param state the state, could be <code>null</code> if the state could be parsed
+     * @param e the exception reason - could also be a {@link FailTaskNoRetryException}
+     * @see <a href="https://spring-persistent-task.sterl.org/failed-spring-triggers/">Failed trigger</a>
+     */
+    default void afterTriggerFailed(@Nullable T state, Exception e) {
     }
 }
