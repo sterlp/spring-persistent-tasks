@@ -1,4 +1,5 @@
 site_name: Spring Persistent Tasks
+site_url: https://spring-persistent-task.sterl.org
 theme:
     name: material
     features:
@@ -6,8 +7,6 @@ theme:
       - content.code.annotate
 plugins:
   - search
-  - sitemap:
-      site_url: https://spring-persistent-task.sterl.org
   - tags
   - glightbox
 markdown_extensions:

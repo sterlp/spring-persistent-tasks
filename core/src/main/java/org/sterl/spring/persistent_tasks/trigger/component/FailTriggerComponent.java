@@ -62,6 +62,14 @@ public class FailTriggerComponent {
         final var retryAt = determineWhenToRetry(task, trigger, e);
         var result = editTrigger.failTrigger(trigger.getKey(), state, e, retryAt);
 
+        invokeTriggerErrorCallback(task, retryAt, state, e);
+
+        return result;
+    }
+
+    private <T extends Serializable> void invokeTriggerErrorCallback(
+            PersistentTask<T> task,
+            final OffsetDateTime retryAt, T state, Exception e) {
         if (task != null && retryAt == null) {
             try {
                 task.afterTriggerFailed(state, e);
@@ -69,8 +77,6 @@ public class FailTriggerComponent {
                 log.error("Failed to invoke afterTriggerFailed on {}", task.getClass(), e);
             }
         }
-
-        return result;
     }
 
     /**

@@ -6,6 +6,8 @@ A simple task management framework designed to queue and execute asynchronous ta
 
 Focus is the usage with spring boot and JPA.
 
+![Dashboard](./assets/dashboard.png)
+
 ## Key Features ✨
 
 1. **JPA-Powered Persistence** - Automatically persists tasks to your database

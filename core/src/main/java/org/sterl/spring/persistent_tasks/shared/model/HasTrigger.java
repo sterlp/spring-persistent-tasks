@@ -28,7 +28,8 @@ public interface HasTrigger {
     }
     
     default boolean shouldRunInFuture() {
-        if (getData().getRunAt() == null) return true;
+        if (status() == TriggerStatus.AWAITING_SIGNAL) return true;
+        if (getData().getRunAt() == null) return false;
         return getData().getRunAt().toInstant().toEpochMilli() > System.currentTimeMillis();
     }
 }
