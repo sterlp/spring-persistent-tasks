@@ -1,0 +1,17 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet author="sterlp" id="2025-08-21-drop-indexes">
+        <dropIndex indexName="idx_pt_trigger_history_tag" tableName="pt_trigger_history" />
+        <dropIndex indexName="idx_pt_trigger_history_correlation_id" tableName="pt_trigger_history" />
+        <dropIndex indexName="idx_pt_trigger_history_status" tableName="pt_trigger_history" />
+        <dropIndex indexName="idx_pt_trigger_history_created_time" tableName="pt_trigger_history" />
+    </changeSet>
+
+</databaseChangeLog>

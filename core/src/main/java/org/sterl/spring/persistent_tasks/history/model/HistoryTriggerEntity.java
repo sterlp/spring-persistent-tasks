@@ -29,10 +29,6 @@ import lombok.NoArgsConstructor;
         @Index(name = "idx_pt_trigger_history_instance_id", columnList = "instance_id"),
         @Index(name = "idx_pt_trigger_history_name", columnList = "task_name"),
         @Index(name = "idx_pt_trigger_history_trigger_id", columnList = "trigger_id"),
-        @Index(name = "idx_pt_trigger_history_status", columnList = "status"),
-        @Index(name = "idx_pt_trigger_history_created_time", columnList = "created_time"),
-        @Index(name = "idx_pt_trigger_history_correlation_id", columnList = "correlation_id"),
-        @Index(name = "idx_pt_trigger_history_tag", columnList = "tag"),
 })
 @Data
 @NoArgsConstructor

@@ -26,17 +26,18 @@ public class TriggerSearch {
                 || StringHelper.hasValue(tag);
     }
     
-    
     public static TriggerSearch byCorrelationId(String correlationId) {
         var result = new TriggerSearch();
         result.setCorrelationId(correlationId);
         return result;
     }
+
     public static TriggerSearch byStatus(TriggerStatus status) {
         var result = new TriggerSearch();
         result.setStatus(status);
         return result;
     }
+
     public static TriggerSearch forTriggerRequest(TriggerRequest<?> trigger) {
         var search = new TriggerSearch();
         if (trigger.key() != null) {
@@ -57,6 +58,7 @@ public class TriggerSearch {
     public static Sort sortByCreatedTime(Direction direction) {
         return Sort.by(direction, "data.createdTime");
     }
+
     public static Pageable applyDefaultSortIfNeeded(Pageable page) {
         var result = page;
         if (page.getSort() == Sort.unsorted()) {
@@ -64,5 +66,4 @@ public class TriggerSearch {
         }
         return result;
     }
-
 }

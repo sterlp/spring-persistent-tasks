@@ -15,6 +15,7 @@ public interface HistoryTriggerRepository<T extends HasTrigger> extends TriggerR
     @Query("""
             SELECT e FROM #{#entityName} e 
             WHERE e.data.key = :key
+            ORDER BY e.id DESC
             """)
     Page<T> listKnownStatusFor(@Param("key") TriggerKey key, Pageable page);
 }
