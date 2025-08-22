@@ -95,11 +95,12 @@ class TriggerLifeCycleTest extends AbstractSpringTest {
             }
         });
 
-        trx.executeWithoutResult(trx -> {
+        trx.execute(trx -> {
             var t = subject.queue(taskId.newTrigger().waitForSignal(OffsetDateTime.now().minusSeconds(1)).build());
             t.runOn("foo-bar-gone");
             t.setLastPing(OffsetDateTime.now().minusDays(1));
             t.getData().setExecutionCount(99);
+            return t;
         });
 
         // WHEN

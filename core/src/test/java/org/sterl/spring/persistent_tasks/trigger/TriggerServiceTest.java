@@ -431,6 +431,28 @@ class TriggerServiceTest extends AbstractSpringTest {
     }
     
     @Test
+    void testRescheduleAbandonedTasksOnlyRunning() {
+        // GIVEN
+        var now = OffsetDateTime.now();
+        var t1 = new RunningTriggerEntity(new TriggerKey(UuidCreator.getTimeOrdered().toString(), "fooTask"))
+                        .runOn("fooScheduler");
+        t1.setLastPing(now.minusSeconds(60));
+        triggerRepository.save(t1);
+        
+        var t2 = new RunningTriggerEntity(
+                new TriggerKey(UuidCreator.getTimeOrdered().toString(), "barTask"));
+        t2.setLastPing(now.minusSeconds(60));
+        triggerRepository.save(t2);
+
+        // WHEN
+        final var rescheduledTasks = subject.rescheduleAbandoned(now.minusSeconds(59));
+
+        // THEN
+        assertThat(rescheduledTasks).hasSize(1);
+        assertThat(rescheduledTasks.get(0).getKey()).isEqualTo(t1.getKey());
+    }
+    
+    @Test
     void testUnknownTriggersNoRetry() {
         // GIVEN
         var t = triggerRepository.save(

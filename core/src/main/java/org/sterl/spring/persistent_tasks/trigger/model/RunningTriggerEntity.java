@@ -87,6 +87,7 @@ public class RunningTriggerEntity implements HasTrigger {
         this.data.setEnd(OffsetDateTime.now());
         this.data.updateRunningDuration();
         this.data.setStatus(status);
+        this.lastPing = null;
 
         if (e != null) {
             this.data.setExceptionName(e.getClass().getName());

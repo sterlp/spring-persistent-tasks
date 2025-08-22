@@ -69,9 +69,11 @@ public interface RunningTriggerRepository extends TriggerRepository<RunningTrigg
 
     @Query("""
             SELECT e FROM #{#entityName} e
-            WHERE  e.lastPing < :lastPing
+            WHERE  e.data.status = :status
+            AND  e.lastPing < :lastPing
             """)
     List<RunningTriggerEntity> findTriggersLastPingAfter(
+            @Param("status") TriggerStatus status,
             @Param("lastPing") OffsetDateTime lastPing);
     
     @Query("""
