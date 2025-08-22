@@ -21,12 +21,12 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "pt_completed_triggers", indexes = {
-        @Index(name = "idx_pt_trigger_history_last_states_task_name", columnList = "task_name"),
-        @Index(name = "idx_pt_trigger_history_last_states_trigger_id", columnList = "trigger_id"),
-        @Index(name = "idx_pt_trigger_history_last_states_status", columnList = "status"),
-        @Index(name = "idx_pt_trigger_history_last_states_created_time", columnList = "created_time"),
-        @Index(name = "idx_pt_trigger_history_last_states_correlation_id", columnList = "correlation_id"),
-        @Index(name = "idx_pt_trigger_history_last_states_tag", columnList = "tag"),
+        @Index(name = "idx_pt_completed_triggers_task_name", columnList = "task_name"),
+        @Index(name = "idx_pt_completed_triggers_trigger_id", columnList = "trigger_id"),
+        @Index(name = "idx_pt_completed_triggers_status", columnList = "status"),
+        @Index(name = "idx_pt_completed_triggers_created_time", columnList = "created_time"),
+        @Index(name = "idx_pt_completed_triggers_correlation_id", columnList = "correlation_id"),
+        @Index(name = "idx_pt_completed_triggers_tag", columnList = "tag"),
 })
 @Data
 @NoArgsConstructor
