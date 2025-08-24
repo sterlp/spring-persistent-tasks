@@ -15,9 +15,9 @@
 
     <properties>
         <!--
-        <spt.version>1.6.7</spt.version>
-        -->
         <spt.version>2.1.2</spt.version>
+        -->
+        <spt.version>2.2.1</spt.version>
     </properties>
 
     <dependencies>
