@@ -10,7 +10,7 @@ import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
  * This event is maybe not in a transaction and so a transactional event listener will not work.
  * </p>
  */
-public record TriggerRunningEvent(long id, TriggerEntity data, Serializable state, String runningOn) implements TriggerLifeCycleEvent {
+public record TriggerRunningEvent(Long id, TriggerEntity data, Serializable state, String runningOn) implements TriggerLifeCycleEvent {
 
     public boolean isRunningOn(String name) {
         return isRunning() && name != null && name.equals(runningOn);

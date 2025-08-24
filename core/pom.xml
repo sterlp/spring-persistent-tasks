@@ -156,6 +156,10 @@
                     <outputFile>../ui/spt-ui-lib/lib/server-api.ts</outputFile>
                     <outputKind>module</outputKind>
                     <outputFileType>implementationFile</outputFileType>
+                    <optionalAnnotations>
+                        <annotation>jakarta.annotation.Nullable</annotation>
+                        <annotation>org.springframework.lang.Nullable</annotation>
+                    </optionalAnnotations>
                 </configuration>
             </plugin>
             <plugin>

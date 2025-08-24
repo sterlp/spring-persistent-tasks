@@ -1,5 +1,6 @@
 package org.sterl.spring.persistent_tasks.trigger.component;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import org.springframework.lang.Nullable;
@@ -25,7 +26,8 @@ public class RunTriggerComponent {
     private final StateSerializer serializer = new StateSerializer();
 
     /**
-     * Will execute the given {@link RunningTriggerEntity} and handle any errors etc.
+     * Will execute the given {@link RunningTriggerEntity} and handle any errors
+     * etc.
      */
     @Transactional(propagation = Propagation.NEVER)
     public Optional<RunningTriggerEntity> execute(RunningTriggerEntity trigger) {
@@ -35,9 +37,17 @@ public class RunTriggerComponent {
 
         final var runTaskWithState = buildTaskWithStateFor(trigger);
         // something went really wrong this trigger is crap
-        if (runTaskWithState == null) return Optional.of(trigger);
+        if (runTaskWithState == null)
+            return Optional.of(trigger);
 
         try {
+            if (OffsetDateTime.now().isAfter(trigger.getData().getRunAt())) {
+                log.debug("Running {} for {} time.", trigger.key(), trigger.executionCount());
+            } else {
+                log.info("Running to early {} start should be {} for {} time.",
+                        trigger.key(), trigger.getData().getRunAt(), trigger.executionCount());
+            }
+
             RunningTriggerContextHolder.setContext(runTaskWithState.runningTrigger());
             return runTaskWithState.execute(editTrigger);
         } catch (Exception e) {

@@ -103,13 +103,13 @@ public interface TriggerRepository<T extends HasTrigger> extends JpaRepository<T
     Page<T> findAll(@Param("taskName") String taskName, Pageable page);
     
     @Query("""
-           SELECT COUNT(e.data.key) 
+           SELECT COUNT(e.id) 
            FROM #{#entityName} e WHERE e.data.key.taskName = :taskName
            """)
     long countByTaskName(@Param("taskName") String taskName);
 
     @Query("""
-            SELECT COUNT(e.data.key) 
+            SELECT COUNT(e.id) 
             FROM #{#entityName} e WHERE e.data.key = :key
             """)
     long countByKey(@Param("key") TriggerKey key);

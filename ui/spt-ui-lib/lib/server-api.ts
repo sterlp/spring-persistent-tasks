@@ -3,7 +3,7 @@
 
 export interface PagedModel<T> {
     content: T[];
-    page: PageMetadata;
+    page?: PageMetadata;
 }
 
 export interface SchedulerEntity {
@@ -14,6 +14,17 @@ export interface SchedulerEntity {
     maxHeap: number;
     usedHeap: number;
     lastPing: string;
+}
+
+export interface HistoryTrigger {
+    id: number;
+    instanceId: number;
+    key: TriggerKey;
+    createdTime: string;
+    start?: string;
+    executionCount: number;
+    status: TriggerStatus;
+    message?: string;
 }
 
 export interface TaskStatusHistoryOverview {
@@ -32,21 +43,21 @@ export interface Trigger {
     id: number;
     instanceId: number;
     key: TriggerKey;
-    tag: string;
-    correlationId: string;
-    runningOn: string;
+    tag?: string;
+    correlationId?: string;
+    runningOn?: string;
     createdTime: string;
     runAt: string;
-    lastPing: string;
-    start: string;
-    end: string;
+    lastPing?: string;
+    start?: string;
+    end?: string;
     executionCount: number;
     priority: number;
     status: TriggerStatus;
-    runningDurationInMs: number;
-    state: any;
-    exceptionName: string;
-    lastException: string;
+    runningDurationInMs?: number;
+    state?: any;
+    exceptionName?: string;
+    lastException?: string;
 }
 
 export interface TriggerGroup {

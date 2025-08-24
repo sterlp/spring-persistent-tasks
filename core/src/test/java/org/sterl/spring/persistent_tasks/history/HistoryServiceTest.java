@@ -47,24 +47,23 @@ class HistoryServiceTest extends AbstractSpringTest {
     @Test
     void testTriggerHistory() throws TimeoutException, InterruptedException {
         // GIVEN
-        final var trigger = Task3.ID.newUniqueTrigger("Hallo");
-        triggerService.queue(trigger);
+        final var trigger = triggerService.queue(Task3.ID.newUniqueTrigger("Hallo"));
         persistentTaskTestService.runNextTrigger();
         // WHEN
-        var triggers = subject.findAllDetailsForKey(trigger.key(), PageRequest.of(0, 100)).getContent();
+        var triggers = subject.findAllDetailsForInstance(trigger.getId(), 
+                PageRequest.of(0, 100)).getContent();
         
         // AND
         assertThat(triggers).hasSize(3);
-        assertThat(triggers.get(0).getData().getStatus()).isEqualTo(TriggerStatus.SUCCESS);
-        assertThat(triggers.get(1).getData().getStatus()).isEqualTo(TriggerStatus.RUNNING);
-        assertThat(triggers.get(2).getData().getStatus()).isEqualTo(TriggerStatus.WAITING);
+        assertThat(triggers.get(0).getStatus()).isEqualTo(TriggerStatus.SUCCESS);
+        assertThat(triggers.get(1).getStatus()).isEqualTo(TriggerStatus.RUNNING);
+        assertThat(triggers.get(2).getStatus()).isEqualTo(TriggerStatus.WAITING);
     }
     
     @RepeatedTest(3)
     void testTriggerHistoryTrx() {
         // GIVEN
-        final var trigger = Task3.ID.newUniqueTrigger("Hallo");
-        persistentTaskService.queue(trigger);
+        final var trigger = persistentTaskService.queue(Task3.ID.newUniqueTrigger("Hallo"));
         // WHEN
         hibernateAsserts.reset();
         schedulerService.triggerNextTasks().forEach(t -> {
@@ -75,7 +74,6 @@ class HistoryServiceTest extends AbstractSpringTest {
         // 2 to get the work done
         // 1 for the success history
         hibernateAsserts.assertTrxCount(3);
-        assertThat(subject.countTriggers(trigger.key())).isEqualTo(1);
-        assertThat(subject.findAllDetailsForKey(trigger.key()).getTotalElements()).isEqualTo(3);
+        assertThat(subject.countTriggers(trigger)).isEqualTo(1);
     }
 }

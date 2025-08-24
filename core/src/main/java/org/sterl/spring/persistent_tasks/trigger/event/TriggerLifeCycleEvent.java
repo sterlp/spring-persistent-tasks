@@ -1,6 +1,8 @@
 package org.sterl.spring.persistent_tasks.trigger.event;
 
 import java.io.Serializable;
+import java.time.Duration;
+import java.time.OffsetDateTime;
 
 import org.springframework.lang.Nullable;
 import org.sterl.spring.persistent_tasks.api.event.PersistentTasksEvent;
@@ -15,12 +17,30 @@ public interface TriggerLifeCycleEvent extends HasTrigger, PersistentTasksEvent 
     default TriggerEntity getData() {
         return data();
     }
-    long id();
+    
+    Long id();
+    
+    default Long getId() {
+        return id();
+    }
+    
     TriggerEntity data();
+    
     @Nullable
     Serializable state();
+    
     /**
+     * If a trigger is done, it finished it's execution either successfully or with an final error without retries left.
+     * 
      * @return <code>true</code> if the trigger was completed, either with success, error or canceled.
      */
     boolean isDone();
+    
+    default long timePassedMs() {
+        var result = data().getRunningDurationInMs();
+        if (result == null && data().getStart() != null) {
+            result = Duration.between(data().getStart(), OffsetDateTime.now()).toMillis();
+        }
+        return result == null ? 0 : result.longValue();
+    }
 }

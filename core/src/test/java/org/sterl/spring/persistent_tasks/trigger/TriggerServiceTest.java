@@ -28,7 +28,6 @@ import org.sterl.spring.persistent_tasks.task.repository.TaskRepository;
 import org.sterl.spring.persistent_tasks.trigger.component.StateSerializer.DeSerializationFailedException;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerAddedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerCanceledEvent;
-import org.sterl.spring.persistent_tasks.trigger.event.TriggerExpiredEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerFailedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerResumedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerSuccessEvent;
@@ -463,8 +462,8 @@ class TriggerServiceTest extends AbstractSpringTest {
         
         // WHEN
         var triggerData = persistentTaskService.getLastTriggerData(t.getKey()).get();
-        assertThat(triggerData.getStatus()).isEqualTo(TriggerStatus.FAILED);
-        assertThat(triggerData.getExceptionName()).isEqualTo(IllegalStateException.class.getName());
+        assertThat(triggerData.status()).isEqualTo(TriggerStatus.FAILED);
+        assertThat(triggerData.getData().getExceptionName()).isEqualTo(IllegalStateException.class.getName());
     }
     
     @Test
@@ -479,8 +478,8 @@ class TriggerServiceTest extends AbstractSpringTest {
         
         // WHEN
         var triggerData = persistentTaskService.getLastTriggerData(t.getKey()).get();
-        assertThat(triggerData.getStatus()).isEqualTo(TriggerStatus.FAILED);
-        assertThat(triggerData.getExceptionName()).isEqualTo(DeSerializationFailedException.class.getName());
+        assertThat(triggerData.status()).isEqualTo(TriggerStatus.FAILED);
+        assertThat(triggerData.getData().getExceptionName()).isEqualTo(DeSerializationFailedException.class.getName());
         // AND
         assertThat(events.stream(TriggerSuccessEvent.class).count()).isZero();
         assertThat(events.stream(TriggerFailedEvent.class).count()).isOne();

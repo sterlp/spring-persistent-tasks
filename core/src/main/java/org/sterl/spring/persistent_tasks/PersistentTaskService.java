@@ -10,7 +10,6 @@ import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,9 @@ import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.api.event.TriggerTaskCommand;
 import org.sterl.spring.persistent_tasks.history.HistoryService;
 import org.sterl.spring.persistent_tasks.history.model.CompletedTriggerEntity;
+import org.sterl.spring.persistent_tasks.history.model.HistoryTriggerEntity;
 import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
+import org.sterl.spring.persistent_tasks.shared.model.HasTrigger;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
@@ -47,25 +48,17 @@ public class PersistentTaskService {
      * @param key the {@link TriggerKey} to look for
      * @return the {@link TriggerEntity} to the {@link TriggerKey}
      */
-    public Optional<TriggerEntity> getLastTriggerData(TriggerKey key) {
+    public Optional<HasTrigger> getLastTriggerData(TriggerKey key) {
         final Optional<RunningTriggerEntity> trigger = triggerService.get(key);
         if (trigger.isEmpty()) {
             var history = historyService.findLastKnownStatus(key);
             if (history.isPresent()) {
-                return Optional.ofNullable(history.get().getData());
+                return Optional.ofNullable(history.get());
             }
             return Optional.empty();
         } else {
-            return Optional.ofNullable(trigger.get().getData());
+            return Optional.ofNullable(trigger.get());
         }
-    }
-
-    public Optional<TriggerEntity> getLastDetailData(TriggerKey key) {
-        var data = historyService.findAllDetailsForKey(key, Pageable.ofSize(1));
-        if (data.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(data.getContent().get(0).getData());
     }
 
     @EventListener
@@ -166,5 +159,11 @@ public class PersistentTaskService {
                                    .toList();
         }
         return result.isEmpty() ? Optional.empty() : Optional.of(result.getFirst());
+    }
+
+    public Optional<HistoryTriggerEntity> getLastTriggerHistory(Long id) {
+        var result = historyService.findAllDetailsForInstance(id, PageRequest.ofSize(1));
+        if (result.isEmpty()) return Optional.empty();
+        return Optional.of(result.getContent().getFirst());
     }
 }
