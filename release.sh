@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e -o pipefail
 
 # Fetch the current version from the POM
 MVN_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)

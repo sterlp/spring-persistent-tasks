@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Exit immediately on error
-set -e
+set -e -o pipefail
 
 # Check if version argument is provided
 if [ -z "$1" ]; then
