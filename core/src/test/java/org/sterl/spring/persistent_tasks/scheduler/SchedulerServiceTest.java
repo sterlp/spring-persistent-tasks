@@ -129,7 +129,7 @@ class SchedulerServiceTest extends AbstractSpringTest {
         asserts.awaitValue(Task3.NAME + "::Hallo");
         persistentTaskTestService.awaitRunningTriggers();
 
-        assertThat(persistentTaskService.getLastTriggerData(ref).get().getStatus())
+        assertThat(persistentTaskService.getLastTriggerData(ref).get().status())
             .isEqualTo(TriggerStatus.SUCCESS);
     }
 

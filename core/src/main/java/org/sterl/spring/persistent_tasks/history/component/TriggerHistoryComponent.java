@@ -1,7 +1,6 @@
 package org.sterl.spring.persistent_tasks.history.component;
 
-import java.time.OffsetDateTime;
-
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -64,11 +63,16 @@ public class TriggerHistoryComponent {
         }
 
         var detail = new HistoryTriggerEntity();
+        detail.setExecutionCount(data.getExecutionCount());
         detail.setInstanceId(triggerId);
-        detail.setData(data.toBuilder()
-                .state(null)
-                .createdTime(OffsetDateTime.now())
-                .build());
+        detail.setKey(data.getKey());
+        
+        var msg = data.getExceptionName();
+        if (data.getLastException() != null) msg = data.getLastException();
+        detail.setMessage(StringUtils.substring(msg, 0, 200));
+
+        detail.setStart(data.getStart());
+        detail.setStatus(data.getStatus());
         triggerHistoryDetailRepository.save(detail);
     }
 }

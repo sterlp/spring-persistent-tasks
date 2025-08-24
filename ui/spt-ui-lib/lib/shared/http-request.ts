@@ -55,6 +55,7 @@ export const useServerObject = <T>(
                     } else {
                         console.error(requestUrl, e);
                         setError(e);
+                        throw e;
                     }
                 })
                 .finally(() => setIsLoading(false));

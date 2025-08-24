@@ -8,6 +8,8 @@ spring:
 
   persistent-tasks:
     max-threads: 1
+    trigger-timeout: PT2M
+    poll-abandoned-triggers: 60
 
   liquibase:
       change-log: classpath:db/changelog/db.changelog-master.xml

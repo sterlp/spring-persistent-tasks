@@ -15,11 +15,20 @@ function App() {
             content: [],
         }
     );
+    const triggerHistory = useServerObject<PagedModel<Trigger>>(
+        "/spring-tasks-api/history?size=15",
+        {
+            page: { number: 0, size: 0, totalElements: 0, totalPages: 0 },
+            content: [],
+        }
+    );
     useEffect(triggers.doGet, []);
+    useEffect(triggerHistory.doGet, []);
 
     return (
         <Container>
             <TriggerListView triggers={triggers.data?.content} />
+            <TriggerListView triggers={triggerHistory.data?.content} />
             <GroupView />
         </Container>
     );

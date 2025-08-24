@@ -85,16 +85,22 @@ public class RunningTriggerEntity implements HasTrigger {
 
     public void finishTriggerWithStatus(TriggerStatus status, Exception e) {
         this.data.setEnd(OffsetDateTime.now());
-        this.data.updateRunningDuration();
         this.data.setStatus(status);
+        this.data.updateRunningDuration();
+        this.lastPing = null;
 
-        if (e != null) {
+        if (e == null) {
+            this.data.setExceptionName(null);
+            this.data.setLastException(null);
+        } else {
             this.data.setExceptionName(e.getClass().getName());
             this.data.setLastException(ExceptionUtils.getStackTrace(e));
         }
     }
 
     public RunningTriggerEntity runOn(String runningOn) {
+        this.data.setExceptionName(null);
+        this.data.setLastException(null);
         this.data.setStart(OffsetDateTime.now());
         this.data.setEnd(null);
         this.data.setExecutionCount(data.getExecutionCount() + 1);
@@ -108,7 +114,8 @@ public class RunningTriggerEntity implements HasTrigger {
     public RunningTriggerEntity runAt(OffsetDateTime runAt) {
         data.setStatus(TriggerStatus.WAITING);
         data.setRunAt(runAt);
-        setRunningOn(null);
+        this.runningOn = null;
+        this.lastPing = null;
         return this;
     }
 

@@ -28,7 +28,6 @@ import org.sterl.spring.persistent_tasks.task.repository.TaskRepository;
 import org.sterl.spring.persistent_tasks.trigger.component.StateSerializer.DeSerializationFailedException;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerAddedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerCanceledEvent;
-import org.sterl.spring.persistent_tasks.trigger.event.TriggerExpiredEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerFailedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerResumedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerSuccessEvent;
@@ -431,6 +430,28 @@ class TriggerServiceTest extends AbstractSpringTest {
     }
     
     @Test
+    void testRescheduleAbandonedTasksOnlyRunning() {
+        // GIVEN
+        var now = OffsetDateTime.now();
+        var t1 = new RunningTriggerEntity(new TriggerKey(UuidCreator.getTimeOrdered().toString(), "fooTask"))
+                        .runOn("fooScheduler");
+        t1.setLastPing(now.minusSeconds(60));
+        triggerRepository.save(t1);
+        
+        var t2 = new RunningTriggerEntity(
+                new TriggerKey(UuidCreator.getTimeOrdered().toString(), "barTask"));
+        t2.setLastPing(now.minusSeconds(60));
+        triggerRepository.save(t2);
+
+        // WHEN
+        final var rescheduledTasks = subject.rescheduleAbandoned(now.minusSeconds(59));
+
+        // THEN
+        assertThat(rescheduledTasks).hasSize(1);
+        assertThat(rescheduledTasks.get(0).getKey()).isEqualTo(t1.getKey());
+    }
+    
+    @Test
     void testUnknownTriggersNoRetry() {
         // GIVEN
         var t = triggerRepository.save(
@@ -441,8 +462,8 @@ class TriggerServiceTest extends AbstractSpringTest {
         
         // WHEN
         var triggerData = persistentTaskService.getLastTriggerData(t.getKey()).get();
-        assertThat(triggerData.getStatus()).isEqualTo(TriggerStatus.FAILED);
-        assertThat(triggerData.getExceptionName()).isEqualTo(IllegalStateException.class.getName());
+        assertThat(triggerData.status()).isEqualTo(TriggerStatus.FAILED);
+        assertThat(triggerData.getData().getExceptionName()).isEqualTo(IllegalStateException.class.getName());
     }
     
     @Test
@@ -457,8 +478,8 @@ class TriggerServiceTest extends AbstractSpringTest {
         
         // WHEN
         var triggerData = persistentTaskService.getLastTriggerData(t.getKey()).get();
-        assertThat(triggerData.getStatus()).isEqualTo(TriggerStatus.FAILED);
-        assertThat(triggerData.getExceptionName()).isEqualTo(DeSerializationFailedException.class.getName());
+        assertThat(triggerData.status()).isEqualTo(TriggerStatus.FAILED);
+        assertThat(triggerData.getData().getExceptionName()).isEqualTo(DeSerializationFailedException.class.getName());
         // AND
         assertThat(events.stream(TriggerSuccessEvent.class).count()).isZero();
         assertThat(events.stream(TriggerFailedEvent.class).count()).isOne();

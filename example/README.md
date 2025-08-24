@@ -5,3 +5,8 @@
 -   url: http://localhost:8080/task-ui
 -   user: admin
 -   password: admin
+
+
+# Read metric by status
+
+- http://localhost:8080/actuator/metrics/persistent_tasks.task.failingBuildVehicleTask?tag=status:FAILED

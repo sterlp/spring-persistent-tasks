@@ -18,6 +18,7 @@ import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
+import org.sterl.spring.persistent_tasks.shared.DateUtil;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
 import org.sterl.spring.persistent_tasks.task.TaskService;
 import org.sterl.spring.persistent_tasks.trigger.component.EditTriggerComponent;
@@ -206,10 +207,15 @@ public class TriggerService {
     public List<RunningTriggerEntity> rescheduleAbandoned(OffsetDateTime timeout) {
         final List<RunningTriggerEntity> result = readTrigger.findTriggersLastPingAfter(
                 timeout);
-        final var e = new IllegalStateException("Trigger abandoned - timeout: " + timeout);
+        var now = OffsetDateTime.now().toEpochSecond();
         result.forEach(t -> {
-            var task = taskService.get(t.newTaskId());
-            var state = stateSerializer.deserializeOrNull(t.getData().getState());
+            final var task = taskService.get(t.newTaskId());
+            final var state = stateSerializer.deserializeOrNull(t.getData().getState());
+            
+            final var e = new IllegalStateException("Trigger abandoned. Timeout: " 
+                    + timeout + " running on: " + t.getRunningOn()
+                    + " since: " + DateUtil.secondsBeetween(t.getData().getStart(), now));
+            
             failTrigger.execute(task.orElse(null), t, state, e);
         });
         log.debug("rescheduled {} triggers", result.size());

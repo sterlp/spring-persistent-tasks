@@ -59,4 +59,9 @@ public record RunTaskWithStateCommand (
     public TriggerEntity getData() {
         return trigger.getData();
     }
+
+    @Override
+    public Long getId() {
+        return trigger.getId();
+    }
 }

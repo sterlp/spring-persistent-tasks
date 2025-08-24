@@ -22,6 +22,7 @@ import org.sterl.spring.persistent_tasks.history.model.HistoryTriggerEntity;
 import org.sterl.spring.persistent_tasks.history.model.QCompletedTriggerEntity;
 import org.sterl.spring.persistent_tasks.history.repository.CompletedTriggerRepository;
 import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryDetailRepository;
+import org.sterl.spring.persistent_tasks.shared.QueryHelper;
 import org.sterl.spring.persistent_tasks.shared.model.HasTrigger;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
 
@@ -53,9 +54,10 @@ public class HistoryService {
         triggerHistoryDetailRepository.deleteAllInBatch();
     }
     
-    public void deleteAllOlderThan(OffsetDateTime age) {
-        completedTriggerRepository.deleteOlderThan(age);
-        triggerHistoryDetailRepository.deleteOlderThan(age);
+    public long deleteAllOlderThan(OffsetDateTime age) {
+        var result = triggerHistoryDetailRepository.deleteOlderThan(age);
+        result += completedTriggerRepository.deleteOlderThan(age);
+        return result;
     }
 
     /**
@@ -65,16 +67,9 @@ public class HistoryService {
         return triggerHistoryDetailRepository.countByStatus(status);
     }
 
-    public List<HistoryTriggerEntity> findAllDetailsForInstance(long instanceId) {
-        return triggerHistoryDetailRepository.findAllByInstanceId(instanceId);
-    }
-    
-    public Page<HistoryTriggerEntity> findAllDetailsForKey(TriggerKey key) {
-        return findAllDetailsForKey(key, PageRequest.of(0, 100));
-    }
-    public Page<HistoryTriggerEntity> findAllDetailsForKey(TriggerKey key, Pageable page) {
-        page = applyDefaultSortIfNeeded(page);
-        return triggerHistoryDetailRepository.listKnownStatusFor(key, page);
+    public Page<HistoryTriggerEntity> findAllDetailsForInstance(long instanceId, Pageable page) {
+        page = QueryHelper.applySortIfEmpty(page, Sort.by(Direction.DESC, "id"));
+        return triggerHistoryDetailRepository.findAllByInstanceId(instanceId, page);
     }
 
     public Optional<TriggerKey> reQueue(Long id, OffsetDateTime runAt) {

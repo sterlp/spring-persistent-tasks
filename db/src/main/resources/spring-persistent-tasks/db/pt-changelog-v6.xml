@@ -1,0 +1,61 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <property name="offsetdatetime.type" value="datetimeoffset(6)" dbms="mssql" />
+    <property name="offsetdatetime.type" value="TIMESTAMPTZ" dbms="postgresql" />
+    <property name="offsetdatetime.type" value="TIMESTAMP WITH TIME ZONE" dbms="h2" />
+    <property name="offsetdatetime.type" value="DATETIME(6)" dbms="mysql,mariadb" />
+
+    <changeSet author="sterlp" id="2025-08-21-rebuild-details-history">
+        <dropIndex indexName="idx_pt_trigger_history_tag" tableName="pt_trigger_history" />
+        <dropIndex indexName="idx_pt_trigger_history_correlation_id" tableName="pt_trigger_history" />
+        <dropIndex indexName="idx_pt_trigger_history_status" tableName="pt_trigger_history" />
+        <dropIndex indexName="idx_pt_trigger_history_created_time" tableName="pt_trigger_history" />
+        <dropIndex indexName="idx_pt_trigger_history_trigger_id" tableName="pt_trigger_history" />
+
+        <dropTable cascadeConstraints="true" tableName="pt_trigger_history" />
+        <dropSequence sequenceName="seq_pt_trigger_history_details" />
+
+        <createTable tableName="pt_trigger_history">
+            <column computed="false" name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true"
+                    primaryKeyName="pk_pt_trigger_history_id" />
+            </column>
+            <column computed="false" name="instance_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="execution_count" type="int" defaultValueNumeric="0">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="trigger_id" type="varchar(200)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="task_name" type="varchar(200)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="status" type="varchar(20)">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="created_time" type="${offsetdatetime.type}">
+                <constraints nullable="false" />
+            </column>
+            <column computed="false" name="start_time" type="${offsetdatetime.type}" />
+            <column computed="false" name="message" type="varchar(200)" />
+        </createTable>
+
+        <createIndex indexName="idx_pt_trigger_history_instance_id" tableName="pt_trigger_history">
+            <column name="instance_id" />
+        </createIndex>
+
+        <createSequence cycle="false" incrementBy="50" maxValue="9223372036854775807"
+            minValue="-9223372036854775808" sequenceName="seq_pt_trigger_history" startValue="1" />
+
+    </changeSet>
+
+</databaseChangeLog>

@@ -30,18 +30,15 @@ export function formatShortDateTime(inputDate?: string | Date): string {
 export function formatDateTime(inputDate?: string | Date): string {
     if (!inputDate) return "";
     const date = inputDate instanceof Date ? inputDate : new Date(inputDate);
-    return new Intl.DateTimeFormat(
-        navigator.language || "en-US",
-        {
-            day: "2-digit",
-            month: "2-digit",
-            year: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            hour12: false, // Use 24-hour format
-        }
-    ).format(date);
+    return new Intl.DateTimeFormat(navigator.language || "en-US", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false, // Use 24-hour format
+    }).format(date);
 }
 
 export function formatMs(ms?: number) {
@@ -56,7 +53,7 @@ export function formatMs(ms?: number) {
     if (inS < 181) {
         return sign + inS + "s " + (ms - inS * 1000) + "ms";
     }
-    
+
     const inMin = Math.floor(inS / 60);
     if (inMin < 181) {
         return sign + inMin + "min " + (inS - inMin * 60) + "s";
@@ -73,4 +70,21 @@ export function runningSince(value?: string) {
     if (!value) return "";
     const msRuntime = new Date().getTime() - new Date(value).getTime();
     return `since ${formatMs(msRuntime)}`;
+}
+
+export function durationInSeconds(
+    start?: string | Date,
+    end?: string | Date
+): number | undefined {
+    if (!start || !end) return undefined;
+    const startDate = typeof start === "string" ? new Date(start) : start;
+    const endDate = typeof end === "string" ? new Date(end) : end;
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        return undefined; // invalid date input
+    }
+
+    const seconds = (endDate.getTime() - startDate.getTime()) / 1000;
+    if (seconds < 100) return Math.round(seconds * 10) / 10;
+    return Math.round(seconds);
 }

@@ -15,11 +15,11 @@ const PageView: React.FC<PageViewProps> = ({
 }) => {
     if (!data || isLoading) return <PageViewLoaing />;
 
-    const currentPage = data?.page.number ?? 0;
-    const totalPages = data?.page.totalPages ?? 0;
-    const totalElements = data?.page.totalElements ?? 0;
-    const pageSize = data?.page.size ?? 0;
-    const contentLength = data?.content?.length ?? 0;
+    const currentPage = data.page?.number ?? 0;
+    const totalPages = data.page?.totalPages ?? 0;
+    const totalElements = data.page?.totalElements ?? 0;
+    const pageSize = data.page?.size ?? 0;
+    const contentLength = data.content?.length ?? 0;
 
     const handlePrevClick = () => {
         if (currentPage > 0) {

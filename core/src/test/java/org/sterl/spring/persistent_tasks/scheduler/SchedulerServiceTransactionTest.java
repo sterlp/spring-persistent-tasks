@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.Pageable;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
@@ -112,13 +113,13 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         hibernateAsserts.assertTrxCount(4);
         assertThat(personRepository.count()).isOne();
         // AND
-        var data = persistentTaskService.getLastDetailData(trigger.key());
-        assertThat(data.get().getStatus()).isEqualTo(TriggerStatus.SUCCESS);
+        var data = persistentTaskService.getLastTriggerHistory(trigger.getId()).get();
+        assertThat(data.getStatus()).isEqualTo(TriggerStatus.SUCCESS);
         // AND
-        var history = historyService.findAllDetailsForKey(trigger.key()).getContent();
-        assertThat(history.get(0).getData().getStatus()).isEqualTo(TriggerStatus.SUCCESS);
-        assertThat(history.get(1).getData().getStatus()).isEqualTo(TriggerStatus.RUNNING);
-        assertThat(history.get(2).getData().getStatus()).isEqualTo(TriggerStatus.WAITING);
+        var history = historyService.findAllDetailsForInstance(trigger.getId(), Pageable.ofSize(10)).getContent();
+        assertThat(history.get(0).getStatus()).isEqualTo(TriggerStatus.SUCCESS);
+        assertThat(history.get(1).getStatus()).isEqualTo(TriggerStatus.RUNNING);
+        assertThat(history.get(2).getStatus()).isEqualTo(TriggerStatus.WAITING);
     }
     
     @Test
@@ -138,13 +139,13 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         hibernateAsserts.assertTrxCount(3);
         assertThat(personRepository.count()).isOne();
         // AND
-        var data = persistentTaskService.getLastDetailData(trigger.key());
-        assertThat(data.get().getStatus()).isEqualTo(TriggerStatus.SUCCESS);
+        var data = persistentTaskService.getLastTriggerHistory(trigger.getId()).get();
+        assertThat(data.getStatus()).isEqualTo(TriggerStatus.SUCCESS);
         // AND
-        var history = historyService.findAllDetailsForKey(trigger.key()).getContent();
-        assertThat(history.get(0).getData().getStatus()).isEqualTo(TriggerStatus.SUCCESS);
-        assertThat(history.get(1).getData().getStatus()).isEqualTo(TriggerStatus.RUNNING);
-        assertThat(history.get(2).getData().getStatus()).isEqualTo(TriggerStatus.WAITING);
+        var history = historyService.findAllDetailsForInstance(trigger.getId(), Pageable.ofSize(10)).getContent();
+        assertThat(history.get(0).getStatus()).isEqualTo(TriggerStatus.SUCCESS);
+        assertThat(history.get(1).getStatus()).isEqualTo(TriggerStatus.RUNNING);
+        assertThat(history.get(2).getStatus()).isEqualTo(TriggerStatus.WAITING);
     }
     
     @Test
@@ -168,15 +169,16 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         // 4. Update the status to failed and write the history
         hibernateAsserts.assertTrxCount(4);
         // AND
-        var data = persistentTaskService.getLastDetailData(trigger.key());
-        assertThat(data.get().getStatus()).isEqualTo(TriggerStatus.FAILED);
+        var history = persistentTaskService.getLastTriggerHistory(trigger.getId()).get();
+        assertThat(history.getStatus()).isEqualTo(TriggerStatus.FAILED);
+        // AND
         assertThat(triggerService.get(trigger.getKey()).get().getRunningOn()).isNull();
         assertThat(triggerService.get(trigger.getKey()).get().status()).isEqualTo(TriggerStatus.WAITING);
         // AND
-        var history = historyService.findAllDetailsForKey(trigger.key()).getContent();
-        assertThat(history.get(0).getData().getStatus()).isEqualTo(TriggerStatus.FAILED);
-        assertThat(history.get(1).getData().getStatus()).isEqualTo(TriggerStatus.RUNNING);
-        assertThat(history.get(2).getData().getStatus()).isEqualTo(TriggerStatus.WAITING);
+        var histories = historyService.findAllDetailsForInstance(trigger.getId(), Pageable.ofSize(10)).getContent();
+        assertThat(histories.get(0).getStatus()).isEqualTo(TriggerStatus.FAILED);
+        assertThat(histories.get(1).getStatus()).isEqualTo(TriggerStatus.RUNNING);
+        assertThat(histories.get(2).getStatus()).isEqualTo(TriggerStatus.WAITING);
     }
     
     @Test
@@ -187,7 +189,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         // THEN 1 to save and 1 to start it and 1 for the history
         awaitHistoryThreads();
         hibernateAsserts.assertTrxCount(3);
-        assertThat(persistentTaskService.getLastTriggerData(k1).get().getStatus())
+        assertThat(persistentTaskService.getLastTriggerData(k1).get().status())
             .isEqualTo(TriggerStatus.RUNNING);
 
         // WHEN
@@ -200,7 +202,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         // THEN
         assertThat(personRepository.count()).isEqualTo(1);
         // AND
-        assertThat(persistentTaskService.getLastTriggerData(k1).get().getStatus())
+        assertThat(persistentTaskService.getLastTriggerData(k1).get().status())
             .isEqualTo(TriggerStatus.SUCCESS);
     }
     
@@ -211,9 +213,9 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         var k2 = subject.runOrQueue(TriggerBuilder.newTrigger("savePersonInTrx").state("Paul").build());
 
         // WHEN
-        assertThat(persistentTaskService.getLastTriggerData(k1).get().getStatus())
+        assertThat(persistentTaskService.getLastTriggerData(k1).get().status())
             .isEqualTo(TriggerStatus.RUNNING);
-        assertThat(persistentTaskService.getLastTriggerData(k2).get().getStatus())
+        assertThat(persistentTaskService.getLastTriggerData(k2).get().status())
             .isEqualTo(TriggerStatus.RUNNING);
 
         COUNTDOWN.countDown();
@@ -222,9 +224,9 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         // THEN
         assertThat(personRepository.count()).isEqualTo(2);
         // AND
-        assertThat(persistentTaskService.getLastTriggerData(k1).get().getStatus())
+        assertThat(persistentTaskService.getLastTriggerData(k1).get().status())
             .isEqualTo(TriggerStatus.SUCCESS);
-        assertThat(persistentTaskService.getLastTriggerData(k2).get().getStatus())
+        assertThat(persistentTaskService.getLastTriggerData(k2).get().status())
             .isEqualTo(TriggerStatus.SUCCESS);
     }
 
@@ -241,13 +243,11 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         awaitRunningTasks();
 
         // THEN
-        var history = historyService.findAllDetailsForKey(key).getContent();
-        assertThat(history.get(0).getData().getStatus())
-            .isEqualTo(TriggerStatus.FAILED);
-        assertThat(history.get(1).getData().getStatus())
-            .isEqualTo(TriggerStatus.RUNNING);
-        assertThat(history.get(2).getData().getStatus())
-            .isEqualTo(TriggerStatus.WAITING);
+        var trigger = persistentTaskService.getLastTriggerData(key);
+        var history = historyService.findAllDetailsForInstance(trigger.get().getId(), Pageable.ofSize(10)).getContent();
+        assertThat(history.get(0).getStatus()).isEqualTo(TriggerStatus.FAILED);
+        assertThat(history.get(1).getStatus()).isEqualTo(TriggerStatus.RUNNING);
+        assertThat(history.get(2).getStatus()).isEqualTo(TriggerStatus.WAITING);
 
         // WHEN
         sendError.set(false);
@@ -262,7 +262,7 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
     private void assertExecutionCount(TriggerKey triggerKey, int count) throws InterruptedException, ExecutionException {
         var data = persistentTaskService.getLastTriggerData(triggerKey);
         assertThat(data).isPresent();
-        assertThat(data.get().getExecutionCount()).isEqualTo(count);
+        assertThat(data.get().getData().getExecutionCount()).isEqualTo(count);
     }
     
     protected void awaitRunningTasks() throws TimeoutException, InterruptedException {

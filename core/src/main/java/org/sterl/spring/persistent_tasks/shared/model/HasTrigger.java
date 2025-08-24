@@ -7,6 +7,8 @@ import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 
 public interface HasTrigger {
+    Long getId();
+
     TriggerEntity getData();
     
     default TriggerKey key() {

@@ -30,8 +30,8 @@ class HistoryTimer {
     void deleteOldHistory() {
         try {
             final var age = OffsetDateTime.now().minus(historyTimeout);
-            historyService.deleteAllOlderThan(age);
-            log.debug("Deleted triggers older than {}.", historyTimeout);
+            var count = historyService.deleteAllOlderThan(age);
+            log.debug("Deleted history {} older than {}.", count, historyTimeout);
         } catch (Exception e) {
             log.error("Failed to delete old triggers", e);
         }

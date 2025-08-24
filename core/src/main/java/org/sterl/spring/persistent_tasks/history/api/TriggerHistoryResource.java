@@ -15,11 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.sterl.spring.persistent_tasks.api.TaskStatusHistoryOverview;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.api.TriggerGroup;
+import org.sterl.spring.persistent_tasks.api.HistoryTrigger;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.history.HistoryService;
 import org.sterl.spring.persistent_tasks.history.api.HistoryConverter.FromLastTriggerStateEntity;
-import org.sterl.spring.persistent_tasks.history.api.HistoryConverter.FromTriggerStateDetailEntity;
+import org.sterl.spring.persistent_tasks.history.api.HistoryConverter.ToHistoryTrigger;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,9 +33,11 @@ public class TriggerHistoryResource {
     private final HistoryService historyService;
 
     @GetMapping("history/instance/{instanceId}")
-    public List<Trigger> listInstances(@PathVariable("instanceId") long instanceId) {
-        return FromTriggerStateDetailEntity.INSTANCE.convert( //
-                historyService.findAllDetailsForInstance(instanceId));
+    public PagedModel<HistoryTrigger> listInstances(
+            @PathVariable("instanceId") long instanceId, 
+            @PageableDefault(size = 250) Pageable page) {
+        
+        return ToHistoryTrigger.INSTANCE.toPage(historyService.findAllDetailsForInstance(instanceId, page));
     }
     @GetMapping("task-status-history")
     public List<TaskStatusHistoryOverview> taskStatusHistory() {

@@ -7,6 +7,7 @@ import java.time.OffsetDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
@@ -61,8 +62,9 @@ class TaskFailoverTest extends AbstractSpringTest {
         assertThat(triggerService.countTriggers(TriggerStatus.WAITING))
             .isEqualTo(1);
         // AND
-        var timeoutTrigger = historyService.findAllDetailsForKey(willTimeout.getKey()).getContent().getFirst();
-        assertThat(timeoutTrigger.status()).isEqualTo(TriggerStatus.FAILED);
-        assertThat(timeoutTrigger.getData().getLastException()).contains("Trigger abandoned");
+        var timeoutTrigger = historyService.findAllDetailsForInstance(willTimeout.getId(),
+                Pageable.ofSize(10)).getContent().getFirst();
+        assertThat(timeoutTrigger.getStatus()).isEqualTo(TriggerStatus.FAILED);
+        assertThat(timeoutTrigger.getMessage()).contains("Trigger abandoned");
     }
 }

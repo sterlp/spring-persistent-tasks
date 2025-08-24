@@ -73,9 +73,24 @@ const TriggerView = ({
                 </Col>
                 <Col {...col}>
                     <LabeledText
+                        label="Execution count"
+                        value={trigger.executionCount}
+                    />
+                </Col>
+                <Col {...col}>
+                    <LabeledText
+                        label="Created at"
+                        value={formatShortDateTime(trigger.createdTime)}
+                    />
+                </Col>
+                <Col {...col}>
+                    <LabeledText
                         label="Last keep alive"
                         value={formatShortDateTime(trigger.lastPing)}
                     />
+                </Col>
+                <Col {...col}>
+                    <LabeledText label="Running on" value={trigger.runningOn} />
                 </Col>
             </Row>
 

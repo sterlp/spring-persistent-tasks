@@ -56,9 +56,16 @@ public class ReadTriggerComponent {
         }
         return false;
     }
-    
+
+    /**
+     * Searches for all triggers which are still running but the ping is long ago.
+     * @param dateTime the ping should be before this date
+     * @return all found triggers - never <code>null</code> 
+     */
     public List<RunningTriggerEntity> findTriggersLastPingAfter(OffsetDateTime dateTime) {
-        return triggerRepository.findTriggersLastPingAfter(dateTime);
+        return triggerRepository.findTriggersLastPingAfter(
+                TriggerStatus.RUNNING,
+                dateTime);
     }
 
     public Page<RunningTriggerEntity> searchTriggers(@Nullable TriggerSearch search, Pageable page) {
