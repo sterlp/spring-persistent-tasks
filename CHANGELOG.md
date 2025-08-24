@@ -1,20 +1,34 @@
 # Changelog
 
+## v2.2.1 - (2025-08-24)
+
+### New features:
+
+-   reduced history to a simpler and smaller table
+
+### Bug fixes:
+
+-   removed some indexes which aren't used
+-   ensure only running triggers are select to be abandon
+-   fixed name in the entity
+
 ## v2.2.0 - (2025-07-31)
 
 ### New features:
 
--    added the ability to listen for an error in the trigger itself
+-   added the ability to listen for an error in the trigger itself
 
 ## v2.1.3 - (2025-07-24)
 
 ### Bug fixes:
+
 -   fixed search by correlationId
 -   Extended logging
 
 ## v2.1.2 - (2025-07-22)
 
 ### Bug fixes:
+
 -   fixed search for exact values
 -   extended resume function interface to modify the state
 
