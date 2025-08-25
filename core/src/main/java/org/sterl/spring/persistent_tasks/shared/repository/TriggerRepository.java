@@ -133,5 +133,5 @@ public interface TriggerRepository<T extends HasTrigger> extends JpaRepository<T
            WHERE e.data.createdTime < :age
            """)
     @Modifying
-    long deleteOlderThan(@Param("age") OffsetDateTime age);
+    int deleteOlderThan(@Param("age") OffsetDateTime age);
 }

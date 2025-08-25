@@ -43,8 +43,10 @@ class SchedulerTimer {
         for (SchedulerService s : schedulerServices) {
             try {
                 final var count = s.rescheduleAbandonedTriggers(timeout);
-                log.info("Found {} abandoned tasks for {}. Timeout={}", 
-                        count.size(), s.getName(), taskTimeout);
+                if (count.size() > 0) {
+                    log.info("Found {} abandoned tasks for {}. Timeout={}", 
+                            count.size(), s.getName(), taskTimeout);
+                }
             } catch (Exception e) {
                 log.error("Scheduler {} failed schedule abandoned tasks", s.getName(), e);
             }

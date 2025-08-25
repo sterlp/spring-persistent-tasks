@@ -2,6 +2,7 @@ package org.sterl.spring.persistent_tasks.history.model;
 
 import java.time.OffsetDateTime;
 
+import org.apache.commons.lang3.StringUtils;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
@@ -77,5 +78,20 @@ public class HistoryTriggerEntity {
 
     @Column(length = 200, updatable = false)
     private String message;
+    
+    
+    public static HistoryTriggerEntity from(TriggerEntity data) {
+        var result = new HistoryTriggerEntity();
+        result.setExecutionCount(data.getExecutionCount());
+        result.setKey(data.getKey());
+        
+        var msg = data.getExceptionName();
+        if (data.getLastException() != null) msg = data.getLastException();
+        result.setMessage(StringUtils.substring(msg, 0, 200));
+
+        result.setStart(data.getStart());
+        result.setStatus(data.getStatus());
+        return result;
+    }
 
 }

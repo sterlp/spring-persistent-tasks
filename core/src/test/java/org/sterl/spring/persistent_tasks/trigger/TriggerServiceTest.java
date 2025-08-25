@@ -433,16 +433,19 @@ class TriggerServiceTest extends AbstractSpringTest {
     void testRescheduleAbandonedTasksOnlyRunning() {
         // GIVEN
         var now = OffsetDateTime.now();
-        var t1 = new RunningTriggerEntity(new TriggerKey(UuidCreator.getTimeOrdered().toString(), "fooTask"))
+        var t1 = trx.execute(t -> {
+            RunningTriggerEntity running = null;
+            for (var status : TriggerStatus.values()) {
+                var any = new RunningTriggerEntity(new TriggerKey(UuidCreator.getTimeOrdered().toString(), "fooTask"))
                         .runOn("fooScheduler");
-        t1.setLastPing(now.minusSeconds(60));
-        triggerRepository.save(t1);
+                any.getData().setStatus(status);
+                any.setLastPing(now.minusSeconds(60));
+                any = triggerRepository.save(any);
+                if (status == TriggerStatus.RUNNING) running = any;
+            }
+            return running;
+        });
         
-        var t2 = new RunningTriggerEntity(
-                new TriggerKey(UuidCreator.getTimeOrdered().toString(), "barTask"));
-        t2.setLastPing(now.minusSeconds(60));
-        triggerRepository.save(t2);
-
         // WHEN
         final var rescheduledTasks = subject.rescheduleAbandoned(now.minusSeconds(59));
 
@@ -614,5 +617,11 @@ class TriggerServiceTest extends AbstractSpringTest {
         assertThat(persistentTaskTestService.runNextTrigger()).isEmpty();
         // AND
         asserts.assertMissing("old state");
+    }
+    
+    @Test
+    void testDeleteAll() {
+        // WHEN
+        subject.deleteAll();
     }
 }

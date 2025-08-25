@@ -21,7 +21,7 @@ import org.sterl.spring.persistent_tasks.history.model.CompletedTriggerEntity;
 import org.sterl.spring.persistent_tasks.history.model.HistoryTriggerEntity;
 import org.sterl.spring.persistent_tasks.history.model.QCompletedTriggerEntity;
 import org.sterl.spring.persistent_tasks.history.repository.CompletedTriggerRepository;
-import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryDetailRepository;
+import org.sterl.spring.persistent_tasks.history.repository.HistoryTriggerRepository;
 import org.sterl.spring.persistent_tasks.shared.QueryHelper;
 import org.sterl.spring.persistent_tasks.shared.model.HasTrigger;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
@@ -36,7 +36,7 @@ import lombok.RequiredArgsConstructor;
 public class HistoryService {
     private final EntityManager em;
     private final CompletedTriggerRepository completedTriggerRepository;
-    private final TriggerHistoryDetailRepository triggerHistoryDetailRepository;
+    private final HistoryTriggerRepository historyTriggerRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
     
     public Optional<CompletedTriggerEntity> findStatus(long triggerId) {
@@ -51,11 +51,11 @@ public class HistoryService {
 
     public void deleteAll() {
         completedTriggerRepository.deleteAllInBatch();
-        triggerHistoryDetailRepository.deleteAllInBatch();
+        historyTriggerRepository.deleteAllInBatch();
     }
     
     public long deleteAllOlderThan(OffsetDateTime age) {
-        var result = triggerHistoryDetailRepository.deleteOlderThan(age);
+        var result = historyTriggerRepository.deleteOlderThan(age);
         result += completedTriggerRepository.deleteOlderThan(age);
         return result;
     }
@@ -64,12 +64,12 @@ public class HistoryService {
      * Counts the <b>unique</b> triggers in the history.
      */
     public long countTriggers(TriggerStatus status) {
-        return triggerHistoryDetailRepository.countByStatus(status);
+        return historyTriggerRepository.countByStatus(status);
     }
 
     public Page<HistoryTriggerEntity> findAllDetailsForInstance(long instanceId, Pageable page) {
         page = QueryHelper.applySortIfEmpty(page, Sort.by(Direction.DESC, "id"));
-        return triggerHistoryDetailRepository.findAllByInstanceId(instanceId, page);
+        return historyTriggerRepository.findAllByInstanceId(instanceId, page);
     }
 
     public Optional<TriggerKey> reQueue(Long id, OffsetDateTime runAt) {

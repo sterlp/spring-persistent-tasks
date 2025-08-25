@@ -12,7 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.history.model.HistoryTriggerEntity;
 
-public interface TriggerHistoryDetailRepository
+public interface HistoryTriggerRepository
         extends JpaRepository<HistoryTriggerEntity, Long>, QuerydslPredicateExecutor<HistoryTriggerEntity> {
 
     @Query("""
@@ -28,7 +28,7 @@ public interface TriggerHistoryDetailRepository
             WHERE e.createdTime < :age
             """)
     @Modifying
-    long deleteOlderThan(@Param("age") OffsetDateTime age);
+    int deleteOlderThan(@Param("age") OffsetDateTime age);
 
     @Query("""
             SELECT COUNT(e.id)

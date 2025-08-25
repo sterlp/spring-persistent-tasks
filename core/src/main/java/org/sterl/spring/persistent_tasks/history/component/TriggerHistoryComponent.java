@@ -1,6 +1,5 @@
 package org.sterl.spring.persistent_tasks.history.component;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -11,7 +10,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import org.sterl.spring.persistent_tasks.history.model.CompletedTriggerEntity;
 import org.sterl.spring.persistent_tasks.history.model.HistoryTriggerEntity;
 import org.sterl.spring.persistent_tasks.history.repository.CompletedTriggerRepository;
-import org.sterl.spring.persistent_tasks.history.repository.TriggerHistoryDetailRepository;
+import org.sterl.spring.persistent_tasks.history.repository.HistoryTriggerRepository;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerLifeCycleEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerRunningEvent;
@@ -25,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TriggerHistoryComponent {
 
     private final CompletedTriggerRepository completedTriggerRepository;
-    private final TriggerHistoryDetailRepository triggerHistoryDetailRepository;
+    private final HistoryTriggerRepository historyTriggerRepository;
 
     // we have to ensure to run in an own transaction
     // as if the trigger fails, a rollback would also remove this entry
@@ -45,10 +44,10 @@ public class TriggerHistoryComponent {
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     void onPersistentTaskEvent(TriggerLifeCycleEvent e) {
         if (e instanceof TriggerRunningEvent) return; // we have an own listener for that
+        
         log.debug("Received event={} for {} new status={}",
                 e.getClass().getSimpleName(),
                 e.key(), e.status());
-        
         
         execute(e.id(), e.data(), e.isDone());
     }
@@ -62,17 +61,8 @@ public class TriggerHistoryComponent {
             completedTriggerRepository.save(state);
         }
 
-        var detail = new HistoryTriggerEntity();
-        detail.setExecutionCount(data.getExecutionCount());
+        var detail = HistoryTriggerEntity.from(data);
         detail.setInstanceId(triggerId);
-        detail.setKey(data.getKey());
-        
-        var msg = data.getExceptionName();
-        if (data.getLastException() != null) msg = data.getLastException();
-        detail.setMessage(StringUtils.substring(msg, 0, 200));
-
-        detail.setStart(data.getStart());
-        detail.setStatus(data.getStatus());
-        triggerHistoryDetailRepository.save(detail);
+        historyTriggerRepository.save(detail);
     }
 }
