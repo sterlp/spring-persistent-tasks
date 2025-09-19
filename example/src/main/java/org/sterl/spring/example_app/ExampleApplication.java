@@ -7,6 +7,7 @@ import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.envers.repository.config.EnableEnversRepositories;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode;
@@ -21,6 +22,7 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.EnableSpringPersistentTasks;
+import org.sterl.spring.persistent_tasks.EnableSpringPersistentTasksJpaRepositories;
 import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
 import org.sterl.spring.persistent_tasks.scheduler.component.EditSchedulerStatusComponent;
 import org.sterl.spring.persistent_tasks.scheduler.config.SchedulerConfig;
@@ -33,8 +35,9 @@ import io.micrometer.core.instrument.MeterRegistry;
 
 @EnableWebSecurity
 @SpringBootApplication
-@EnableJpaRepositories
+@EnableEnversRepositories
 @EnableSpringPersistentTasks
+@EnableSpringPersistentTasksJpaRepositories
 @EnableSpringPersistentTasksUI
 @EnableSpringDataWebSupport(pageSerializationMode = PageSerializationMode.VIA_DTO)
 public class ExampleApplication {
