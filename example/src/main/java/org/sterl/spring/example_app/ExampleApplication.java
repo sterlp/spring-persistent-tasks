@@ -7,6 +7,7 @@ import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -32,6 +33,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 
 @EnableWebSecurity
 @SpringBootApplication
+@EnableJpaRepositories
 @EnableSpringPersistentTasks
 @EnableSpringPersistentTasksUI
 @EnableSpringDataWebSupport(pageSerializationMode = PageSerializationMode.VIA_DTO)
