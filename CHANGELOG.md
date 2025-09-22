@@ -1,5 +1,24 @@
 # Changelog
 
+## v2.2.3 - (2025-09-22)
+
+### Bug fixes:
+
+-   #17 added the ability to enable entity and spring repo search
+
+## v2.2.2
+
+### New features:
+
+-   reduced history to a simpler and smaller table
+
+### Bug fixes:
+
+-   removed some indexes which aren't used
+-   ensure only running triggers are select to be abandon
+-   fixed name in the entity
+-   fixed history delete timer
+
 ## v2.2.1 - (2025-08-24)
 
 ### New features:
