@@ -7,15 +7,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.springframework.context.annotation.Import;
-import org.sterl.spring.persistent_tasks.config.EnableSpringPersistentTasksJpaRepositoriesConfig;
+import org.sterl.spring.persistent_tasks.config.EnableSpringPersistentTasksEntityScanConfig;
 
 /**
- * Annotation to include spring persistent task repositories if <code>@EnableJpaRepositories</code> annotation is used.
+ * Annotation to include spring persistent task entities if <code>@EntityScan</code> annotation is used.
  * 
  * <pre>
  * @SpringBootApplication
- * @EnableJpaRepositories
- * @EnableSpringPersistentTasksJpaRepositories
+ * @EntityScan
+ * @EnableSpringPersistentTasksEntityScan
  * @EnableSpringPersistentTasks
  * public class MyApp {
  * }
@@ -24,7 +24,7 @@ import org.sterl.spring.persistent_tasks.config.EnableSpringPersistentTasksJpaRe
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Import(EnableSpringPersistentTasksJpaRepositoriesConfig.class)
-public @interface EnableSpringPersistentTasksJpaRepositories {
+@Import(EnableSpringPersistentTasksEntityScanConfig.class)
+public @interface EnableSpringPersistentTasksEntityScan {
 
 }
