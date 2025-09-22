@@ -26,6 +26,14 @@
 public class ExampleApplication {
 ```
 
+Include corresponding annotation if you use:
+
+-   `@EntityScan` ->` @EnableSpringPersistentTasksEntityScan`
+-   `@EnableJpaRepositories` -> `@EnableSpringPersistentTasksJpaRepositories`
+-   `@EnableEnversRepositories` ->` @EnableSpringPersistentTasksJpaRepositories`
+
+They break the spring auto configuration.
+
 # DB using liquibase
 
 Dependency needed to setup the DB using liquibase

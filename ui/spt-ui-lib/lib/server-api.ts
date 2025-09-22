@@ -3,7 +3,7 @@
 
 export interface PagedModel<T> {
     content: T[];
-    page?: PageMetadata;
+    page: PageMetadata;
 }
 
 export interface SchedulerEntity {
