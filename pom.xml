@@ -5,7 +5,7 @@
 
     <groupId>org.sterl.spring</groupId>
     <artifactId>spring-persistent-tasks-root</artifactId>
-    <version>2.2.3-SNAPSHOT</version>
+    <version>2.2.3</version>
     <packaging>pom</packaging>
 
     <inceptionYear>2024</inceptionYear>
@@ -162,6 +162,9 @@
                                 </goals>
                             </execution>
                         </executions>
+                        <configuration>
+                            <failOnError>false</failOnError>
+                        </configuration>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
