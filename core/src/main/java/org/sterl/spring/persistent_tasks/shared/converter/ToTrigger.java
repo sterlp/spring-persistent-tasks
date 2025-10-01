@@ -52,5 +52,5 @@ public enum ToTrigger implements ExtendetConvert<HasTrigger, Trigger> {
         return result;
     }
     
-    static record FailedToReadStateInfo(String message, String info) {}
+    record FailedToReadStateInfo(String message, String info) {}
 }
