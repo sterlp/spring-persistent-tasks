@@ -7,6 +7,9 @@ import org.sterl.spring.persistent_tasks.shared.model.HasTrigger;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.component.StateSerializer;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public enum ToTrigger implements ExtendetConvert<HasTrigger, Trigger> {
     INSTANCE;
 
@@ -29,8 +32,25 @@ public enum ToTrigger implements ExtendetConvert<HasTrigger, Trigger> {
         result.setRunAt(source.getRunAt());
         result.setRunningDurationInMs(source.getRunningDurationInMs());
         result.setStart(source.getStart());
-        result.setState(SERIALIZER.deserialize(source.getState()));
+        try {
+            result.setState(SERIALIZER.deserialize(source.getState()));
+        } catch (Exception e) {
+            var info = """
+                    Failed to deserialize state
+                    This is most likely due to an incompatible code change.
+                    Old states in the DB cannot be read anymore/deserialized and cast to the given class. 
+                    """;
+            result.setState(new FailedToReadStateInfo(e.getMessage(), info));
+            log.warn("""
+                    Failed to deserialize state of {}. 
+                    This is most likely due to an incompatible code change.
+                    Old states in the DB cannot be read anymore/deserialized and cast to the given class. 
+                    {}""", 
+                    source.getKey(), e.getMessage());
+        }
         result.setStatus(source.getStatus());
         return result;
     }
+    
+    record FailedToReadStateInfo(String message, String info) {}
 }

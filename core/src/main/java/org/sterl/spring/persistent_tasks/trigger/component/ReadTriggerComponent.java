@@ -77,9 +77,9 @@ public class ReadTriggerComponent {
             return result;
         } else {
             log.debug("Empty search={}, selecting all triggers for page={}", search, page);
-            return triggerRepository.findAll(page);
+            var result = triggerRepository.findAll(page);
+            return result;
         }
-        
     }
     
     public Page<TriggerGroup> searchGroupedTriggers(@Nullable TriggerSearch search, Pageable page) {

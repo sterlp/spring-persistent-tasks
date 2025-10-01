@@ -66,6 +66,5 @@ public interface PersistentTask<T extends Serializable> {
      * @param e the exception reason - could also be a {@link FailTaskNoRetryException}
      * @see <a href="https://spring-persistent-task.sterl.org/failed-spring-triggers/">Failed trigger</a>
      */
-    default void afterTriggerFailed(@Nullable T state, Exception e) {
-    }
+    default void afterTriggerFailed(@Nullable T state, Exception e) {}
 }
