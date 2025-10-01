@@ -27,6 +27,7 @@ import org.sterl.spring.persistent_tasks.trigger.repository.RunningTriggerReposi
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.github.f4b6a3.uuid.UuidCreator;
 
 class TriggerResourceTest extends AbstractSpringTest {
 
@@ -215,6 +216,27 @@ class TriggerResourceTest extends AbstractSpringTest {
 
         assertThat(result.getBody()).contains("\"count\":2");
         assertThat(result.getBody()).contains("\"groupByValue\":\"a1\"");
+    }
+    
+    @Test
+    void testReadIncompatibleTriggerState() {
+        // GIVEN we have a bad state we cannot read in the DB
+        var key = UuidCreator.getTimeOrdered().toString();
+        trx.execute(t -> {
+            return triggerRepository.save(new RunningTriggerEntity(
+                        new TriggerKey(key, "slowTask")
+                    ).withState(new byte[] {12, 54, 33})
+                );
+        });
+        
+        // WHEN
+        assertThat(triggerRepository.count()).isGreaterThanOrEqualTo(1L);
+        var response = template.getForEntity(baseUrl, String.class);
+        
+        // THEN
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).contains(key);
+        assertThat(response.getBody()).contains("Failed to deserialize state of length");
     }
     
     private RunningTriggerEntity createStatus(TriggerKey key, TriggerStatus status) {

@@ -2,9 +2,11 @@ package org.sterl.spring.persistent_tasks.trigger.component;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.ObjectInput;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.ObjectStreamClass;
 import java.io.Serializable;
 
 import org.sterl.spring.persistent_tasks.exception.SpringPersistentTaskException;
@@ -50,7 +52,7 @@ public class StateSerializer {
         }
 
         var bis = new ByteArrayInputStream(bytes);
-        try (ObjectInput in = new ObjectInputStream(bis)) {
+        try (var in = new ContextClassLoaderObjectInputStream(bis)) {
             return (Serializable)in.readObject();
         } catch (Exception ex) {
             throw new DeSerializationFailedException(bytes, ex);
@@ -63,6 +65,20 @@ public class StateSerializer {
         } catch (Exception e) {
             log.error("Failed to deserialize bytes", e);
             return null;
+        }
+    }
+    
+    // needed for spring boot developer tools
+    // https://github.com/sterlp/spring-persistent-tasks/issues/19
+    static class ContextClassLoaderObjectInputStream extends ObjectInputStream {
+        ContextClassLoaderObjectInputStream(InputStream in) throws IOException {
+            super(in);
+        }
+        @Override
+        protected Class<?> resolveClass(ObjectStreamClass desc) 
+                throws IOException, ClassNotFoundException {
+            return Class.forName(desc.getName(), false, 
+                Thread.currentThread().getContextClassLoader());
         }
     }
 }
