@@ -13,11 +13,13 @@ import org.sterl.spring.persistent_tasks.config.EnableSpringPersistentTasksJpaRe
  * Annotation to include spring persistent task repositories if <code>@EnableJpaRepositories</code> annotation is used.
  * 
  * <pre>
+ * {@code
  * @SpringBootApplication
  * @EnableJpaRepositories
  * @EnableSpringPersistentTasksJpaRepositories
  * @EnableSpringPersistentTasks
  * public class MyApp {
+ * }
  * }
  * </pre>
  */

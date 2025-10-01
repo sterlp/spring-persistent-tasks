@@ -13,11 +13,13 @@ import org.sterl.spring.persistent_tasks.config.EnableSpringPersistentTasksEntit
  * Annotation to include spring persistent task entities if <code>@EntityScan</code> annotation is used.
  * 
  * <pre>
+ * {@code
  * @SpringBootApplication
  * @EntityScan
  * @EnableSpringPersistentTasksEntityScan
  * @EnableSpringPersistentTasks
  * public class MyApp {
+ * }
  * }
  * </pre>
  */

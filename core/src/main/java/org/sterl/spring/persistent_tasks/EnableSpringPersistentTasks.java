@@ -13,9 +13,11 @@ import org.sterl.spring.persistent_tasks.config.SpringPersistentTasksConfig;
  * Enables the spring persistent task services.
  * 
  * <pre>
+ * {@code
  * @SpringBootApplication
  * @EnableSpringPersistentTasks
  * public class MyApp {
+ * }
  * }
  * </pre>
  * <p>Include corresponding annotation if you use:</p>
