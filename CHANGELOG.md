@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.2.4 - (2025-10-01)
+
+### New features:
+
+-   show triggers with invalid/old state
+
+### Bug fixes:
+
+-   #19 ClassCastException with spring-boot-devtools
+
 ## v2.2.3 - (2025-09-22)
 
 ### Bug fixes:
