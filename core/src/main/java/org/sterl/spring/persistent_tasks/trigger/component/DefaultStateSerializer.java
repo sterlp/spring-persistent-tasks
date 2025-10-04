@@ -9,62 +9,49 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectStreamClass;
 import java.io.Serializable;
 
-import org.sterl.spring.persistent_tasks.exception.SpringPersistentTaskException;
+import org.springframework.core.serializer.DefaultDeserializer;
+import org.springframework.core.serializer.DefaultSerializer;
+import org.springframework.core.serializer.Deserializer;
+import org.springframework.core.serializer.Serializer;
+import org.springframework.lang.NonNull;
+import org.sterl.spring.persistent_tasks.api.TaskId;
+import org.sterl.spring.persistent_tasks.api.task.StateSerializer;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class StateSerializer {
-    public static class DeSerializationFailedException extends SpringPersistentTaskException {
-        private static final long serialVersionUID = 1L;
-
-        public DeSerializationFailedException(byte[] bytes, Exception e) {
-            super("Failed to deserialize state of length " + bytes.length, bytes, e);
-        }
-    }
+@RequiredArgsConstructor
+public class DefaultStateSerializer implements StateSerializer<Serializable> {
     
-    public static class SerializationFailedException extends SpringPersistentTaskException {
-        private static final long serialVersionUID = 1L;
-
-        public SerializationFailedException(Serializable obj, Exception e) {
-            super("Failed to serialize state " + obj.getClass(), obj, e);
-        }
+    private final Serializer<Object> serializer;
+    private final Deserializer<Object> deserializer;
+    
+    public DefaultStateSerializer() {
+        this.serializer = new DefaultSerializer();
+        this.deserializer = new DefaultDeserializer(Thread.currentThread().getContextClassLoader());
     }
 
-    public byte[] serialize(final Serializable obj) {
-        if (obj == null) {
-            return null;
-        }
+    @Override
+    public byte[] serialize(@NonNull TaskId<Serializable> id, @NonNull Serializable obj) {
         if (obj instanceof byte[] b) return b;
 
         var bos = new ByteArrayOutputStream(512);
         try (var out = new ObjectOutputStream(bos)) {
-            out.writeObject(obj);
+            serializer.serialize(obj, bos);
             return bos.toByteArray();
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             throw new SerializationFailedException(obj, ex);
         }
     }
 
-    public Serializable deserialize(byte[] bytes) {
-        if (bytes == null) {
-            return null;
-        }
-
+    @Override
+    public Serializable deserialize(@NonNull TaskId<Serializable> id, @NonNull byte[] bytes) {
         var bis = new ByteArrayInputStream(bytes);
         try (var in = new ContextClassLoaderObjectInputStream(bis)) {
-            return (Serializable)in.readObject();
-        } catch (Exception ex) {
+            return (Serializable)deserializer.deserialize(bis);
+        } catch (IOException ex) {
             throw new DeSerializationFailedException(bytes, ex);
-        }
-    }
-    
-    public Serializable deserializeOrNull(byte[] bytes) {
-        try {
-            return deserialize(bytes);
-        } catch (Exception e) {
-            log.error("Failed to deserialize bytes", e);
-            return null;
         }
     }
     

@@ -31,10 +31,11 @@ public class TriggerKey implements Serializable {
         return new TriggerKey(id, taskId.name());
     }
 
-    public TaskId<Serializable> toTaskId() {
+    public <T extends Serializable> TaskId<T> toTaskId() {
         if (taskName == null) return null;
-        return new TaskId<>(taskName);
+        return TaskId.of(taskName);
     }
+
     /**
      * Builds a trigger for the given persistentTask name
      */

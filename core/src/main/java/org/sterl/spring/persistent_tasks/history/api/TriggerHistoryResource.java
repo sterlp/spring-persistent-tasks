@@ -12,14 +12,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.sterl.spring.persistent_tasks.api.HistoryTrigger;
 import org.sterl.spring.persistent_tasks.api.TaskStatusHistoryOverview;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.api.TriggerGroup;
-import org.sterl.spring.persistent_tasks.api.HistoryTrigger;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.history.HistoryService;
-import org.sterl.spring.persistent_tasks.history.api.HistoryConverter.FromLastTriggerStateEntity;
 import org.sterl.spring.persistent_tasks.history.api.HistoryConverter.ToHistoryTrigger;
 
 import lombok.RequiredArgsConstructor;
@@ -31,6 +30,7 @@ public class TriggerHistoryResource {
 
     public static final String PATH_GROUP = "history-grouped";
     private final HistoryService historyService;
+    private final FromCompletedTriggerEntityConverter converter;
 
     @GetMapping("history/instance/{instanceId}")
     public PagedModel<HistoryTrigger> listInstances(
@@ -56,7 +56,7 @@ public class TriggerHistoryResource {
             TriggerSearch search,
             @PageableDefault(size = 100) Pageable page) {
 
-        return FromLastTriggerStateEntity.INSTANCE.toPage( //
+        return converter.toPage( //
                 historyService.searchTriggers(search, page));
     }
     

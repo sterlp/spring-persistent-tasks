@@ -3,6 +3,8 @@ package org.sterl.spring.persistent_tasks.api;
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 
@@ -13,6 +15,15 @@ import lombok.RequiredArgsConstructor;
  * Represents the ID of a persistentTask, which is currently not running.
  */
 public record TaskId<T extends Serializable>(String name) implements Serializable {
+    
+    @SuppressWarnings("rawtypes")
+    private static final Map<String, TaskId> CACHE = new ConcurrentHashMap<>();
+
+    @SuppressWarnings("unchecked")
+    public static <T extends Serializable> TaskId<T> of(String taskId) {
+        if (taskId == null || taskId.isBlank()) return null;
+        return CACHE.computeIfAbsent(taskId, s -> new TaskId<>(s));
+    }
 
     public TriggerBuilder<T> newTrigger() {
         return new TriggerBuilder<>(this);
@@ -36,11 +47,6 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
                 .build();
     }
 
-    public static TaskId<Serializable> of(String taskId) {
-        if (taskId == null || taskId.isBlank()) return null;
-        return new TaskId<>(taskId);
-    }
-    
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class TriggerBuilder<T extends Serializable> {
         private final TaskId<T> taskId;

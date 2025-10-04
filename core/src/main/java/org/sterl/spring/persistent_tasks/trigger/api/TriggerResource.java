@@ -19,7 +19,6 @@ import org.sterl.spring.persistent_tasks.api.TriggerGroup;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
-import org.sterl.spring.persistent_tasks.trigger.api.TriggerConverter.FromTriggerEntity;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +29,7 @@ public class TriggerResource {
 
     public static final String PATH_GROUPED = "triggers-grouped";
     private final TriggerService triggerService;
+    private final FromRunningTriggerEntityConverter converter;
     
     @GetMapping("triggers/count")
     public long count() {
@@ -49,7 +49,7 @@ public class TriggerResource {
             TriggerSearch search,
             @PageableDefault(size = 100, direction = Direction.ASC, sort = "data.runAt")
             Pageable pageable) {
-        return FromTriggerEntity.INSTANCE.toPage(
+        return converter.toPage(
                 triggerService.searchTriggers(search, pageable));
     }
     
@@ -60,7 +60,7 @@ public class TriggerResource {
             @RequestBody OffsetDateTime runAt) {
         
         var result = triggerService.updateRunAt(new TriggerKey(id, taskName), runAt);
-        return FromTriggerEntity.INSTANCE.convert(result);
+        return converter.convert(result);
     }
     
     @DeleteMapping("triggers/{taskName}/{id}")
@@ -68,7 +68,6 @@ public class TriggerResource {
             @PathVariable("taskName") String taskName,
             @PathVariable("id") String id) {
 
-        return FromTriggerEntity.INSTANCE
-                .convert(triggerService.cancel(new TriggerKey(id, taskName)));
+        return converter.convert(triggerService.cancel(new TriggerKey(id, taskName)));
     }
 }

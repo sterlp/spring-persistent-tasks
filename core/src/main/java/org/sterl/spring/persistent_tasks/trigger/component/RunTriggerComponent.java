@@ -23,7 +23,7 @@ public class RunTriggerComponent {
     private final TaskService taskService;
     private final FailTriggerComponent failTrigger;
     private final EditTriggerComponent editTrigger;
-    private final StateSerializer serializer = new StateSerializer();
+    private final StateSerializationComponent stateSerialization;
 
     /**
      * Will execute the given {@link RunningTriggerEntity} and handle any errors
@@ -62,7 +62,7 @@ public class RunTriggerComponent {
         try {
             final var task = taskService.assertIsKnown(trigger.newTaskId());
             final var trx = taskService.getTransactionTemplateIfJoinable(task);
-            final var state = serializer.deserialize(trigger.getData().getState());
+            final var state = stateSerialization.deserialize(trigger.getData());
             return new RunTaskWithStateCommand(task, trx, state, trigger);
         } catch (Exception e) {
             failTrigger.execute(trigger, e);

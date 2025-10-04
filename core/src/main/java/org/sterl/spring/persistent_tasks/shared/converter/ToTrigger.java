@@ -1,19 +1,22 @@
 package org.sterl.spring.persistent_tasks.shared.converter;
 
 import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.shared.ExtendetConvert;
 import org.sterl.spring.persistent_tasks.shared.model.HasTrigger;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
-import org.sterl.spring.persistent_tasks.trigger.component.StateSerializer;
+import org.sterl.spring.persistent_tasks.trigger.component.StateSerializationComponent;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public enum ToTrigger implements ExtendetConvert<HasTrigger, Trigger> {
-    INSTANCE;
-
-    private final static StateSerializer SERIALIZER = new StateSerializer();
+@Component
+@RequiredArgsConstructor
+public class ToTrigger implements ExtendetConvert<HasTrigger, Trigger> {
+    
+    private final StateSerializationComponent stateSerialization;
 
     @NonNull
     @Override
@@ -33,7 +36,7 @@ public enum ToTrigger implements ExtendetConvert<HasTrigger, Trigger> {
         result.setRunningDurationInMs(source.getRunningDurationInMs());
         result.setStart(source.getStart());
         try {
-            result.setState(SERIALIZER.deserialize(source.getState()));
+            result.setState(stateSerialization.deserialize(source));
         } catch (Exception e) {
             var info = """
                     Failed to deserialize state
