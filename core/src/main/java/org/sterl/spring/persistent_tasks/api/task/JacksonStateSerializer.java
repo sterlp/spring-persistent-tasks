@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Default implementation to use jackson instead java serialization for a task.
+ * Default implementation to use jackson instead java serialization for a task state.
  * 
  * @param <T> the type of the state for the deserialization
  */
