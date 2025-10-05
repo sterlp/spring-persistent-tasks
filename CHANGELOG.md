@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.3.0 - (2025-10-5)
+
+-   added the ability to add custom serialization
+    -   added a task StateSerializer
+    -   added JacksonStateSerializer
+    -   added task SerializationProvider
+-   improved doc structure
+
 ## v2.2.4 - (2025-10-01)
 
 ### New features:
