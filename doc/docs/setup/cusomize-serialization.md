@@ -1,4 +1,4 @@
-## Use Jackson serialization for a task
+## Use Jackson serialization for a task @since v2.5
 
 ```java
 public record TaskState(int id, String message) implements Serializable {}
@@ -22,7 +22,7 @@ public class TaskWithOwnSerialization
 }
 ```
 
-## Replace the default serialization
+## Replace the default serialization @since v2.5
 
 By default the `DefaultStateSerializer` uses Java Serialization and can be replaced if required:
 

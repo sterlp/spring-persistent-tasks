@@ -1,0 +1,6 @@
+nav:
+   - Home: index.md
+   - Usage: usage
+   - Setup: setup
+   - Test: test
+   - JavaDoc: https://sterlp.github.io/spring-persistent-tasks/javadoc-core

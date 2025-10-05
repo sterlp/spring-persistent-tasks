@@ -5,7 +5,7 @@
 The `SchedulerService` can be disabled for unit testing, which ensures that no trigger will be
 executed automatically.
 
-```yml
+```yaml
 spring:
     persistent-tasks:
         scheduler-enabled: false

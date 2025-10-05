@@ -22,7 +22,7 @@ void testCancelTrigger() {
 ## Cancel a running trigger
 
 As soon a task is triggered, a task may decide to cancel or to fail itself. Both will suppress any outstanding retries of the retry strategy.
-![Task Exceprtion](./assets/spring-persistent-task-exception.png){ align=center }
+![Task Exceprtion](/assets/spring-persistent-task-exception.png){ align=center }
 
 ```java
 @Test
