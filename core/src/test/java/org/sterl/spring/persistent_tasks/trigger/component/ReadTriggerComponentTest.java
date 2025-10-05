@@ -11,7 +11,7 @@ import org.sterl.spring.persistent_tasks.api.TaskId;
 class ReadTriggerComponentTest extends AbstractSpringTest {
 
     @Autowired
-    ReadTriggerComponent subject;
+    private ReadTriggerComponent subject;
 
     @Test
     void test() {

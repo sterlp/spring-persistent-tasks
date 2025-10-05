@@ -1,8 +1,6 @@
 package org.sterl.spring.persistent_tasks.trigger.component;
 
 import java.io.Serializable;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -12,6 +10,7 @@ import org.sterl.spring.persistent_tasks.api.task.StateSerializer;
 import org.sterl.spring.persistent_tasks.api.task.StateSerializer.DeSerializationFailedException;
 import org.sterl.spring.persistent_tasks.api.task.StateSerializer.SerializationFailedException;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
+import org.sterl.spring.persistent_tasks.task.TaskService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,18 +21,12 @@ import lombok.extern.slf4j.Slf4j;
 public class StateSerializationComponent {
 
     private final StateSerializer<Serializable> defaultStateSerializer;
-    @SuppressWarnings("rawtypes")
-    private Map<TaskId, StateSerializer> serializers = new ConcurrentHashMap<>();
-    
-    public <T extends Serializable> void register(@NonNull TaskId<T> id, @NonNull StateSerializer<T> serializer) {
-        serializers.put(id, serializer);
-    }
+    private final TaskService taskService;
     
     @Nullable
     public <T extends Serializable> byte[] serialize(@NonNull TaskId<T> id, @Nullable final T obj) {
         if (obj == null) return null;
-        @SuppressWarnings("unchecked")
-        StateSerializer<T> d = serializers.getOrDefault(id, defaultStateSerializer);
+        StateSerializer<T> d = taskService.getStateSerializer(id, defaultStateSerializer);
         try {
             return d.serialize(id, obj);
         } catch (SerializationFailedException e) {
@@ -46,8 +39,8 @@ public class StateSerializationComponent {
     @Nullable
     public <T extends Serializable> T deserialize(@NonNull TaskId<T> id, @Nullable byte[] bytes) {
         if (bytes == null) return null;
-        @SuppressWarnings("unchecked")
-        StateSerializer<T> d = serializers.getOrDefault(id, defaultStateSerializer);
+
+        StateSerializer<T> d = taskService.getStateSerializer(id, defaultStateSerializer);
         try {
             return d.deserialize(id, bytes);
         } catch (DeSerializationFailedException e) {
@@ -83,5 +76,4 @@ public class StateSerializationComponent {
             return null;
         }
     }
-
 }

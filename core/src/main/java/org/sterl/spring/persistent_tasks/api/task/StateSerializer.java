@@ -12,7 +12,7 @@ public interface StateSerializer<T extends Serializable> {
 
     T deserialize(@NonNull TaskId<T> id, @NonNull byte[] bytes) throws DeSerializationFailedException;
 
-    public static class DeSerializationFailedException extends SpringPersistentTaskException {
+    class DeSerializationFailedException extends SpringPersistentTaskException {
         private static final long serialVersionUID = 1L;
 
         public DeSerializationFailedException(byte[] bytes, Exception e) {
@@ -20,7 +20,7 @@ public interface StateSerializer<T extends Serializable> {
         }
     }
     
-    public static class SerializationFailedException extends SpringPersistentTaskException {
+    class SerializationFailedException extends SpringPersistentTaskException {
         private static final long serialVersionUID = 1L;
 
         public SerializationFailedException(Serializable obj, Exception e) {

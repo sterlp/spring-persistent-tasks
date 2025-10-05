@@ -3,10 +3,6 @@ package org.sterl.spring.persistent_tasks.trigger.component;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.ObjectStreamClass;
 import java.io.Serializable;
 
 import org.springframework.core.serializer.DefaultDeserializer;
@@ -28,16 +24,19 @@ public class DefaultStateSerializer implements StateSerializer<Serializable> {
     private final Deserializer<Object> deserializer;
     
     public DefaultStateSerializer() {
-        this.serializer = new DefaultSerializer();
-        this.deserializer = new DefaultDeserializer(Thread.currentThread().getContextClassLoader());
+        // needed for spring boot developer tools
+        // https://github.com/sterlp/spring-persistent-tasks/issues/19
+        this(new DefaultSerializer(), 
+                new DefaultDeserializer(Thread.currentThread().getContextClassLoader()));
     }
 
+    @SuppressWarnings("PMD.UnusedLocalVariable")
     @Override
     public byte[] serialize(@NonNull TaskId<Serializable> id, @NonNull Serializable obj) {
         if (obj instanceof byte[] b) return b;
 
-        var bos = new ByteArrayOutputStream(512);
-        try (var out = new ObjectOutputStream(bos)) {
+        try {
+            var bos = new ByteArrayOutputStream(512);
             serializer.serialize(obj, bos);
             return bos.toByteArray();
         } catch (IOException ex) {
@@ -45,27 +44,14 @@ public class DefaultStateSerializer implements StateSerializer<Serializable> {
         }
     }
 
+    @SuppressWarnings("PMD.UnusedLocalVariable")
     @Override
     public Serializable deserialize(@NonNull TaskId<Serializable> id, @NonNull byte[] bytes) {
-        var bis = new ByteArrayInputStream(bytes);
-        try (var in = new ContextClassLoaderObjectInputStream(bis)) {
+        try {
+            var bis = new ByteArrayInputStream(bytes);
             return (Serializable)deserializer.deserialize(bis);
         } catch (IOException ex) {
             throw new DeSerializationFailedException(bytes, ex);
-        }
-    }
-    
-    // needed for spring boot developer tools
-    // https://github.com/sterlp/spring-persistent-tasks/issues/19
-    static class ContextClassLoaderObjectInputStream extends ObjectInputStream {
-        ContextClassLoaderObjectInputStream(InputStream in) throws IOException {
-            super(in);
-        }
-        @Override
-        protected Class<?> resolveClass(ObjectStreamClass desc) 
-                throws IOException, ClassNotFoundException {
-            return Class.forName(desc.getName(), false, 
-                Thread.currentThread().getContextClassLoader());
         }
     }
 }
