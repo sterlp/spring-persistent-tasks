@@ -6,7 +6,7 @@ A simple task management framework designed to queue and execute asynchronous ta
 
 Focus is the usage with spring boot and JPA.
 
-![Dashboard](./assets/dashboard.png)
+![Dashboard](/assets/dashboard.png)
 
 ## Key Features ✨
 

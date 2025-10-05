@@ -13,21 +13,42 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
+import org.sterl.spring.persistent_tasks.api.task.SerializationProvider;
+import org.sterl.spring.persistent_tasks.api.task.StateSerializer;
 import org.sterl.spring.persistent_tasks.task.component.TaskTransactionComponent;
 import org.sterl.spring.persistent_tasks.task.repository.TaskRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TaskService {
 
     private final TaskTransactionComponent taskTransactionComponent;
     private final TaskRepository taskRepository;
+    
+    @SuppressWarnings("rawtypes")
+    private Map<TaskId, StateSerializer> serializers = new ConcurrentHashMap<>();
+    
+    // TODO move it to the component
     private final Map<PersistentTask<? extends Serializable>, Optional<TransactionTemplate>> cache = new ConcurrentHashMap<>();
 
     public Set<TaskId<? extends Serializable>> findAllTaskIds() {
         return this.taskRepository.all();
+    }
+    
+    public <T extends Serializable> void registerStateSerializer(
+            @NonNull TaskId<T> id, 
+            @NonNull StateSerializer<T> serializer) {
+        log.info("{} brings an own state serializer: {}", id, serializer.getClass().getSimpleName());
+        serializers.put(id, serializer);
+    }
+    @SuppressWarnings("unchecked")
+    public <T extends Serializable> StateSerializer<T> getStateSerializer(TaskId<T> taskId, 
+            StateSerializer<?> fallBack) {
+        return serializers.getOrDefault(taskId, fallBack);
     }
 
     public <T extends Serializable> Optional<PersistentTask<T>> get(TaskId<T> id) {
@@ -84,16 +105,25 @@ public class TaskService {
     /**
      * A way to manually register a PersistentTask, usually not needed as spring beans will be added automatically.
      */
+    @SuppressWarnings("unchecked")
     public <T extends Serializable> TaskId<T> register(TaskId<T> id, PersistentTask<T> task) {
         taskTransactionComponent.buildOrGetDefaultTransactionTemplate(task);
+        if (task instanceof SerializationProvider sp) {
+            registerStateSerializer(id, sp.getSerializer());
+        }
         return taskRepository.addTask(id, task);
     }
     /**
      * A way to manually register a PersistentTask, usually not needed as spring beans will be added automatically.
      */
-    @SuppressWarnings("unchecked")
     public <T extends Serializable> TaskId<T> replace(String name, PersistentTask<T> task) {
-        var id = (TaskId<T>)TaskId.of(name);
+        return replace(TaskId.of(name), task);
+    }
+    
+    /**
+     * A way to manually register a PersistentTask, usually not needed as spring beans will be added automatically.
+     */
+    public <T extends Serializable> TaskId<T> replace(TaskId<T> id, PersistentTask<T> task) {
         taskRepository.remove(id);
         return register(id, task);
     }

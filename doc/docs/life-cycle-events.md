@@ -8,7 +8,7 @@ Any trigger follows a particular life cycle having the status:
 1. FAILED => TriggerFailedEvent
 1. CANCELED => TriggerCanceledEvent
 
-![TriggerLifeCycleEvent](./assets/trigger-life-cycle-events.png)
+![TriggerLifeCycleEvent](/assets/trigger-life-cycle-events.png)
 
 # Create a custom life cycle listener
 

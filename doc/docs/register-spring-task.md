@@ -1,6 +1,6 @@
 # Register a Tasks
 
-![Spring Persistent Task Interface](assets/spring-persistent-task-interface.png)
+![Spring Persistent Task Interface](/assets/spring-persistent-task-interface.png)
 
 ## RunningTriggerContextHolder @since v1.6
 

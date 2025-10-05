@@ -22,10 +22,10 @@ import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
+import org.sterl.spring.persistent_tasks.api.task.StateSerializer.DeSerializationFailedException;
 import org.sterl.spring.persistent_tasks.history.repository.CompletedTriggerRepository;
 import org.sterl.spring.persistent_tasks.task.exception.CancelTaskException;
 import org.sterl.spring.persistent_tasks.task.repository.TaskRepository;
-import org.sterl.spring.persistent_tasks.trigger.component.StateSerializer.DeSerializationFailedException;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerAddedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerCanceledEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerFailedEvent;
@@ -114,7 +114,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         // AND
         assertThat(events.stream(TriggerAddedEvent.class).count()).isEqualTo(2);
         var t = subject.get(t2.getKey()).get();
-        assertThat(t.getData().getState()).isEqualTo(subject.getStateSerializer().serialize("foo"));
+        assertThat(t.getData().getState()).isEqualTo(stateSerialization.serialize(taskId, "foo"));
     }
 
     @Test
@@ -545,7 +545,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         // THEN
         var t = subject.get(triggerKey).get();
         assertThat(t.getData().getStatus()).isEqualTo(TriggerStatus.WAITING);
-        assertThat(t.getData().getState()).isEqualTo(subject.getStateSerializer().serialize("new state"));
+        assertThat(t.getData().getState()).isEqualTo(stateSerialization.serialize(taskId, "new state"));
         
         // WHEN
         assertThat(persistentTaskTestService.runNextTrigger()).isPresent();
@@ -588,7 +588,7 @@ class TriggerServiceTest extends AbstractSpringTest {
         // THEN
         var t = subject.get(triggerKey).get();
         assertThat(t.getData().getStatus()).isEqualTo(TriggerStatus.WAITING);
-        assertThat(t.getData().getState()).isEqualTo(subject.getStateSerializer().serialize("Cool new State"));
+        assertThat(t.getData().getState()).isEqualTo(stateSerialization.serialize(taskId, "Cool new State"));
         
         // WHEN
         assertThat(persistentTaskTestService.runNextTrigger()).isPresent();

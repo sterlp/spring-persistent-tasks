@@ -40,10 +40,10 @@ import lombok.extern.slf4j.Slf4j;
 public class EditTriggerComponent {
     private final ApplicationEventPublisher publisher;
 
-    private final StateSerializer stateSerializer = new StateSerializer();
-    private final ToTriggerData toTriggerData = new ToTriggerData(stateSerializer);
+    private final ToTriggerData toTriggerData;
     private final ReadTriggerComponent readTrigger;
     private final RunningTriggerRepository triggerRepository;
+    
 
     public Optional<RunningTriggerEntity> completeTaskWithSuccess(TriggerKey key, Serializable state) {
         final Optional<RunningTriggerEntity> result = readTrigger.get(key);
@@ -101,7 +101,7 @@ public class EditTriggerComponent {
         publisher.publishEvent(new TriggerCanceledEvent(
                 t.getId(), 
                 t.copyData(),
-                stateSerializer.deserializeOrNull(t.getData().getState())));
+                toTriggerData.getStateSerialization().deserializeOrNull(t.getData())));
 
         triggerRepository.delete(t);
         return t;
@@ -164,14 +164,15 @@ public class EditTriggerComponent {
             TriggerSearch search, Function<T, T> stateModifier) {
         
         search.setStatus(TriggerStatus.AWAITING_SIGNAL);
-        var foundTriggers = readTrigger.searchTriggers(search, Pageable.ofSize(1));
+        final var foundTriggers = readTrigger.searchTriggers(search, Pageable.ofSize(1));
+        final var stateSerializer = toTriggerData.getStateSerialization();
 
         foundTriggers.forEach(t -> {
             log.debug("Resuming trigger={} with search={}", t, search);
-            var newStart = stateModifier.apply((T)stateSerializer.deserialize(t.getData().getState()));
-            t.getData().setState(stateSerializer.serialize(newStart));
+            var newState = stateModifier.apply((T)stateSerializer.deserialize(t.getData()));
+            t.getData().setState(stateSerializer.serialize(t.newTaskId(), newState));
             t.runAt(OffsetDateTime.now());
-            publisher.publishEvent(new TriggerResumedEvent(t.getId(), t.copyData(), newStart));
+            publisher.publishEvent(new TriggerResumedEvent(t.getId(), t.copyData(), newState));
         });
 
         return foundTriggers.isEmpty() ? Optional.empty() : Optional.of(foundTriggers.getContent().get(0));
@@ -184,8 +185,10 @@ public class EditTriggerComponent {
         t.getData().updateRunningDuration();
         
         publisher.publishEvent(new TriggerExpiredEvent(
-                t.getId(), t.copyData(), 
-                stateSerializer.deserializeOrNull(t.getData().getState())));
+                t.getId(), t.copyData(),
+                toTriggerData.getStateSerialization().deserializeOrNull(t.getData())
+            )
+        );
         return t;
     }
 

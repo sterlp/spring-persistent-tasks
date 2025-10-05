@@ -34,6 +34,7 @@ import org.sterl.spring.persistent_tasks.task.TaskService;
 import org.sterl.spring.persistent_tasks.test.AsyncAsserts;
 import org.sterl.spring.persistent_tasks.test.PersistentTaskTestService;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
+import org.sterl.spring.persistent_tasks.trigger.component.StateSerializationComponent;
 import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
 import org.sterl.spring.sample_app.SampleApp;
 import org.sterl.test.hibernate_asserts.HibernateAsserts;
@@ -60,6 +61,9 @@ public class AbstractSpringTest {
     @Qualifier("schedulerB")
     protected SchedulerService schedulerB;
 
+    @Autowired
+    protected StateSerializationComponent stateSerialization;
+    
     @Autowired
     protected TriggerService triggerService;
     @Autowired

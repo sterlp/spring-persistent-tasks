@@ -1,14 +1,22 @@
 site_name: Spring Persistent Tasks
 site_url: https://spring-persistent-task.sterl.org
+use_directory_urls: false
 theme:
     name: material
     features:
       - content.code.copy
       - content.code.annotate
+      - navigation.indexes
+      - navigation.path
+      - navigation.prune
+      - navigation.expand
+
 plugins:
   - search
   - tags
   - glightbox
+  - awesome-nav
+
 markdown_extensions:
   - attr_list
   - md_in_html

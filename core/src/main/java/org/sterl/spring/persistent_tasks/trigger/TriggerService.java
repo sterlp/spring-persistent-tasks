@@ -26,10 +26,9 @@ import org.sterl.spring.persistent_tasks.trigger.component.FailTriggerComponent;
 import org.sterl.spring.persistent_tasks.trigger.component.LockNextTriggerComponent;
 import org.sterl.spring.persistent_tasks.trigger.component.ReadTriggerComponent;
 import org.sterl.spring.persistent_tasks.trigger.component.RunTriggerComponent;
-import org.sterl.spring.persistent_tasks.trigger.component.StateSerializer;
+import org.sterl.spring.persistent_tasks.trigger.component.StateSerializationComponent;
 import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,13 +38,12 @@ import lombok.extern.slf4j.Slf4j;
 public class TriggerService {
 
     private final TaskService taskService;
-    @Getter
-    private final StateSerializer stateSerializer = new StateSerializer();
     private final RunTriggerComponent runTrigger;
     private final ReadTriggerComponent readTrigger;
     private final EditTriggerComponent editTrigger;
     private final FailTriggerComponent failTrigger;
     private final LockNextTriggerComponent lockNextTrigger;
+    private final StateSerializationComponent stateSerialization;
 
     /**
      * Executes the given trigger directly in the current thread
@@ -210,7 +208,7 @@ public class TriggerService {
         var now = OffsetDateTime.now().toEpochSecond();
         result.forEach(t -> {
             final var task = taskService.get(t.newTaskId());
-            final var state = stateSerializer.deserializeOrNull(t.getData().getState());
+            final var state = stateSerialization.deserializeOrNull(t.key().toTaskId(), t.getData().getState());
             
             final var e = new IllegalStateException("Trigger abandoned. Timeout: " 
                     + timeout + " running on: " + t.getRunningOn()
