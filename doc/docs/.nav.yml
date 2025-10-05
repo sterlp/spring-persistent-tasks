@@ -1,6 +1,5 @@
 nav:
-   - Home: index.md
-   - Usage: usage
-   - Setup: setup
-   - Test: test
+   - Home: "index.md"
+   - Register a Task: "register-spring-task.md"
+   - "*"
    - JavaDoc: https://sterlp.github.io/spring-persistent-tasks/javadoc-core

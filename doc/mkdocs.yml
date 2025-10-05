@@ -1,5 +1,6 @@
 site_name: Spring Persistent Tasks
 site_url: https://spring-persistent-task.sterl.org
+use_directory_urls: false
 theme:
     name: material
     features:
@@ -32,3 +33,4 @@ markdown_extensions:
   - pymdownx.details
   - pymdownx.superfences
   - toc
+repo_url: https://github.com/sterlp/spring-persistent-tasks
