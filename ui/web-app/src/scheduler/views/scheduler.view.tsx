@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import {
     Card,
     Col,
-    Form,
     ProgressBar,
     Row,
     Tooltip,
@@ -50,72 +49,69 @@ const SchedulerStatusView = ({ scheduler }: Props) => {
     }, [scheduler.lastPing]); // Depends only on lastPing
 
     return (
-        <Card className="shadow-sm rounded border-0">
-            <Card.Header
-                as="h5"
-                className="d-flex justify-content-between align-items-center"
-                style={{
-                    background: "linear-gradient(45deg, #007bff, #00d8ff)",
-                    color: "white",
-                }}
-            >
-                <span>
-                    <i className="fas fa-server"></i> {scheduler.id}
-                </span>
+        <Card className="shadow-sm border-0 h-100">
+            <Card.Header className="bg-primary text-white py-3">
+                <h6 className="mb-0 fw-semibold">
+                    <i className="fas fa-server me-2"></i>
+                    {scheduler.id}
+                </h6>
             </Card.Header>
-            <Card.Body>
-                <Row>
-                    {/* Left Column: ProgressBars */}
-                    <Col>
-                        <p>
-                            <strong>Last Ping:</strong>{" "}
-                            {durationSince(new Date(scheduler.lastPing))}
-                        </p>
-                        {renderLoadStatus(
-                            "Threads",
-                            scheduler.runningTasks,
-                            scheduler.tasksSlotCount,
-                            "t_" + scheduler.id
-                        )}
-                        {renderLoadStatus(
-                            "CPU",
-                            scheduler.systemLoadAverage,
-                            100,
-                            "cpu" + scheduler.id,
-                            "%"
-                        )}
-                        {renderLoadStatus(
-                            "Memory",
-                            scheduler.usedHeap / 1024 / 1024,
-                            scheduler.maxHeap / 1024 / 1024,
-                            "memory" + scheduler.id,
-                            "MB"
-                        )}
+            <Card.Body className="p-3">
+                <div className="mb-3 pb-2 border-bottom">
+                    <small className="text-muted">Last Ping</small>
+                    <div className="fw-semibold">
+                        {durationSince(new Date(scheduler.lastPing))}
+                    </div>
+                </div>
+
+                <Row className="g-3">
+                    <Col lg={6}>
+                        <div className="mb-3">
+                            {renderLoadStatus(
+                                "Threads",
+                                scheduler.runningTasks,
+                                scheduler.tasksSlotCount,
+                                "t_" + scheduler.id
+                            )}
+                        </div>
+                        <div className="mb-3">
+                            {renderLoadStatus(
+                                "CPU",
+                                scheduler.systemLoadAverage,
+                                100,
+                                "cpu" + scheduler.id,
+                                "%"
+                            )}
+                        </div>
+                        <div>
+                            {renderLoadStatus(
+                                "Memory",
+                                scheduler.usedHeap / 1024 / 1024,
+                                scheduler.maxHeap / 1024 / 1024,
+                                "memory" + scheduler.id,
+                                "MB"
+                            )}
+                        </div>
                     </Col>
 
-                    {/* Right Column: BarChart */}
-                    <Col>
-                        <strong>Running Tasks:</strong>
-                        <ResponsiveContainer width="100%" height={200}>
+                    <Col lg={6}>
+                        <div className="mb-2">
+                            <small className="text-muted">Running Tasks History</small>
+                        </div>
+                        <ResponsiveContainer width="100%" height={180}>
                             <BarChart data={historyData}>
-                                <CartesianGrid strokeDasharray="3 3" />
+                                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                                 <XAxis
                                     dataKey="time"
-                                    label={{
-                                        value: "Time",
-                                        position: "insideBottom",
-                                        offset: -5,
-                                    }}
+                                    tick={{ fontSize: 11 }}
+                                    stroke="#6c757d"
                                 />
                                 <YAxis
-                                    label={{
-                                        value: "Tasks",
-                                        angle: -90,
-                                        position: "insideLeft",
-                                    }}
+                                    tick={{ fontSize: 11 }}
+                                    stroke="#6c757d"
                                 />
                                 <Tooltip />
-                                <Bar dataKey="tasks" fill="#007bff" />
+                                <Bar dataKey="tasks" fill="#0d6efd" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </Col>
@@ -133,32 +129,39 @@ const renderLoadStatus = (
     max: number,
     id: string,
     unit: string = ""
-) => (
-    <>
-        <Form.Label htmlFor={`label-${id}`}>{label}</Form.Label>
-        <OverlayTrigger
-            placement="top"
-            overlay={(props) =>
-                renderTooltip(
-                    props,
-                    `${label}: ${Math.round(current)}${unit} of ${Math.round(
-                        max
-                    )}${unit}`
-                )
-            }
-        >
-            <ProgressBar
-                id={`progress-${id}`}
-                animated
-                striped
-                variant={getVariant(current, max)}
-                now={current}
-                max={max}
-                label={`${Math.round(current)}${unit}`}
-            />
-        </OverlayTrigger>
-    </>
-);
+) => {
+    const percentage = (current / max) * 100;
+    const variant = getVariant(current, max);
+
+    return (
+        <div>
+            <div className="d-flex justify-content-between align-items-center mb-1">
+                <small className="text-muted">{label}</small>
+                <small className="fw-semibold">
+                    {Math.round(current)}{unit} / {Math.round(max)}{unit}
+                </small>
+            </div>
+            <OverlayTrigger
+                placement="top"
+                overlay={(props) =>
+                    renderTooltip(
+                        props,
+                        `${label}: ${Math.round(current)}${unit} of ${Math.round(max)}${unit} (${Math.round(percentage)}%)`
+                    )
+                }
+            >
+                <ProgressBar
+                    id={`progress-${id}`}
+                    variant={variant}
+                    now={current}
+                    max={max}
+                    style={{ height: '8px' }}
+                    className="rounded"
+                />
+            </OverlayTrigger>
+        </div>
+    );
+};
 
 function renderTooltip(props: any, label: string) {
     return (

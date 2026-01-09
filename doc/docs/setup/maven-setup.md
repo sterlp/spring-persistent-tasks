@@ -1,3 +1,14 @@
+---
+title: Maven Setup and Dependencies
+description: Complete guide to setting up Spring Persistent Tasks with Maven including core, UI, and database dependencies configuration.
+keywords: maven setup, spring persistent tasks maven, maven dependency, spring boot setup, liquibase setup, EnableSpringPersistentTasks
+tags:
+  - Setup
+  - Maven
+  - Configuration
+  - Installation
+---
+
 # Maven setup
 
 -   [Maven Central spring-persistent-tasks-core](https://central.sonatype.com/artifact/org.sterl.spring/spring-persistent-tasks-core/versions)

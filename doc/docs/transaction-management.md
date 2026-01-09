@@ -1,6 +1,16 @@
+---
+title: Transaction Management
+description: Learn how to manage transactions in Spring Persistent Tasks using transactional flags, @Transactional annotation, and TransactionTemplate configuration.
+keywords: spring transaction, transactional task, transaction management, spring @Transactional, TransactionTemplate, task transaction
+tags:
+  - Transactions
+  - Configuration
+  - Spring Framework
+---
+
 # Transaction Management
 
-Overall the framework assumes that the queued task is not transactional nor a transaction is needed. To wrap the trigger status updates together with any transactional workload (recommended) where are two possibilites:
+Overall the framework assumes that the queued task is not transactional nor a transaction is needed. To wrap the trigger status updates together with any transactional workload (recommended) there are two possibilities:
 
 1. Use the transactional flag
 1. Use the Spring `@Transactional` annotation

@@ -1,3 +1,13 @@
+---
+title: JUnit Testing for Tasks and Triggers
+description: Comprehensive guide to testing Spring Persistent Tasks with JUnit including disabling scheduler, manual trigger execution, and async testing strategies.
+keywords: junit testing, spring task testing, trigger testing, test scheduler, async testing, integration testing
+tags:
+  - Testing
+  - JUnit
+  - Integration Tests
+---
+
 # JUnit Tests Triggers and Tasks
 
 ## Disable SchedulerService

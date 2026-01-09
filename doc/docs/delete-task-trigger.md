@@ -1,3 +1,13 @@
+---
+title: Cancel and Delete Triggers
+description: Learn how to cancel queued triggers, stop running tasks, and handle task failures with CancelTaskException and FailTaskNoRetryException.
+keywords: cancel trigger, delete task, stop task, task cancellation, fail task, cancel running task
+tags:
+  - Task Cancellation
+  - Error Handling
+  - Task Management
+---
+
 # Cancel a trigger
 
 ## Cancel a queued trigger

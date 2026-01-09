@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { Form } from "react-bootstrap";
 
 interface Props {
     label: string;
@@ -9,20 +8,25 @@ interface Props {
 }
 const LabeledText: React.FC<Props> = ({ label, value, className, onClick }) => {
     return (
-        <Form.Group className={className}>
-            <Form.Text muted role="label">
+        <div className={className}>
+            <small className="text-muted d-block mb-1">
                 {label}
-            </Form.Text>
+            </small>
             {onClick ? (
-                <div>
-                    <a onClick={onClick} href="#">
-                        {value}
-                    </a>
-                </div>
+                <a
+                    onClick={(e) => {
+                        e.preventDefault();
+                        onClick();
+                    }}
+                    href="#"
+                    className="text-decoration-none fw-semibold"
+                >
+                    {value}
+                </a>
             ) : (
-                <div>{value}</div>
+                <div className="fw-semibold">{value}</div>
             )}
-        </Form.Group>
+        </div>
     );
 };
 

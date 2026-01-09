@@ -2,6 +2,10 @@
 
 `mvn clean install`
 
+# Test
+
+- `pnpm recursive run test --run`
+
 # Build web ui only
 
 -   `pnpm install`
