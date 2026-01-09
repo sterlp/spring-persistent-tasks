@@ -8,5 +8,5 @@
 | `spring.persistent-tasks.poll-task-timeout`    | `java.lang.Integer`  | The interval at which the system checks for abandoned tasks, in seconds. | `300` (5 minutes)  |
 | `spring.persistent-tasks.scheduler-enabled`    | `java.lang.Boolean`  | Indicates whether this node should handle triggers.                      | `true`             |
 | `spring.persistent-tasks.thread-factory`       | `DEFAULT`/`VIRTUAL`  | Which thread factory should be used DEFAULT or VIRTUAL.                  | `DEFAULT`          |
-| `spring.persistent-tasks.history.delete-after` | `java.time.Duration` | The max age for a trigger in the hstory.                                 | `PT72H` (30 days)  |
+| `spring.persistent-tasks.history.delete-after` | `java.time.Duration` | The max age for a trigger in the history.                                | `PT72H` (3 days)   |
 | `spring.persistent-tasks.history.delete-rate`  | `java.time.Integer`  | The interval at which old triggers are deleted, in hours.                | `24` (24 hours)    |

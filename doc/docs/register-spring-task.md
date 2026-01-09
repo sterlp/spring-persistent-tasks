@@ -12,7 +12,7 @@ TaskId will be the method name.
 
 ```java
 @Bean
-SpringBeanTask<String> task1() {
+PersistentTask<String> task1() {
     return (String state) -> {
         // DO STUFF
     };
@@ -21,7 +21,7 @@ SpringBeanTask<String> task1() {
 
 # Define a closure which has a transactional workload
 
-This closure will we wrapped in the default `TransactionalTempalte`
+This closure will be wrapped in the default `TransactionTemplate`
 
 ```java
 @Bean("transactionalClosure")
@@ -39,8 +39,8 @@ TaskId will be the method name.
 
 ```java
 @Bean
-SpringBeanTask<String> task2() {
-    return new SpringBeanTask<String>() {
+PersistentTask<String> task2() {
+    return new PersistentTask<String>() {
         @Override
         public void accept(String state) {
             // DO STUFF
@@ -77,7 +77,7 @@ public class BuildVehicleTask implements PersistentTask<Vehicle> {
     @Override
     public RetryStrategy retryStrategy() {
         // run 5 times, multiply the execution count with 4, add the result in HOURS to now.
-        return new MultiplicativeRetryStrategy(5, ChronoUnit.HOURS, 4)
+        return new MultiplicativeRetryStrategy(5, ChronoUnit.HOURS, 4);
     }
     // OPTIONAL
     // if the task in accept requires a DB transaction, join them together with the framework

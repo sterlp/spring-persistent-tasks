@@ -28,7 +28,7 @@ public void buildVehicle() {
 private final PersistentTaskService persistentTaskService;
 
 public void buildVehicle() {
-   var trigger = TaskTriggerBuilder
+   var trigger = TriggerBuilder
             .<Vehicle>newTrigger("task2")
             .id("my-id") // will overwrite existing triggers
             .state(new Vehicle("funny"))

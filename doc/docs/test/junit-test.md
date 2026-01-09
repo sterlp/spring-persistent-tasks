@@ -56,7 +56,7 @@ Now you can run any trigger manually using the `TriggerService`
     void testRunTriggerDirectly() {
         // GIVEN
         // setup your test and create any triggers needed
-        var trigger = TaskTriggerBuilder
+        var trigger = TriggerBuilder
                 .<Vehicle>newTrigger("task2")
                 .id("my-id") // will overwrite existing triggers
                 .state(new Vehicle("funny"))
@@ -94,7 +94,7 @@ protected TriggerService triggerService;
  * Run all pending triggers synchronously
  */
 protected int waitForDbSchedulerTasks() {
-    TriggerEntity t;
+    RunningTriggerEntity t;
     int count = 0;
     while ((t = triggerService.lockNextTrigger("test")) != null) {
         triggerService.run(t);
@@ -113,7 +113,7 @@ A common use case is run tasks which should run in the future or just to wait th
 protected TriggerService triggerService;
 
 protected int waitForDbSchedulerTasks(OffsetDateTime thenToRun) {
-    List<TriggerEntity> triggers;
+    List<RunningTriggerEntity> triggers;
     int count = 0;
     while (!(triggers = triggerService.lockNextTrigger("test", 1, thenToRun)).isEmpty()) {
         triggerService.run(triggers.get(0));
