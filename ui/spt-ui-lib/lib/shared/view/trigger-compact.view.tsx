@@ -1,21 +1,19 @@
 import type { Trigger } from "@lib/server-api";
 import LabeledText from "@lib/shared/view/labled-text.view";
-import { Badge, Col, Form, Row } from "react-bootstrap";
+import { Badge, Col, Row } from "react-bootstrap";
 import { formatMs, formatShortDateTime, runningSince } from "../date.util";
 import TriggerStatusIcon from "./trigger-status-icon.view";
 
 const TriggerCompactView = ({ trigger }: { trigger: Trigger }) => (
-    <Row className="align-items-center">
-        <Col className="col-2">
+    <Row className="align-items-center g-2 w-100">
+        <Col xs={12} md={3} lg={2}>
             <TriggerStatusIcon trigger={trigger} />
         </Col>
-        <Col className="col-6">
-            <Form.Text muted role="label">
-                {trigger.key.id}
-            </Form.Text>
-            <div>{trigger.key.taskName}</div>
+        <Col xs={12} md={5} lg={4}>
+            <small className="text-muted d-block">{trigger.key.id}</small>
+            <div className="fw-semibold">{trigger.key.taskName}</div>
         </Col>
-        <Col className="col-2">
+        <Col xs={6} md={4} lg={3}>
             {isActive(trigger) ? (
                 <LabeledText
                     label="Run at"
@@ -28,7 +26,7 @@ const TriggerCompactView = ({ trigger }: { trigger: Trigger }) => (
                 />
             )}
         </Col>
-        <Col className="col-2">
+        <Col xs={6} md={12} lg={3}>
             <TriggerExecutiomView trigger={trigger} />
         </Col>
     </Row>

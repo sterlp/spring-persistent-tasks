@@ -1,6 +1,6 @@
 import SchedulerStatusView from "@src/scheduler/views/scheduler.view";
 import { useEffect } from "react";
-import { Card, Col, ListGroup, Row } from "react-bootstrap";
+import { Card, Col, Row } from "react-bootstrap";
 import {
     formatMs,
     HttpErrorView,
@@ -26,27 +26,40 @@ const SchedulersPage = () => {
 
     return (
         <>
-            <Row>
-                <Col>
-                    <HttpErrorView error={schedulers.error} />
-                </Col>
-            </Row>
-            <Row>
-                {schedulers.data?.map((s) => (
-                    <Col key={s.id} xl="6" md="12" className="mb-2">
-                        <SchedulerStatusView scheduler={s} />
-                    </Col>
-                ))}
+            <HttpErrorView error={schedulers.error} />
 
-                {tasks.data?.map((i) => (
-                    <Col key={i} xl="6" md="12" className="mb-2">
-                        <TaskStatusHistoryOverviewView
-                            name={i}
-                            status={taskHistory.data || []}
-                        />
-                    </Col>
-                ))}
-            </Row>
+            {schedulers.data && schedulers.data.length > 0 && (
+                <>
+                    <div className="mb-3">
+                        <h5 className="text-muted fw-semibold">Active Schedulers</h5>
+                    </div>
+                    <Row className="g-3 mb-4">
+                        {schedulers.data.map((s) => (
+                            <Col key={s.id} xl={6} lg={12}>
+                                <SchedulerStatusView scheduler={s} />
+                            </Col>
+                        ))}
+                    </Row>
+                </>
+            )}
+
+            {tasks.data && tasks.data.length > 0 && (
+                <>
+                    <div className="mb-3">
+                        <h5 className="text-muted fw-semibold">Task Execution Statistics</h5>
+                    </div>
+                    <Row className="g-3">
+                        {tasks.data.map((i) => (
+                            <Col key={i} xl={6} lg={12}>
+                                <TaskStatusHistoryOverviewView
+                                    name={i}
+                                    status={taskHistory.data || []}
+                                />
+                            </Col>
+                        ))}
+                    </Row>
+                </>
+            )}
         </>
     );
 };
@@ -58,41 +71,66 @@ const TaskStatusHistoryOverviewView = ({
 }: {
     name: string;
     status: TaskStatusHistoryOverview[];
-}) => (
-    <Card>
-        <Card.Header
-            as="h5"
-            className="d-flex justify-content-between align-items-center"
-            style={{
-                background: "linear-gradient(45deg, #007bff, #00d8ff)",
-                color: "white",
-            }}
-        >
-            {name}
-        </Card.Header>
-        <ListGroup variant="flush">
-            {status
-                .filter((s) => s.taskName == name)
-                .map((s) => (
-                    <ListGroup.Item key={s.taskName + s.status}>
-                        <Row className="align-items-center">
-                            <Col>
-                                <TriggerStatusView
-                                    status={s.status}
-                                    suffix={`: ${s.executionCount}`}
-                                />
-                            </Col>
-                            <Col>avg: {formatMs(s.avgDurationMs)}</Col>
-                            <Col>max: {formatMs(s.maxDurationMs)}</Col>
-                            <Col>
-                                avg retry:{" "}
-                                {Math.round(
-                                    Math.max(0, s.avgExecutionCount - 1) * 100
-                                ) / 100}
-                            </Col>
-                        </Row>
-                    </ListGroup.Item>
-                ))}
-        </ListGroup>
-    </Card>
-);
+}) => {
+    const taskStats = status.filter((s) => s.taskName === name);
+
+    return (
+        <Card className="shadow-sm border-0 h-100">
+            <Card.Header className="bg-success text-white py-3">
+                <h6 className="mb-0 fw-semibold">
+                    <i className="fas fa-tasks me-2"></i>
+                    {name}
+                </h6>
+            </Card.Header>
+            <Card.Body className="p-3">
+                {taskStats.length === 0 ? (
+                    <div className="text-muted text-center py-3">
+                        <small>No execution history available</small>
+                    </div>
+                ) : (
+                    <div className="d-flex flex-column gap-2">
+                        {taskStats.map((s) => (
+                            <div
+                                key={s.taskName + s.status}
+                                className="border rounded p-3 bg-body-secondary"
+                            >
+                                <Row className="g-3 align-items-center">
+                                    <Col xs={12} md={6} lg={3}>
+                                        <TriggerStatusView
+                                            status={s.status}
+                                            suffix=""
+                                        />
+                                        <div className="mt-1">
+                                            <small className="text-muted">Count: </small>
+                                            <span className="fw-semibold">{s.executionCount}</span>
+                                        </div>
+                                    </Col>
+                                    <Col xs={6} md={6} lg={3}>
+                                        <div>
+                                            <small className="text-muted d-block">Avg Duration</small>
+                                            <span className="fw-semibold">{formatMs(s.avgDurationMs)}</span>
+                                        </div>
+                                    </Col>
+                                    <Col xs={6} md={6} lg={3}>
+                                        <div>
+                                            <small className="text-muted d-block">Max Duration</small>
+                                            <span className="fw-semibold">{formatMs(s.maxDurationMs)}</span>
+                                        </div>
+                                    </Col>
+                                    <Col xs={12} md={6} lg={3}>
+                                        <div>
+                                            <small className="text-muted d-block">Avg Retries</small>
+                                            <span className="fw-semibold">
+                                                {Math.round(Math.max(0, s.avgExecutionCount - 1) * 100) / 100}
+                                            </span>
+                                        </div>
+                                    </Col>
+                                </Row>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </Card.Body>
+        </Card>
+    );
+};

@@ -16,99 +16,103 @@ const TriggerView = ({
     onClick?: (key: string, value?: string) => void;
 }) => {
     return (
-        <>
-            <Row>
-                <Col {...col}>
-                    <LabeledText
-                        label="Task"
-                        value={trigger.key.taskName}
-                        onClick={() =>
-                            onClick
-                                ? onClick("taskName", trigger.key.taskName)
-                                : undefined
-                        }
-                    />
-                </Col>
-                <Col {...col}>
-                    <LabeledText
-                        label="Correlation Id"
-                        value={trigger.correlationId}
-                        onClick={() =>
-                            onClick
-                                ? onClick("search", trigger.correlationId)
-                                : undefined
-                        }
-                    />
-                </Col>
-                <Col {...col}>
-                    <LabeledText
-                        label="Tag"
-                        value={trigger.tag}
-                        onClick={() =>
-                            onClick ? onClick("search", trigger.tag) : undefined
-                        }
-                    />
-                </Col>
-                <Col {...col}>
-                    <LabeledText label="Priority" value={trigger.priority} />
-                </Col>
+        <div className="p-3 bg-body-secondary rounded">
+            <div className="mb-3">
+                <h6 className="text-secondary mb-3 border-bottom pb-2">Trigger Details</h6>
+                <Row className="g-3">
+                    <Col {...col}>
+                        <LabeledText
+                            label="Task"
+                            value={trigger.key.taskName}
+                            onClick={() =>
+                                onClick
+                                    ? onClick("taskName", trigger.key.taskName)
+                                    : undefined
+                            }
+                        />
+                    </Col>
+                    <Col {...col}>
+                        <LabeledText
+                            label="Correlation Id"
+                            value={trigger.correlationId}
+                            onClick={() =>
+                                onClick
+                                    ? onClick("search", trigger.correlationId)
+                                    : undefined
+                            }
+                        />
+                    </Col>
+                    <Col {...col}>
+                        <LabeledText
+                            label="Tag"
+                            value={trigger.tag}
+                            onClick={() =>
+                                onClick ? onClick("search", trigger.tag) : undefined
+                            }
+                        />
+                    </Col>
+                    <Col {...col}>
+                        <LabeledText label="Priority" value={trigger.priority} />
+                    </Col>
 
-                <Col {...col}>
-                    <LabeledText
-                        label="Run at"
-                        value={formatShortDateTime(trigger.runAt)}
-                    />
-                </Col>
-                <Col {...col}>
-                    <LabeledText
-                        label="Started at"
-                        value={formatShortDateTime(trigger.start)}
-                    />
-                </Col>
-                <Col {...col}>
-                    <LabeledText
-                        label="Finished at"
-                        value={formatShortDateTime(trigger.end)}
-                    />
-                </Col>
-                <Col {...col}>
-                    <LabeledText
-                        label="Execution count"
-                        value={trigger.executionCount}
-                    />
-                </Col>
-                <Col {...col}>
-                    <LabeledText
-                        label="Created at"
-                        value={formatShortDateTime(trigger.createdTime)}
-                    />
-                </Col>
-                <Col {...col}>
-                    <LabeledText
-                        label="Last keep alive"
-                        value={formatShortDateTime(trigger.lastPing)}
-                    />
-                </Col>
-                <Col {...col}>
-                    <LabeledText label="Running on" value={trigger.runningOn} />
-                </Col>
-            </Row>
+                    <Col {...col}>
+                        <LabeledText
+                            label="Run at"
+                            value={formatShortDateTime(trigger.runAt)}
+                        />
+                    </Col>
+                    <Col {...col}>
+                        <LabeledText
+                            label="Started at"
+                            value={formatShortDateTime(trigger.start)}
+                        />
+                    </Col>
+                    <Col {...col}>
+                        <LabeledText
+                            label="Finished at"
+                            value={formatShortDateTime(trigger.end)}
+                        />
+                    </Col>
+                    <Col {...col}>
+                        <LabeledText
+                            label="Execution count"
+                            value={trigger.executionCount}
+                        />
+                    </Col>
+                    <Col {...col}>
+                        <LabeledText
+                            label="Created at"
+                            value={formatShortDateTime(trigger.createdTime)}
+                        />
+                    </Col>
+                    <Col {...col}>
+                        <LabeledText
+                            label="Last keep alive"
+                            value={formatShortDateTime(trigger.lastPing)}
+                        />
+                    </Col>
+                    <Col {...col}>
+                        <LabeledText label="Running on" value={trigger.runningOn} />
+                    </Col>
+                </Row>
+            </div>
 
-            <Row className="mt-2">
-                <Col>
-                    <TriggerHistoryListView instanceId={trigger.instanceId} />
-                </Col>
-            </Row>
-            <hr />
-            <Row className="mt-2">
-                <Col>
+            <div className="mb-3">
+                <h6 className="text-secondary mb-2 border-bottom pb-2">Execution History</h6>
+                <TriggerHistoryListView instanceId={trigger.instanceId} />
+            </div>
+
+            <Row className="g-3">
+                <Col md={6}>
+                    <h6 className="text-secondary mb-2 border-bottom pb-2">State</h6>
                     {isObject(trigger.state) ? (
-                        <JsonView value={trigger.state} />
+                        <JsonView value={trigger.state} style={{ fontSize: '0.875rem' }} />
                     ) : (
-                        <pre>{trigger.state}</pre>
+                        <pre className="bg-body p-2 rounded border">{trigger.state}</pre>
                     )}
                 </Col>
-                <Col>
+                <Col md={6}>
+                    <h6 className="text-secondary mb-2 border-bottom pb-2">Exception</h6>
                     <StackTraceView
                         key={trigger.id + "-error-view"}
                         title={trigger.exceptionName}
@@ -116,7 +120,7 @@ const TriggerView = ({
                     />
                 </Col>
             </Row>
-        </>
+        </div>
     );
 };
 

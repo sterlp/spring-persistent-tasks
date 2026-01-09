@@ -1,5 +1,27 @@
 # Changelog
 
+## v2.3.1 - (wip)
+
+### UI Improvements:
+
+-   Modernized UI with improved Bootstrap 5 styling
+    -   Redesigned scheduler status cards with cleaner layout
+    -   Updated task execution statistics with card-based design
+    -   Improved trigger views with better responsive design
+    -   Enhanced trigger history display with modern card layout
+-   Added dark mode support
+    -   User-toggleable dark/light theme with localStorage persistence
+    -   Proper semantic color classes for theme compatibility
+    -   Toggle button with sun/moon icons in navbar
+-   Documentation improvements
+    -   Fixed navigation structure with tree-based sub-pages
+    -   Restored content navigation to page layout
+    -   Moved tags page to bottom of navigation
+    -   Added robots.txt and SEO improvements
+-   Added React component tests
+    -   Simple render tests for all views and pages
+    -   Test coverage for scheduler, trigger, and history components
+
 ## v2.3.0 - (2025-10-5)
 
 -   added the ability to add custom serialization

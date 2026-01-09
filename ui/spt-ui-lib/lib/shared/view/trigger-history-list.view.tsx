@@ -1,7 +1,7 @@
 import { type HistoryTrigger, type PagedModel } from "@lib/server-api";
 import { formatDateTime } from "@lib/shared/date.util";
 import { useEffect } from "react";
-import { Col, ListGroup, Row } from "react-bootstrap";
+import { Col, Row } from "react-bootstrap";
 import { useServerObject } from "../http-request";
 import HttpRequestView from "./http-request.view";
 import TriggerStatusView from "./trigger-status.view";
@@ -17,31 +17,31 @@ const TriggerHistoryListView = ({ instanceId }: { instanceId: number }) => {
         <HttpRequestView
             request={triggerHistory}
             render={(history) => (
-                <ListGroup variant="flush">
+                <div className="d-flex flex-column gap-2">
                     {history.content.map((t) => (
-                        <ListGroup.Item
+                        <div
                             key={t.id}
-                            style={{ paddingLeft: 0, paddingRight: 0 }}
+                            className="border rounded p-2 bg-body"
                         >
-                            <Row className="align-middle">
-                                <Col md="3" xl="2">
-                                    <strong>#{t.executionCount} - </strong>
-                                    <TriggerStatusView status={t.status} />
+                            <Row className="align-items-center g-2">
+                                <Col xs={12} md={3} lg={2}>
+                                    <div className="d-flex align-items-center gap-2">
+                                        <span className="badge bg-secondary">#{t.executionCount}</span>
+                                        <TriggerStatusView status={t.status} />
+                                    </div>
                                 </Col>
-                                <Col md="3" xl="2">
-                                    {formatDateTime(t.createdTime)}
+                                <Col xs={12} md={3} lg={2}>
+                                    <small className="text-muted">
+                                        {formatDateTime(t.createdTime)}
+                                    </small>
                                 </Col>
-                                <Col
-                                    md="6"
-                                    xl="8"
-                                    className="text-justify text-wrap"
-                                >
-                                    {t.message}
+                                <Col xs={12} md={6} lg={8}>
+                                    <small>{t.message}</small>
                                 </Col>
                             </Row>
-                        </ListGroup.Item>
+                        </div>
                     ))}
-                </ListGroup>
+                </div>
             )}
         />
     );

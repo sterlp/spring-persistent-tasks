@@ -1,6 +1,6 @@
 import Router, { Route, Switch, usePath } from "crossroad";
-import { lazy, ReactNode, Suspense } from "react";
-import { Container, Nav, Navbar } from "react-bootstrap";
+import { lazy, ReactNode, Suspense, useEffect, useState } from "react";
+import { Button, Container, Nav, Navbar } from "react-bootstrap";
 import { LoadingView } from "spring-persistent-tasks-ui";
 import * as Icon from "react-bootstrap-icons";
 
@@ -16,6 +16,18 @@ const routes: MenuItem[] = [
 const BASE = "/task-ui";
 
 const App = () => {
+    const [darkMode, setDarkMode] = useState(() => {
+        return localStorage.getItem("darkMode") === "true";
+    });
+
+    useEffect(() => {
+        document.documentElement.setAttribute(
+            "data-bs-theme",
+            darkMode ? "dark" : "light"
+        );
+        localStorage.setItem("darkMode", darkMode.toString());
+    }, [darkMode]);
+
     return (
         <Router>
             <Navbar expand="lg" bg="primary" data-bs-theme="dark">
@@ -34,6 +46,14 @@ const App = () => {
                                 <Icon.Github />
                             </Nav.Link>
                         </Nav>
+                        <Button
+                            variant="outline-light"
+                            size="sm"
+                            onClick={() => setDarkMode(!darkMode)}
+                            className="ms-2"
+                        >
+                            {darkMode ? <Icon.SunFill /> : <Icon.MoonStarsFill />}
+                        </Button>
                     </Navbar.Collapse>
                 </Container>
             </Navbar>

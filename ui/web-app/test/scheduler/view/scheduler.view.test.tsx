@@ -33,8 +33,10 @@ describe("SchedulerStatusView Tests", () => {
 
         expect(screen.getByText("Threads")).toBeInTheDocument();
         expect(screen.getByText("CPU")).toBeInTheDocument();
+        expect(screen.getByText("Memory")).toBeInTheDocument();
 
-        expect(screen.getByText("150MB")).toBeInTheDocument();
-        expect(screen.getByText("15%")).toBeInTheDocument();
+        // Check for the new format: "value / max"
+        expect(screen.getByText("150MB / 50MB")).toBeInTheDocument();
+        expect(screen.getByText("15% / 100%")).toBeInTheDocument();
     });
 });

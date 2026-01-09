@@ -26,11 +26,13 @@ const TriggerActionsView = ({
     );
 
     return (
-        <>
+        <div className="mb-3">
             <HttpErrorView error={reRunTrigger.error || editTrigger.error} />
-            <div className="d-flex gap-2 mb-2">
-                {trigger.status === "WAITING" && afterTriggerChanged ? (
+            <div className="d-flex flex-wrap gap-2">
+                {trigger.status === "WAITING" && afterTriggerChanged && (
                     <Button
+                        variant="primary"
+                        size="sm"
                         onClick={() => {
                             editTrigger
                                 .doCall("/run-at", {
@@ -43,10 +45,11 @@ const TriggerActionsView = ({
                     >
                         Run now
                     </Button>
-                ) : undefined}
-                {afterTriggerChanged ? (
+                )}
+                {afterTriggerChanged && (
                     <Button
-                        variant="danger"
+                        variant="outline-danger"
+                        size="sm"
                         onClick={() => {
                             editTrigger
                                 .doCall("", { method: "DELETE" })
@@ -56,11 +59,12 @@ const TriggerActionsView = ({
                     >
                         Cancel Trigger
                     </Button>
-                ) : undefined}
+                )}
 
-                {afterTriggerReRun ? (
+                {afterTriggerReRun && (
                     <Button
-                        variant="warning"
+                        variant="outline-warning"
+                        size="sm"
                         onClick={() => {
                             reRunTrigger
                                 .doCall("", { method: "POST" })
@@ -70,9 +74,9 @@ const TriggerActionsView = ({
                     >
                         Run Trigger again
                     </Button>
-                ) : undefined}
+                )}
             </div>
-        </>
+        </div>
     );
 };
 
