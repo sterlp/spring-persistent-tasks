@@ -1,3 +1,14 @@
+---
+title: Trigger Life Cycle Events
+description: Learn about trigger life cycle events in Spring Persistent Tasks including TriggerAddedEvent, TriggerRunningEvent, TriggerSuccessEvent, TriggerFailedEvent, and TriggerCanceledEvent.
+keywords: trigger events, life cycle events, spring event listener, trigger states, task monitoring, event driven tasks
+tags:
+  - Life Cycle
+  - Events
+  - Monitoring
+  - Event Listener
+---
+
 # Trigger Life Cycle Events
 
 Any trigger follows a particular life cycle having the status:

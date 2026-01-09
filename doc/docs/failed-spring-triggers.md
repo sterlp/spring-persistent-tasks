@@ -1,3 +1,14 @@
+---
+title: Handle Failed Triggers
+description: Learn how to react to trigger failures using callbacks and life cycle events with TriggerFailedEvent and TriggerExpiredEvent in Spring Persistent Tasks.
+keywords: failed trigger, error handling, trigger failure callback, TriggerFailedEvent, task error handling, retry failure
+tags:
+  - Error Handling
+  - Failure Callback
+  - Events
+  - Retry Logic
+---
+
 # Reacting to Trigger Failures
 
 ## Use callback since v2.2.0

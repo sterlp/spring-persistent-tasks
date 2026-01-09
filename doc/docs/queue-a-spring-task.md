@@ -1,6 +1,17 @@
+---
+title: Queue and Execute Tasks
+description: Learn how to queue tasks for later execution or run them immediately using TriggerService and PersistentTaskService with Spring application events.
+keywords: queue task, trigger task, task execution, spring events, task scheduling, deferred execution, immediate execution
+tags:
+  - Task Queue
+  - Task Execution
+  - TriggerService
+  - Spring Events
+---
+
 # Queue a task execution
 
-You can queue a task or a later execution or request the executer to run a task directly, if a free thread is available on the node.
+You can queue a task for later execution or request the executor to run a task directly if a free thread is available on the node.
 
 ## Direct usage of the `TriggerService` or `PersistentTaskService`.
 

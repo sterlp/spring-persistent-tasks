@@ -1,10 +1,21 @@
+---
+title: Register and Define Spring Tasks
+description: Learn how to register and define persistent tasks in Spring Boot using beans, closures, and transactional tasks with retry strategies.
+keywords: spring task registration, persistent task definition, transactional task, spring bean task, task retry strategy, spring boot tasks
+tags:
+  - Task Definition
+  - Spring Bean
+  - Transactional Task
+  - Retry Strategy
+---
+
 # Register a Tasks
 
 ![Spring Persistent Task Interface](/assets/spring-persistent-task-interface.png)
 
 ## RunningTriggerContextHolder @since v1.6
 
-Allows the access to the state object and gives more informations about the current executed trigger.
+Allows the access to the state object and gives more information about the currently executed trigger.
 
 # Simple Closure
 
