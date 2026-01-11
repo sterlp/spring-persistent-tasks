@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
  * Fluent builder for creating scheduled (recurring) triggers.
  */
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
-public class ConTriggerBuilder<T extends Serializable> {
+public class CronTriggerBuilder<T extends Serializable> {
     @NonNull
     private final TaskId<T> taskId;
     private String id;
@@ -27,7 +27,7 @@ public class ConTriggerBuilder<T extends Serializable> {
      * Sets the unique ID for this scheduled trigger.
      * If not set, defaults to {@link Schedule#description()}.
      */
-    public ConTriggerBuilder<T> id(String id) {
+    public CronTriggerBuilder<T> id(String id) {
         this.id = id;
         return this;
     }
@@ -35,7 +35,7 @@ public class ConTriggerBuilder<T extends Serializable> {
     /**
      * Sets a fixed state for all trigger executions.
      */
-    public ConTriggerBuilder<T> state(T state) {
+    public CronTriggerBuilder<T> state(T state) {
         this.stateProvider = () -> state;
         return this;
     }
@@ -44,7 +44,7 @@ public class ConTriggerBuilder<T extends Serializable> {
      * Sets a state provider that's called for each trigger execution.
      * Useful for dynamic state generation.
      */
-    public ConTriggerBuilder<T> stateProvider(Supplier<T> stateProvider) {
+    public CronTriggerBuilder<T> stateProvider(Supplier<T> stateProvider) {
         this.stateProvider = stateProvider;
         return this;
     }
@@ -54,7 +54,7 @@ public class ConTriggerBuilder<T extends Serializable> {
      *
      * @param cronExpression cron expression (6 fields: second minute hour day month weekday)
      */
-    public ConTriggerBuilder<T> cron(String cronExpression) {
+    public CronTriggerBuilder<T> cron(String cronExpression) {
         this.schedule = new CronSchedule(cronExpression);
         return this;
     }
@@ -64,7 +64,7 @@ public class ConTriggerBuilder<T extends Serializable> {
      *
      * @param interval duration between executions
      */
-    public ConTriggerBuilder<T> every(Duration interval) {
+    public CronTriggerBuilder<T> every(Duration interval) {
         this.schedule = new IntervalSchedule(interval);
         return this;
     }
@@ -72,7 +72,7 @@ public class ConTriggerBuilder<T extends Serializable> {
     /**
      * Sets a custom tag for created triggers.
      */
-    public ConTriggerBuilder<T> tag(String tag) {
+    public CronTriggerBuilder<T> tag(String tag) {
         this.tag = tag;
         return this;
     }
@@ -80,7 +80,7 @@ public class ConTriggerBuilder<T extends Serializable> {
     /**
      * Sets the priority for created triggers (higher = more important).
      */
-    public ConTriggerBuilder<T> priority(int priority) {
+    public CronTriggerBuilder<T> priority(int priority) {
         this.priority = priority;
         return this;
     }

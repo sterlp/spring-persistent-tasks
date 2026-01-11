@@ -24,8 +24,8 @@ public record TaskId<T extends Serializable>(String name) implements Serializabl
         return new TriggerBuilder<>(this);
     }
     
-    public ConTriggerBuilder<T> newCron() {
-        return new ConTriggerBuilder<>(this);
+    public CronTriggerBuilder<T> newCron() {
+        return new CronTriggerBuilder<>(this);
     }
     
     /**
