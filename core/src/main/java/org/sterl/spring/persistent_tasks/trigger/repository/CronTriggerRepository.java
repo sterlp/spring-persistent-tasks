@@ -15,7 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * In-memory repository for cron trigger definitions.
- * Cron triggers are registered at startup and live in memory like task definitions.
+ * Cron triggers are registered at startup and live in memory like task
+ * definitions.
  */
 @Slf4j
 @Component
@@ -35,7 +36,7 @@ public class CronTriggerRepository {
         if (cronTriggerEntities.containsKey(key)) {
             throw new IllegalStateException("Cron trigger with '" + key + "' is already registered!");
         }
-        cronTriggerEntities.put(key , cronTrigger);
+        cronTriggerEntities.put(key, cronTrigger);
         log.info("Registered cron for={}", cronTrigger);
         return key;
     }
@@ -43,7 +44,7 @@ public class CronTriggerRepository {
     /**
      * Gets a cron trigger by ID.
      *
-     * @param id the trigger ID
+     * @param key the TriggerKey
      * @return the cron trigger if found
      */
     public Optional<CronTriggerEntity<? extends Serializable>> get(@NonNull TriggerKey key) {
@@ -68,6 +69,7 @@ public class CronTriggerRepository {
         }
         return false;
     }
+
     public boolean resume(@NonNull TriggerKey key) {
         var cronTrigger = cronTriggerEntities.get(key);
         if (cronTrigger != null) {
@@ -81,7 +83,7 @@ public class CronTriggerRepository {
     /**
      * Unregisters a cron trigger.
      *
-     * @param id the trigger ID
+     * @param key the TriggerKey of the cron
      * @return the removed cron trigger, or empty if not found
      */
     public Optional<CronTriggerEntity<? extends Serializable>> unregister(@NonNull TriggerKey key) {
