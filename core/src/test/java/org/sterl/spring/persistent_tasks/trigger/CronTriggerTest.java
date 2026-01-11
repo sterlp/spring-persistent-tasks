@@ -70,10 +70,10 @@ class CronTriggerTest extends AbstractSpringTest {
     @Test
     void test_replan_missing_cron_triggers() throws Exception {
         // GIVEN
-        final var cron1 = task1Id.newCron()
+        final var cron1 = task2Id.newCron()
                 .after(Duration.ofSeconds(1))
                 .build();
-        final var cron2 = task2Id.newCron()
+        final var cron2 = task3Id.newCron()
                 .after(Duration.ofHours(1))
                 .build();
 
