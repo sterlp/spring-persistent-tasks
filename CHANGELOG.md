@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.3.1 - (wip)
+## v2.3.1 - (2026-01-11)
 
 ### UI Improvements:
 
