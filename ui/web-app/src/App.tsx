@@ -7,10 +7,12 @@ import * as Icon from "react-bootstrap-icons";
 const SchedulersPage = lazy(() => import("./scheduler/scheduler.page"));
 const TriggersPage = lazy(() => import("./trigger/triggers.page"));
 const HistoryPage = lazy(() => import("./history/history.page"));
+const CronJobsPage = lazy(() => import("./cron/cron.page"));
 
 const routes: MenuItem[] = [
     { label: "Home", path: "", component: SchedulersPage },
     { label: "Triggers", path: "/triggers", component: TriggersPage },
+    { label: "Cron Jobs", path: "/cron", component: CronJobsPage },
     { label: "History", path: "/history", component: HistoryPage },
 ];
 const BASE = "/task-ui";
