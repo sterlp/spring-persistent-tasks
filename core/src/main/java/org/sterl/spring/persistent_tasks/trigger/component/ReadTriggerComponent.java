@@ -36,6 +36,10 @@ public class ReadTriggerComponent {
     public long countByTaskName(@NotNull String name) {
         return triggerRepository.countByTaskName(name);
     }
+    
+    public long countByKey(@NotNull TriggerKey key) {
+        return triggerRepository.countByKey(key);
+    }
 
     public long countByStatus(@Nullable TriggerStatus status) {
         if (status == null) return triggerRepository.count();

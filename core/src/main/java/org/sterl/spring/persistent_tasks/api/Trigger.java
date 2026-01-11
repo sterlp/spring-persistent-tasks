@@ -42,7 +42,7 @@ public class Trigger {
     private int executionCount = 0;
 
     /** priority, the higher a more priority it will get */
-    private int priority = 4;
+    private int priority = TriggerRequest.DEFAULT_PRIORITY;
 
     private TriggerStatus status = TriggerStatus.WAITING;
     

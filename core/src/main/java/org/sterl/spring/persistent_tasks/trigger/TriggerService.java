@@ -7,9 +7,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.springframework.boot.actuate.quartz.QuartzEndpoint.QuartzTriggerGroupSummaryDescriptor.Triggers;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.lang.Nullable;
+import org.springframework.scheduling.config.Task;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.TaskId;
@@ -19,19 +21,26 @@ import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.shared.DateUtil;
+import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
 import org.sterl.spring.persistent_tasks.task.TaskService;
 import org.sterl.spring.persistent_tasks.trigger.component.EditTriggerComponent;
 import org.sterl.spring.persistent_tasks.trigger.component.FailTriggerComponent;
 import org.sterl.spring.persistent_tasks.trigger.component.LockNextTriggerComponent;
+import org.sterl.spring.persistent_tasks.trigger.component.QueueCronTriggerComponent;
 import org.sterl.spring.persistent_tasks.trigger.component.ReadTriggerComponent;
 import org.sterl.spring.persistent_tasks.trigger.component.RunTriggerComponent;
 import org.sterl.spring.persistent_tasks.trigger.component.StateSerializationComponent;
+import org.sterl.spring.persistent_tasks.trigger.model.CronTriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
+import org.sterl.spring.persistent_tasks.trigger.repository.CronTriggerRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Manages {@link Triggers} to {@link Task}s and the data.
+ */
 @TransactionalService
 @RequiredArgsConstructor
 @Slf4j
@@ -44,6 +53,8 @@ public class TriggerService {
     private final FailTriggerComponent failTrigger;
     private final LockNextTriggerComponent lockNextTrigger;
     private final StateSerializationComponent stateSerialization;
+    private final CronTriggerRepository cronTriggerRepository;
+    private final QueueCronTriggerComponent queueCronTrigger;
 
     /**
      * Executes the given trigger directly in the current thread
@@ -118,6 +129,7 @@ public class TriggerService {
 
     public void deleteAll() {
         this.editTrigger.deleteAll();
+        this.cronTriggerRepository.deleteAll();
     }
 
     /**
@@ -240,5 +252,35 @@ public class TriggerService {
             t.getData().setRunAt(time);
             return t;
         });
+    }
+    
+    /**
+     * Adds a {@link CronTriggerEntity} for recurring tasks.
+     * It will also add the {@link TriggerEntity} if required.
+     *
+     * @param cronTrigger the {@link CronTriggerEntity} to manage
+     * @return <code>true</code> if a new {@link TriggerEntity} was created, <code>false</code> if one already exists
+     */
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public boolean register(CronTriggerEntity<? extends Serializable> cronTrigger) {
+        this.taskService.assertIsKnown(cronTrigger.getTaskId());
+        this.cronTriggerRepository.register(cronTrigger);
+        return queueCronTrigger.execute(cronTrigger);
+    }
+
+    public Collection<CronTriggerEntity<? extends Serializable>> cronTriggers() {
+        return this.cronTriggerRepository.getAll();
+    }
+
+    public boolean suspendCron(TriggerKey triggerKey) {
+        return this.cronTriggerRepository.suspend(triggerKey);
+    }
+
+    public boolean resumeCron(TriggerKey triggerKey) {
+        return this.cronTriggerRepository.resume(triggerKey);
+    }
+
+    public int queueCronTrigger() {
+        return this.queueCronTrigger.execute();
     }
 }

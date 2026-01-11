@@ -114,7 +114,8 @@ public class AbstractSpringTest {
         }
 
         @Bean
-        SchedulerService schedulerB(TriggerService triggerService,
+        SchedulerService schedulerB(
+                TriggerService triggerService,
                 MeterRegistry meterRegistry,
                 EditSchedulerStatusComponent editSchedulerStatus,
                 SchedulerThreadFactory threadFactory,

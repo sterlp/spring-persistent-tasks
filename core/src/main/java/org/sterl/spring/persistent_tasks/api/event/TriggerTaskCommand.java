@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
+import org.sterl.spring.persistent_tasks.api.TriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 
 /**

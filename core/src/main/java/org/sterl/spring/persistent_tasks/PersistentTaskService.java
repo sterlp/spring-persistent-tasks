@@ -14,6 +14,8 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.sterl.spring.persistent_tasks.api.ConTriggerBuilder;
+import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerSearch;
@@ -25,6 +27,7 @@ import org.sterl.spring.persistent_tasks.scheduler.SchedulerService;
 import org.sterl.spring.persistent_tasks.shared.model.HasTrigger;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
+import org.sterl.spring.persistent_tasks.trigger.model.CronTriggerEntity;
 import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
 
 import lombok.RequiredArgsConstructor;
@@ -165,5 +168,16 @@ public class PersistentTaskService {
         var result = historyService.findAllDetailsForInstance(id, PageRequest.ofSize(1));
         if (result.isEmpty()) return Optional.empty();
         return Optional.of(result.getContent().getFirst());
+    }
+
+    /**
+     * Adds a {@link CronTriggerEntity} for recurring tasks.
+     * It will also add the {@link TriggerEntity} if required.
+     *
+     * @param cronTrigger the {@link CronTriggerEntity} to manage
+     * @return <code>true</code> if a new {@link TriggerEntity} was created, <code>false</code> if one already exists
+     */
+    public boolean register(CronTriggerEntity<? extends Serializable> cron) {
+        return triggerService.register(cron);
     }
 }

@@ -19,7 +19,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.PersistentTaskService;
 import org.sterl.spring.persistent_tasks.api.RetryStrategy;
-import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
+import org.sterl.spring.persistent_tasks.api.TriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.api.task.PersistentTask;

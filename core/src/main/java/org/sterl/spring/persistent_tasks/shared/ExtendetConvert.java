@@ -8,25 +8,32 @@ import java.util.function.Function;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.web.PagedModel;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
 @FunctionalInterface
 public interface ExtendetConvert<S, T> 
     extends Converter<S, T>, Function<S, T> {
     
-    default T apply(S s) {
+    @Nullable
+    default T apply(@Nullable S s) {
+        if (s == null) return null;
         return convert(s);
     }
     
+    @NonNull
     default Optional<T> convert(Optional<S> s) {
         if (s.isEmpty()) return Optional.empty();
         return Optional.of(convert(s.get()));
     }
 
+    @NonNull
     default List<T> convert(Collection<S> source) {
         return source.stream().map(this::convert).toList();
     }
 
-    default PagedModel<T> toPage(Page<S> page) {
+    @NonNull
+    default PagedModel<T> toPage(@NonNull Page<S> page) {
         return new PagedModel<>(page.map(this::apply));
     }
 }

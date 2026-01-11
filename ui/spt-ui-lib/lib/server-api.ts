@@ -16,6 +16,23 @@ export interface SchedulerEntity {
     lastPing: string;
 }
 
+export interface ConTriggerBuilder<T> {
+}
+
+export interface CronSchedule extends Schedule {
+    expression: string;
+}
+
+export interface CronTriggerInfo {
+    id: string;
+    taskName: string;
+    schedule: string;
+    tag?: string;
+    priority: number;
+    suspended: boolean;
+    hasStateProvider: boolean;
+}
+
 export interface HistoryTrigger {
     id: number;
     instanceId: number;
@@ -25,6 +42,13 @@ export interface HistoryTrigger {
     executionCount: number;
     status: TriggerStatus;
     message?: string;
+}
+
+export interface IntervalSchedule extends Schedule {
+    interval: Duration;
+}
+
+export interface Schedule {
 }
 
 export interface TaskStatusHistoryOverview {
@@ -58,6 +82,9 @@ export interface Trigger {
     state?: any;
     exceptionName?: string;
     lastException?: string;
+}
+
+export interface TriggerBuilder<T> {
 }
 
 export interface TriggerGroup {
@@ -100,6 +127,23 @@ export interface PageMetadata {
     number: number;
     totalElements: number;
     totalPages: number;
+}
+
+export interface Duration extends TemporalAmount, Comparable<Duration> {
+}
+
+export interface TemporalAmount {
+    units: TemporalUnit[];
+}
+
+export interface TemporalUnit {
+    durationEstimated: boolean;
+    duration: Duration;
+    timeBased: boolean;
+    dateBased: boolean;
+}
+
+export interface Comparable<T> {
 }
 
 export type TriggerStatus = "AWAITING_SIGNAL" | "WAITING" | "RUNNING" | "SUCCESS" | "FAILED" | "CANCELED" | "EXPIRED_SIGNAL";

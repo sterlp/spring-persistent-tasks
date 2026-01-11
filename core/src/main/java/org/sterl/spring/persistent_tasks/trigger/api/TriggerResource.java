@@ -1,6 +1,7 @@
 package org.sterl.spring.persistent_tasks.trigger.api;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
@@ -14,11 +15,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.sterl.spring.persistent_tasks.api.CronTriggerInfo;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.api.TriggerGroup;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerSearch;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
+import org.sterl.spring.persistent_tasks.trigger.model.CronTriggerEntity;
 
 import lombok.RequiredArgsConstructor;
 
@@ -69,5 +72,37 @@ public class TriggerResource {
             @PathVariable("id") String id) {
 
         return converter.convert(triggerService.cancel(new TriggerKey(id, taskName)));
+    }
+
+    /**
+     * Lists all registered cron triggers (scheduled triggers).
+     *
+     * @return list of all cron trigger definitions
+     */
+    @GetMapping("cron-triggers")
+    public List<CronTriggerInfo> listCronTriggerInfos() {
+        return ToCronTriggerInfo.INSTANCE.convert(triggerService.cronTriggers());
+    }
+
+    /**
+     * Suspends a cron trigger, preventing new trigger instances from being created.
+     *
+     * @param id the cron trigger ID to suspend
+     * @return <code>true</code> if found, otherweise <code>false</code>
+     */
+    @DeleteMapping("cron-triggers/{taskName}/{id}")
+    public boolean suspendCron(@PathVariable("taskName") String taskName, @PathVariable("id") String id) {
+        return this.triggerService.suspendCron(new TriggerKey(id, taskName));
+    }
+
+    /**
+     * Resumes a suspended cron trigger, allowing new trigger instances to be created.
+     *
+     * @param id the cron trigger ID to resume
+     * @return <code>true</code> if found, otherweise <code>false</code>
+     */
+    @PostMapping("cron-triggers/{taskName}/{id}")
+    public boolean resumeCron(@PathVariable("taskName") String taskName, @PathVariable("id") String id) {
+        return this.triggerService.resumeCron(new TriggerKey(id, taskName));
     }
 }
