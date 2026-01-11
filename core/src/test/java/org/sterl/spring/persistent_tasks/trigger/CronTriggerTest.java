@@ -80,9 +80,10 @@ class CronTriggerTest extends AbstractSpringTest {
         subject.register(cron1);
         subject.register(cron2);
         
-        persistentTaskTestService.runAllDueTrigger(OffsetDateTime.now().plusMinutes(1));
+        var run = persistentTaskTestService.runAllDueTrigger(OffsetDateTime.now().plusMinutes(1));
 
         // WHEN
+        assertThat(run).hasSize(1);
         assertThat(subject.countTriggers()).isOne();
         var count = subject.queueCronTrigger();
 

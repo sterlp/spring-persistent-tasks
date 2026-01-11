@@ -2,6 +2,7 @@ package org.sterl.spring.persistent_tasks.api;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 /**
@@ -37,7 +38,7 @@ public final class IntervalSchedule implements Schedule {
 
     @Override
     public OffsetDateTime next(OffsetDateTime from) {
-        return from.plus(interval);
+        return from.plus(interval).truncatedTo(ChronoUnit.SECONDS);
     }
 
     @Override

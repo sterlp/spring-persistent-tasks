@@ -1,6 +1,7 @@
 package org.sterl.spring.persistent_tasks.api;
 
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 
 import org.springframework.scheduling.support.CronExpression;
 
@@ -53,7 +54,7 @@ public final class CronSchedule implements Schedule {
             throw new IllegalStateException("No next execution time found for cron: " + expression);
         }
 
-        return next;
+        return next.truncatedTo(ChronoUnit.SECONDS);
     }
 
     @Override
