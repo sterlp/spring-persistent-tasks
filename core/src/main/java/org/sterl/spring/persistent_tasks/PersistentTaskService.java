@@ -172,7 +172,7 @@ public class PersistentTaskService {
      * Adds a {@link CronTriggerEntity} for recurring tasks.
      * It will also add the {@link TriggerEntity} if required.
      *
-     * @param cronTrigger the {@link CronTriggerEntity} to manage
+     * @param cron the {@link CronTriggerEntity} to manage
      * @return <code>true</code> if a new {@link TriggerEntity} was created, <code>false</code> if one already exists
      */
     public boolean register(CronTriggerEntity<? extends Serializable> cron) {

@@ -261,14 +261,14 @@ public class TriggerService {
      * Adds a {@link CronTriggerEntity} for recurring tasks.
      * It will also add the {@link TriggerEntity} if required.
      *
-     * @param cronTrigger the {@link CronTriggerEntity} to manage
+     * @param cron the {@link CronTriggerEntity} to manage
      * @return <code>true</code> if a new {@link TriggerEntity} was created, <code>false</code> if one already exists
      */
     @Transactional(propagation = Propagation.SUPPORTS)
-    public boolean register(CronTriggerEntity<? extends Serializable> cronTrigger) {
-        this.taskService.assertIsKnown(cronTrigger.getTaskId());
-        this.cronTriggerRepository.register(cronTrigger);
-        return queueCronTrigger.execute(cronTrigger);
+    public boolean register(CronTriggerEntity<? extends Serializable> cron) {
+        this.taskService.assertIsKnown(cron.getTaskId());
+        this.cronTriggerRepository.register(cron);
+        return queueCronTrigger.execute(cron);
     }
 
     public boolean register(CronTrigger cronAnnotation, TaskId<?> taskId) {
