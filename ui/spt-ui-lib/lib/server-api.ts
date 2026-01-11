@@ -20,7 +20,7 @@ export interface CronSchedule extends Schedule {
     expression: string;
 }
 
-export interface CronTriggerBuilder<T> {
+export interface CronTriggerBuilder<_T = unknown> {
 }
 
 export interface CronTriggerInfo {
@@ -84,7 +84,7 @@ export interface Trigger {
     lastException?: string;
 }
 
-export interface TriggerBuilder<T> {
+export interface TriggerBuilder<_T = unknown> {
 }
 
 export interface TriggerGroup {
@@ -143,7 +143,7 @@ export interface TemporalUnit {
     dateBased: boolean;
 }
 
-export interface Comparable<T> {
+export interface Comparable<_T = unknown> {
 }
 
 export type TriggerStatus = "AWAITING_SIGNAL" | "WAITING" | "RUNNING" | "SUCCESS" | "FAILED" | "CANCELED" | "EXPIRED_SIGNAL";

@@ -7,11 +7,9 @@ import react from "eslint-plugin-react";
 
 export default tseslint.config(
     { ignores: ["dist"] },
+    js.configs.recommended,
+    ...tseslint.configs.recommendedTypeChecked,
     {
-        extends: [
-            js.configs.recommended,
-            ...tseslint.configs.recommendedTypeChecked,
-        ],
         files: ["**/*.{ts,tsx}"],
         languageOptions: {
             ecmaVersion: 2020,
@@ -22,7 +20,7 @@ export default tseslint.config(
             },
         },
         // Set the react version
-        settings: { react: { version: "18.3" } },
+        settings: { react: { version: "19.1" } },
         plugins: {
             react: react,
             "react-hooks": reactHooks,

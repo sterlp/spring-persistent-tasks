@@ -5,7 +5,6 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.sterl.spring.persistent_tasks.shared.TimersEnabled;
-import org.sterl.spring.persistent_tasks.trigger.component.QueueCronTriggerComponent;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
