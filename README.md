@@ -159,15 +159,15 @@ public class ExampleApplication {
 
 ## Schedulers
 
-![Schedulers](screenshots/schedulers-screen.png)
+![Schedulers](doc/docs/assets/dashboard.png)
 
 ## Triggers
 
-![Triggers](screenshots/triggers-screen.png)
+![Triggers](doc/docs/assets/triggers.png)
 
 ## History
 
-![History](screenshots/history-screen.png)
+![Triggers](doc/docs/assets/history-page.png)
 
 # Alternatives
 
