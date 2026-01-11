@@ -152,6 +152,12 @@
                         <class>java.io.Serializable</class>
                         <class>org.sterl.spring.persistent_tasks.api.TaskId</class>
                         <class>org.sterl.spring.persistent_tasks.api.RetryStrategy</class>
+                        <class>org.sterl.spring.persistent_tasks.api.CronSchedule</class>
+                        <class>org.sterl.spring.persistent_tasks.api.Schedule</class>
+                        <class>org.sterl.spring.persistent_tasks.api.CronTriggerBuilder</class>
+                        <class>org.sterl.spring.persistent_tasks.api.TriggerBuilder</class>
+                        <class>org.sterl.spring.persistent_tasks.api.IntervalSchedule</class>
+                        TemporalUnit
                     </excludeClasses>
                     <outputFile>../ui/spt-ui-lib/lib/server-api.ts</outputFile>
                     <outputKind>module</outputKind>
