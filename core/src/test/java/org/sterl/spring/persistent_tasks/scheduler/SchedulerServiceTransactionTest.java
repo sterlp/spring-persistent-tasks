@@ -101,7 +101,10 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         // WHEN
         hibernateAsserts.reset();
         COUNTDOWN.countDown();
-        schedulerService.triggerNextTasks().forEach(t -> {
+        var futures = schedulerService.triggerNextTasks();
+        // AND
+        assertThat(futures).hasSize(1);
+        futures.forEach(t -> {
             try {t.get();} catch (Exception ex) {throw new RuntimeException(ex);}
         });
 

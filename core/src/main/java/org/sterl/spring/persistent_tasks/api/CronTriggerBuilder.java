@@ -60,11 +60,11 @@ public class CronTriggerBuilder<T extends Serializable> {
     }
 
     /**
-     * Sets the schedule using a fixed interval.
+     * Sets the schedule using a fixed interval after each invocation.
      *
      * @param interval duration between executions
      */
-    public CronTriggerBuilder<T> every(Duration interval) {
+    public CronTriggerBuilder<T> after(Duration interval) {
         this.schedule = new IntervalSchedule(interval);
         return this;
     }

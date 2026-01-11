@@ -1,12 +1,14 @@
 package org.sterl.spring.persistent_tasks.trigger;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.actuate.quartz.QuartzEndpoint.QuartzTriggerGroupSummaryDescriptor.Triggers;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +16,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.scheduling.config.Task;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.sterl.spring.persistent_tasks.api.CronTriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.TriggerGroup;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
@@ -266,6 +269,27 @@ public class TriggerService {
         this.taskService.assertIsKnown(cronTrigger.getTaskId());
         this.cronTriggerRepository.register(cronTrigger);
         return queueCronTrigger.execute(cronTrigger);
+    }
+
+    public boolean register(CronTrigger cronAnnotation, TaskId<?> taskId) {
+        CronTriggerBuilder<?> builder = taskId.newCron();
+
+        // Set ID if provided
+        if (cronAnnotation.id() != null && !cronAnnotation.id().isBlank()) {
+            builder.id(cronAnnotation.id());
+        }
+
+        // Set cron expression or fixed delay
+        if (StringUtils.isNotBlank(cronAnnotation.cron())) {
+            builder.cron(cronAnnotation.cron());
+        } else if (cronAnnotation.fixedDelay() > 0) {
+            builder.after(Duration.ofMillis(cronAnnotation.timeUnit().toMillis(cronAnnotation.fixedDelay())));
+        } else {
+            throw new IllegalArgumentException("@" + CronTrigger.class.getSimpleName() + " on "
+                    + taskId + " has neither cron nor fixedDelay configured");
+        }
+
+        return register(builder.build());
     }
 
     public Collection<CronTriggerEntity<? extends Serializable>> cronTriggers() {

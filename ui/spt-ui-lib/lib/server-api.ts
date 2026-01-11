@@ -16,11 +16,11 @@ export interface SchedulerEntity {
     lastPing: string;
 }
 
-export interface ConTriggerBuilder<T> {
-}
-
 export interface CronSchedule extends Schedule {
     expression: string;
+}
+
+export interface CronTriggerBuilder<T> {
 }
 
 export interface CronTriggerInfo {

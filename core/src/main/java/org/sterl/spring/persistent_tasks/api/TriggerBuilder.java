@@ -3,6 +3,7 @@ package org.sterl.spring.persistent_tasks.api;
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ public class TriggerBuilder<T extends Serializable> {
     private String tag;
     private TriggerStatus status = TriggerStatus.WAITING;
     private T state;
-    private OffsetDateTime when = OffsetDateTime.now();
+    private OffsetDateTime when = OffsetDateTime.now().truncatedTo(ChronoUnit.SECONDS);
     private int priority = TriggerRequest.DEFAULT_PRIORITY;
 
     public static <T extends Serializable> TriggerBuilder<T> newTrigger(String name) {
