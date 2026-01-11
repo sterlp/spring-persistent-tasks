@@ -41,7 +41,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <pmd.version>7.13.0</pmd.version>
+        <pmd.version>7.20.0</pmd.version>
         <querydsl.version>5.1.0</querydsl.version>
     </properties>
 
@@ -70,14 +70,19 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>3.26.0</version> <!-- Use the correct version -->
+                <version>3.28.0</version> <!-- Use the correct version -->
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+                <version>3.6.0</version>
             </plugin>
 
             <!-- Javadoc Plugin Configuration -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.11.2</version>
+                <version>3.12.0</version>
             </plugin>
 
             <!-- Site Plugin Configuration -->

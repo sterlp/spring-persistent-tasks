@@ -18,7 +18,7 @@ class CronTriggerTest extends AbstractSpringTest {
 
     @Autowired
     private TriggerService subject;
-    
+
     @Autowired
     private TaskId<String> task1Id;
     @Autowired
@@ -46,7 +46,7 @@ class CronTriggerTest extends AbstractSpringTest {
         assertThat(subject.countTriggers(cron.getTaskId())).isOne();
         assertThat(subject.countTriggers(task2Id)).isZero();
     }
-    
+
     @Test
     void test_cron_triggers_are_not_create_if_exisits() throws Exception {
         // GIVEN
@@ -59,14 +59,14 @@ class CronTriggerTest extends AbstractSpringTest {
 
         subject.register(cron1);
         subject.register(cron2);
-        
+
         // WHEN
         var count = subject.queueCronTrigger();
 
         // THEN - as by default we should create all which are needed
         assertThat(count).isZero();
     }
-    
+
     @Test
     void test_replan_missing_cron_triggers() throws Exception {
         // GIVEN
@@ -79,7 +79,8 @@ class CronTriggerTest extends AbstractSpringTest {
 
         subject.register(cron1);
         subject.register(cron2);
-        
+        assertThat(subject.countTriggers()).isEqualTo(2);
+
         var run = persistentTaskTestService.runAllDueTrigger(OffsetDateTime.now().plusMinutes(1));
 
         // WHEN
@@ -90,7 +91,7 @@ class CronTriggerTest extends AbstractSpringTest {
         // THEN - as by default we should create all which are needed
         assertThat(count).isOne();
     }
-    
+
     @Test
     void test_cron_test_builder() throws Exception {
         // GIVEN
@@ -104,7 +105,7 @@ class CronTriggerTest extends AbstractSpringTest {
         // WHEN
         var task = subject.register(cron);
         assertThat(task).isTrue();
-        
+
         // THEN
         var triggers = subject.findAllTriggers(task3Id, Pageable.ofSize(10)).getContent();
         assertThat(triggers).hasSize(1);
@@ -114,7 +115,7 @@ class CronTriggerTest extends AbstractSpringTest {
         persistentTaskTestService.runAllDueTrigger(OffsetDateTime.now().plusHours(1));
         asserts.awaitValueOnce(Task3.NAME + "::" + anyState);
     }
-    
+
     @Test
     void test_register_annoation() throws Exception {
         // GIVEN
@@ -122,7 +123,7 @@ class CronTriggerTest extends AbstractSpringTest {
 
         // WHEN
         boolean res = subject.register(cronAnnotation, task3Id);
-        
+
         // THEN
         assertThat(res).isTrue();
     }
