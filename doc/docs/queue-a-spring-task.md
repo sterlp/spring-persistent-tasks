@@ -11,6 +11,8 @@ tags:
 
 # Queue a task execution
 
+![Triggers](/assets/triggers.png)
+
 You can queue a task for later execution or request the executor to run a task directly if a free thread is available on the node.
 
 ## Direct usage of the `TriggerService` or `PersistentTaskService`.

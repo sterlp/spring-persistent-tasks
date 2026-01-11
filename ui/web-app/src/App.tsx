@@ -11,8 +11,8 @@ const CronJobsPage = lazy(() => import("./cron/cron.page"));
 
 const routes: MenuItem[] = [
     { label: "Home", path: "", component: SchedulersPage },
-    { label: "Triggers", path: "/triggers", component: TriggersPage },
     { label: "Cron Jobs", path: "/cron", component: CronJobsPage },
+    { label: "Triggers", path: "/triggers", component: TriggersPage },
     { label: "History", path: "/history", component: HistoryPage },
 ];
 const BASE = "/task-ui";

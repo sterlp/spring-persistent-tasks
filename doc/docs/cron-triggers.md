@@ -1,5 +1,7 @@
 # Cron Triggers
 
+![Triggers](/assets/cron-jobs.png)
+
 Spring Persistent Tasks supports scheduled recurring triggers using cron expressions or fixed intervals. Cron triggers are automatically recreated after execution and survive application restarts.
 
 ## Overview

@@ -1,15 +1,20 @@
-import { useState } from "react";
-import { Container, Row, Col, Card, Badge, Button, Stack, Form, Accordion } from "react-bootstrap";
+import { useEffect, useState } from "react";
+import { Container, Row, Col, Card, Badge, Stack, Form, Accordion } from "react-bootstrap";
 import { useServerObject, HttpErrorView, LoadingView, ReloadButton } from "spring-persistent-tasks-ui";
 import { CronTriggerInfo } from "spring-persistent-tasks-ui";
 import { useUrl } from "crossroad";
 import * as Icon from "react-bootstrap-icons";
+import CronJobCard from "./cron-job-card.view";
 
 const CronJobsView = () => {
     const [_, setUrl] = useUrl();
     const [searchText, setSearchText] = useState("");
 
     const cronJobs = useServerObject<CronTriggerInfo[]>("/spring-tasks-api/cron-triggers", []);
+
+    useEffect(() => {
+        cronJobs.doGet();
+    }, []);
 
     const doReload = () => {
         cronJobs.doGet();
@@ -84,7 +89,7 @@ const CronJobsView = () => {
                     <Col md={6} className="text-end">
                         <Stack direction="horizontal" gap={2} className="justify-content-end">
                             <Badge bg="secondary">
-                                {filteredJobs.length} / {cronJobs.data?.length || 0} jobs
+                                {filteredJobs.length} / {cronJobs.data?.length || 0} crons
                             </Badge>
                             <ReloadButton
                                 isLoading={cronJobs.isLoading}
@@ -153,90 +158,13 @@ const CronJobsView = () => {
                                     </div>
                                 </Accordion.Header>
                                 <Accordion.Body>
-                                    <Card className="border-0 shadow-sm">
-                                        <Card.Body>
-                                            <Row className="mb-3">
-                                                <Col md={6}>
-                                                    <div className="mb-2">
-                                                        <small className="text-muted">Cron ID</small>
-                                                        <div className="fw-semibold">{job.id}</div>
-                                                    </div>
-                                                    <div className="mb-2">
-                                                        <small className="text-muted">Task Name</small>
-                                                        <div className="fw-semibold">{job.taskName}</div>
-                                                    </div>
-                                                    <div className="mb-2">
-                                                        <small className="text-muted">Schedule</small>
-                                                        <div className="fw-semibold">
-                                                            <code>{job.schedule}</code>
-                                                        </div>
-                                                    </div>
-                                                </Col>
-                                                <Col md={6}>
-                                                    <div className="mb-2">
-                                                        <small className="text-muted">Priority</small>
-                                                        <div className="fw-semibold">{job.priority}</div>
-                                                    </div>
-                                                    <div className="mb-2">
-                                                        <small className="text-muted">Tag</small>
-                                                        <div className="fw-semibold">{job.tag || "—"}</div>
-                                                    </div>
-                                                    <div className="mb-2">
-                                                        <small className="text-muted">Has State Provider</small>
-                                                        <div className="fw-semibold">
-                                                            {job.hasStateProvider ? (
-                                                                <Badge bg="success">Yes</Badge>
-                                                            ) : (
-                                                                <Badge bg="secondary">No</Badge>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </Col>
-                                            </Row>
-
-                                            {/* Actions */}
-                                            <div className="border-top pt-3">
-                                                <Stack direction="horizontal" gap={2} className="flex-wrap">
-                                                    <Button
-                                                        variant={job.suspended ? "success" : "warning"}
-                                                        size="sm"
-                                                        onClick={() => handleSuspendResume(job)}
-                                                        disabled={cronJobs.isLoading}
-                                                    >
-                                                        {job.suspended ? (
-                                                            <>
-                                                                <Icon.PlayFill className="me-1" />
-                                                                Resume
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <Icon.PauseFill className="me-1" />
-                                                                Suspend
-                                                            </>
-                                                        )}
-                                                    </Button>
-
-                                                    <Button
-                                                        variant="outline-primary"
-                                                        size="sm"
-                                                        onClick={() => navigateToTriggers(job.taskName, job.id)}
-                                                    >
-                                                        <Icon.ListTask className="me-1" />
-                                                        View Planned Triggers
-                                                    </Button>
-
-                                                    <Button
-                                                        variant="outline-secondary"
-                                                        size="sm"
-                                                        onClick={() => navigateToHistory(job.taskName, job.id)}
-                                                    >
-                                                        <Icon.ClockHistory className="me-1" />
-                                                        View History
-                                                    </Button>
-                                                </Stack>
-                                            </div>
-                                        </Card.Body>
-                                    </Card>
+                                    <CronJobCard
+                                        job={job}
+                                        isLoading={cronJobs.isLoading}
+                                        onSuspendResume={handleSuspendResume}
+                                        onViewTriggers={navigateToTriggers}
+                                        onViewHistory={navigateToHistory}
+                                    />
                                 </Accordion.Body>
                             </Accordion.Item>
                         ))}
