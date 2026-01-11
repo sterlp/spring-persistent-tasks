@@ -126,7 +126,7 @@ public interface TriggerRepository<T extends HasTrigger> extends JpaRepository<T
             FROM #{#entityName} e
             WHERE e.data.status IN ( :status )
             """)
-     long countByStatus(@Param("status") Set<TriggerStatus> status);
+    long countByStatus(@Param("status") Set<TriggerStatus> status);
     
     @Query("""
            DELETE FROM #{#entityName} e

@@ -75,7 +75,10 @@ class HistoryServiceTest extends AbstractSpringTest {
         final var trigger = persistentTaskService.queue(Task3.ID.newUniqueTrigger("Hallo"));
         // WHEN
         hibernateAsserts.reset();
-        schedulerService.triggerNextTasks().forEach(t -> {
+        
+        var futures = schedulerService.triggerNextTasks();
+        assertThat(futures).hasSize(1);
+        futures.forEach(t -> {
             try {t.get();} catch (Exception ex) {throw new RuntimeException(ex);}
         });
         

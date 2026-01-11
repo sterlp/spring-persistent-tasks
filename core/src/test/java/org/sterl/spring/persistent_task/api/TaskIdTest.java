@@ -3,7 +3,7 @@ package org.sterl.spring.persistent_task.api;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
-import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
+import org.sterl.spring.persistent_tasks.api.TriggerBuilder;
 
 class TaskIdTest {
 

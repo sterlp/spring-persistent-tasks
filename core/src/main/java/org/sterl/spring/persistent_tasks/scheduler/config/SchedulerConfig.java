@@ -67,50 +67,34 @@ public class SchedulerConfig {
             EditSchedulerStatusComponent editSchedulerStatus,
             Optional<SchedulerCustomizer> customizer,
             TransactionTemplate trx) throws UnknownHostException {
-        
+
         customizer = customizer.isEmpty() ? Optional.of(new SchedulerCustomizer() {}) : customizer;
         final var name = customizer.get().name();
         final var maxShutdownWaitTime = Duration.ofSeconds(10);
 
-        return newSchedulerService(name, meterRegistry, triggerService, editSchedulerStatus, 
-                schedulerThreadFactory, maxThreads, 
+        return newSchedulerService(name, meterRegistry, triggerService,
+                editSchedulerStatus, schedulerThreadFactory, maxThreads,
                 maxShutdownWaitTime, trx);
     }
 
-    @Deprecated
-    public static SchedulerService newSchedulerService(
-            String name,
-            MeterRegistry meterRegistry,
-            TriggerService triggerService,
-            EditSchedulerStatusComponent editSchedulerStatus, 
-            int maxThreads, 
-            Duration maxShutdownWaitTime,
-            TransactionTemplate trx) {
-        
-        return newSchedulerService(name, meterRegistry, triggerService, editSchedulerStatus,
-                SchedulerThreadFactory.DEFAULT_THREAD_POOL_FACTORY,
-                maxThreads, 
-                maxShutdownWaitTime, trx);
-    }
-    
     public static SchedulerService newSchedulerService(
             String name,
             MeterRegistry meterRegistry,
             TriggerService triggerService,
             EditSchedulerStatusComponent editSchedulerStatus,
             SchedulerThreadFactory schedulerThreadFactory,
-            int maxThreads, 
+            int maxThreads,
             Duration maxShutdownWaitTime,
             TransactionTemplate trx) {
-        
+
         final var taskExecutor = new TaskExecutorComponent(name, triggerService, schedulerThreadFactory, maxThreads);
         if (maxShutdownWaitTime != null) taskExecutor.setMaxShutdownWaitTime(maxShutdownWaitTime);
 
         final var runOrQueue = new RunOrQueueComponent(name, triggerService, taskExecutor);
 
-        return new SchedulerService(name, 
+        return new SchedulerService(name,
                 triggerService,
-                taskExecutor, 
+                taskExecutor,
                 editSchedulerStatus,
                 runOrQueue,
                 trx,

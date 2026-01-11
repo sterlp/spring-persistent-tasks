@@ -47,14 +47,14 @@ public class SchedulerService {
     @Getter
     private final String name;
     private final TriggerService triggerService;
-    
+
     private final TaskExecutorComponent taskExecutor;
     private final EditSchedulerStatusComponent editSchedulerStatus;
 
     private final RunOrQueueComponent runOrQueue;
 
     private final TransactionTemplate trx;
-    
+
     private final MeterRegistry meterRegistry;
 
     @PostConstruct
@@ -146,8 +146,7 @@ public class SchedulerService {
      * Runs the given trigger if a free threads are available and the runAt time is
      * not in the future.
      * 
-     * @return the reference to the {@link Future} with the key, if no threads are
-     *         available it is resolved
+     * @return the TriggerKey of the planned trigger
      */
     @Transactional(timeout = 10)
     public <T extends Serializable> TriggerKey runOrQueue(TriggerRequest<T> triggerRequest) {

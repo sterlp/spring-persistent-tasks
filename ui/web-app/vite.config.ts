@@ -1,5 +1,5 @@
 /// <reference types="vitest" />
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
@@ -25,13 +25,13 @@ export default defineConfig({
     server: {
         proxy: {
             "/api": {
-                target: "http://localhost:8080",
+                target: "http://localhost:7070",
                 changeOrigin: true,
                 secure: false,
                 ws: true,
             },
             "/spring-tasks-api": {
-                target: "http://localhost:8080",
+                target: "http://localhost:7070",
                 changeOrigin: true,
                 secure: false,
                 ws: true,

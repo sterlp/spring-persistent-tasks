@@ -17,7 +17,7 @@ import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest.TaskConfig.Task3;
 import org.sterl.spring.persistent_tasks.PersistentTaskService;
 import org.sterl.spring.persistent_tasks.api.TaskId;
-import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
+import org.sterl.spring.persistent_tasks.api.TriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerSearch;
@@ -225,9 +225,10 @@ class TriggerServiceTest extends AbstractSpringTest {
 
         // WHEN
         var trigger = subject.queue(task.newTrigger().state("Hallo :-)").build());
-        subject.run(subject.lockNextTrigger("test"));
+        var running = subject.run(subject.lockNextTrigger("test"));
 
         // THEN
+        assertThat(running).isPresent();
         trigger = triggerService.get(trigger.getKey()).get();
         assertThat(trigger.getData().getRunAt()).isAfter(OffsetDateTime.now());
         assertThat(trigger.getData().getStatus()).isEqualTo(TriggerStatus.WAITING);
@@ -268,9 +269,10 @@ class TriggerServiceTest extends AbstractSpringTest {
 
         // WHEN
         var trigger = subject.queue(task.newTrigger().state("Hallo :-)").build());
-        subject.run(subject.lockNextTrigger("test"));
+        var running = subject.run(subject.lockNextTrigger("test"));
 
         // THEN
+        assertThat(running).isPresent();
         trigger = triggerService.get(trigger.getKey()).get();
         assertThat(trigger.getData().getEnd()).isAfter(trigger.getData().getStart());
         assertThat(trigger.getData().getRunningDurationInMs())
@@ -457,13 +459,17 @@ class TriggerServiceTest extends AbstractSpringTest {
     @Test
     void testUnknownTriggersNoRetry() {
         // GIVEN
+        var id = UuidCreator.getTimeOrdered().toString();
         var t = triggerRepository.save(
-                new RunningTriggerEntity(new TriggerKey(UuidCreator.getTimeOrdered().toString(), "fooTask-unknown")));
+                new RunningTriggerEntity(new TriggerKey(id, "foo-task-unknown"))
+                    .runAt(OffsetDateTime.now()));
         
         // WHEN
-        persistentTaskTestService.runNextTrigger();
+        var triggered = persistentTaskTestService.runNextTrigger();
         
         // WHEN
+        assertThat(triggered).isPresent();
+        assertThat(triggered.get().getKey().getId()).isEqualTo(id);
         var triggerData = persistentTaskService.getLastTriggerData(t.getKey()).get();
         assertThat(triggerData.status()).isEqualTo(TriggerStatus.FAILED);
         assertThat(triggerData.getData().getExceptionName()).isEqualTo(IllegalStateException.class.getName());

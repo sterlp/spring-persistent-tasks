@@ -19,7 +19,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.PersistentTaskService;
 import org.sterl.spring.persistent_tasks.api.RetryStrategy;
-import org.sterl.spring.persistent_tasks.api.TaskId.TriggerBuilder;
+import org.sterl.spring.persistent_tasks.api.TriggerBuilder;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
@@ -101,7 +101,10 @@ class SchedulerServiceTransactionTest extends AbstractSpringTest {
         // WHEN
         hibernateAsserts.reset();
         COUNTDOWN.countDown();
-        schedulerService.triggerNextTasks().forEach(t -> {
+        var futures = schedulerService.triggerNextTasks();
+        // AND
+        assertThat(futures).hasSize(1);
+        futures.forEach(t -> {
             try {t.get();} catch (Exception ex) {throw new RuntimeException(ex);}
         });
 

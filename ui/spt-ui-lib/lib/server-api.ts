@@ -16,6 +16,16 @@ export interface SchedulerEntity {
     lastPing: string;
 }
 
+export interface CronTriggerInfo {
+    id: string;
+    taskName: string;
+    schedule: string;
+    tag?: string;
+    priority: number;
+    suspended: boolean;
+    hasStateProvider: boolean;
+}
+
 export interface HistoryTrigger {
     id: number;
     instanceId: number;

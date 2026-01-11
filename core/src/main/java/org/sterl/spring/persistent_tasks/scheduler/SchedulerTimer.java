@@ -44,7 +44,7 @@ class SchedulerTimer {
             try {
                 final var count = s.rescheduleAbandonedTriggers(timeout);
                 if (count.size() > 0) {
-                    log.info("Found {} abandoned tasks for {}. Timeout={}", 
+                    log.info("Found {} abandoned tasks for {}. Timeout={}",
                             count.size(), s.getName(), taskTimeout);
                 }
             } catch (Exception e) {

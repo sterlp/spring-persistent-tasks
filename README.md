@@ -14,7 +14,8 @@ Secondary goal is to support [Poor mans Workflow](https://github.com/sterlp/pmw)
 
 1. **JPA-Powered Persistence** - Automatically persists tasks to your database
 1. **Spring Boot Auto-Configuration** - Simple setup with @EnableSpringPersistentTasks
-1. **Clustering Support** - Built-in lock management for distributed environments
+1. **Clustering Support for tasks** - Built-in lock management for distributed environments and tasks
+1. **Clustering Support for cron tasks** - Support for cron tasks in a cluster - run on just one node
 1. **Type-Safe Tasks** - Generic task definitions with state objects
 1. **Retry Mechanisms** - Automatic retry policies for failed executions
 1. **Transactional Integration** - Works with Spring's transaction management
@@ -158,15 +159,15 @@ public class ExampleApplication {
 
 ## Schedulers
 
-![Schedulers](screenshots/schedulers-screen.png)
+![Schedulers](doc/docs/assets/dashboard.png)
 
 ## Triggers
 
-![Triggers](screenshots/triggers-screen.png)
+![Triggers](doc/docs/assets/triggers.png)
 
 ## History
 
-![History](screenshots/history-screen.png)
+![Triggers](doc/docs/assets/history-page.png)
 
 # Alternatives
 

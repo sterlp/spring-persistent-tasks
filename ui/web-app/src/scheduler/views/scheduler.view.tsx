@@ -75,12 +75,26 @@ const SchedulerStatusView = ({ scheduler }: Props) => {
                             )}
                         </div>
                         <div className="mb-3">
-                            {renderLoadStatus(
-                                "CPU",
-                                scheduler.systemLoadAverage,
-                                100,
-                                "cpu" + scheduler.id,
-                                "%"
+                            {scheduler.systemLoadAverage >= 0 ? (
+                                renderLoadStatus(
+                                    "CPU",
+                                    scheduler.systemLoadAverage,
+                                    100,
+                                    "cpu" + scheduler.id,
+                                    "%"
+                                )
+                            ) : (
+                                <div>
+                                    <div className="d-flex justify-content-between align-items-center mb-1">
+                                        <small className="text-muted">CPU</small>
+                                        <small className="text-muted">N/A</small>
+                                    </div>
+                                    <div className="progress">
+                                        <div className="progress-bar bg-secondary" style={{ width: "100%" }}>
+                                            System load unavailable
+                                        </div>
+                                    </div>
+                                </div>
                             )}
                         </div>
                         <div>

@@ -1,5 +1,18 @@
 # Changelog
 
+## v2.4.0 - (2026-01-11)
+
+### New features:
+
+-   Added cron trigger support
+    -   Schedule tasks using cron expressions
+    -   Suspend and resume cron jobs via API and UI
+    -   New cron jobs management page in UI
+-   Updated UI dependencies
+    -   Updated React to 19.2.3
+    -   Updated all npm packages to latest versions
+    -   Fixed security vulnerabilities (CVE-2025-62522, CVE-2025-64718)
+
 ## v2.3.1 - (2026-01-11)
 
 ### UI Improvements:

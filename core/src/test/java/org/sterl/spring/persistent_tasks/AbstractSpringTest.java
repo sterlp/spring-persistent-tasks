@@ -3,6 +3,7 @@ package org.sterl.spring.persistent_tasks;
 import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
@@ -33,6 +34,7 @@ import org.sterl.spring.persistent_tasks.scheduler.config.SchedulerThreadFactory
 import org.sterl.spring.persistent_tasks.task.TaskService;
 import org.sterl.spring.persistent_tasks.test.AsyncAsserts;
 import org.sterl.spring.persistent_tasks.test.PersistentTaskTestService;
+import org.sterl.spring.persistent_tasks.trigger.CronTrigger;
 import org.sterl.spring.persistent_tasks.trigger.TriggerService;
 import org.sterl.spring.persistent_tasks.trigger.component.StateSerializationComponent;
 import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
@@ -114,7 +116,8 @@ public class AbstractSpringTest {
         }
 
         @Bean
-        SchedulerService schedulerB(TriggerService triggerService,
+        SchedulerService schedulerB(
+                TriggerService triggerService,
                 MeterRegistry meterRegistry,
                 EditSchedulerStatusComponent editSchedulerStatus,
                 SchedulerThreadFactory threadFactory,
@@ -142,6 +145,7 @@ public class AbstractSpringTest {
 
         @Component(Task3.NAME)
         @RequiredArgsConstructor
+        @CronTrigger(fixedDelay = 6, timeUnit = TimeUnit.HOURS)
         public static class Task3 implements PersistentTask<String> {
             public static final String NAME = "task3";
             public static final TaskId<String> ID = new TaskId<>(NAME);
