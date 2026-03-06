@@ -1,2 +1,2 @@
-
-/site/
+.vitepress/cache
+.vitepress/dist

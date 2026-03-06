@@ -41,7 +41,6 @@ public class DailyCleanupTask implements PersistentTask<Void> {
 }
 ```
 
-
 ### Option 2: Manual Registration with @PostConstruct
 
 If you need more control, register the cron trigger programmatically:
@@ -75,7 +74,6 @@ public class DailyCleanupTask implements PersistentTask<Void> {
     }
 }
 ```
-
 
 > **Note**: The `@CronTrigger` annotation automatically registers the cron trigger when the application starts. You don't need to inject `TriggerService` or use `@PostConstruct` when using the annotation.
 
@@ -185,7 +183,6 @@ syncTask.newCron()
     .stateProvider(() -> new SyncState(OffsetDateTime.now()))
     .build();
 ```
-
 
 ## Configuration
 
