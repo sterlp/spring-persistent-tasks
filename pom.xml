@@ -5,7 +5,7 @@
 
     <groupId>org.sterl.spring</groupId>
     <artifactId>spring-persistent-tasks-root</artifactId>
-    <version>4.0.0</version>
+    <version>4.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <inceptionYear>2024</inceptionYear>
