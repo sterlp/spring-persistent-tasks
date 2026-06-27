@@ -98,7 +98,7 @@ public class CronTriggerRepository {
      * Removes all cron triggers (for testing).
      */
     public void deleteAll() {
-        log.warn("*** All cron triggers {} will be removed now! ***", cronTriggerEntities.size());
+        if (cronTriggerEntities.size() > 0) log.warn("*** All cron triggers {} will be removed now! ***", cronTriggerEntities.size());
         cronTriggerEntities.clear();
     }
 

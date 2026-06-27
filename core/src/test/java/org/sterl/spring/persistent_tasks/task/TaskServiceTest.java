@@ -20,7 +20,7 @@ import org.sterl.spring.persistent_tasks.api.task.SerializationProvider;
 import org.sterl.spring.persistent_tasks.api.task.StateSerializer;
 import org.sterl.spring.persistent_tasks.test.AsyncAsserts;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 

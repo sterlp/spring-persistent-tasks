@@ -12,9 +12,6 @@ import org.springframework.web.client.RestTemplate;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-
 class TriggerHistoryResourceTest extends AbstractSpringTest {
 
     @LocalServerPort
@@ -28,7 +25,7 @@ class TriggerHistoryResourceTest extends AbstractSpringTest {
     }
 
     @Test
-    void testGroupSearch() throws JsonMappingException, JsonProcessingException {
+    void testGroupSearch() throws Exception {
         TaskId<String> taskId = taskService.replace("foo", c -> asserts.info("foo"));
         triggerService.queue(taskId.newTrigger().id("1").correlationId("a1").tag("tag1").build());
         triggerService.queue(taskId.newTrigger().id("2").correlationId("a1").tag("tag1").build());

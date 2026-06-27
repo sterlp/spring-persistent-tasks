@@ -6,9 +6,21 @@
 
 A simple task management framework designed to queue and execute asynchronous tasks with support for database persistence and a user-friendly interface. It can be used to implement scheduling patterns or outbound patterns.
 
-Focus is the usage with spring boot and JPA.
+Focus is the usage with spring boot and JPA and AI.
 
 Secondary goal is to support [Poor mans Workflow](https://github.com/sterlp/pmw)
+
+# AI setup
+
+use the available skill in skills
+
+# Spring compatibility
+
+- use 2.4.x for Spring 3
+- use 4.x.x for Spring 4
+
+## Spring 3 braqnch
+- https://github.com/sterlp/spring-persistent-tasks/tree/spring-boot-3
 
 # Key Features ✨
 

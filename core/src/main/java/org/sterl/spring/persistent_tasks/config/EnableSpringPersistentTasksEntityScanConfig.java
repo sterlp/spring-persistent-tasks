@@ -1,7 +1,7 @@
 package org.sterl.spring.persistent_tasks.config;
 
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.context.annotation.Role;
 import org.sterl.spring.persistent_tasks.EnableSpringPersistentTasksEntityScan;
 

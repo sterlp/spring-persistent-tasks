@@ -34,6 +34,10 @@ A lightweight and simple task management framework for **Spring Boot** designed 
 1. **Queue Management** - Intelligent task queuing and prioritization
 1. **Different DB Supports** - MySQL, azure-sql-edge, PostgreSQL, and H2
 
+## Setup with AI
+
+
+
 ## Setup with Maven
 
 -   [Maven Central spring-persistent-tasks-core](https://central.sonatype.com/artifact/org.sterl.spring/spring-persistent-tasks-core/versions)

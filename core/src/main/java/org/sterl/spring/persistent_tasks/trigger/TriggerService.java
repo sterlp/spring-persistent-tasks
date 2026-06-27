@@ -9,11 +9,9 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.boot.actuate.quartz.QuartzEndpoint.QuartzTriggerGroupSummaryDescriptor.Triggers;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.lang.Nullable;
-import org.springframework.scheduling.config.Task;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.sterl.spring.persistent_tasks.api.CronTriggerBuilder;
@@ -42,7 +40,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Manages {@link Triggers} to {@link Task}s and the data.
+ * Manages triggers to tasks and the data.
  */
 @TransactionalService
 @RequiredArgsConstructor

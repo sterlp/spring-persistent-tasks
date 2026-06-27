@@ -46,7 +46,7 @@ public class TaskRepository {
      * Removes all persistentTasks, should only be used for testing!
      */
     public void clear() {
-        log.warn("*** All persistentTasks {} will be removed now! ***", persistentTasks.size());
+        if (persistentTasks.size() > 0) log.warn("*** All persistentTasks {} will be removed now! ***", persistentTasks.size());
         persistentTasks.clear();
     }
 

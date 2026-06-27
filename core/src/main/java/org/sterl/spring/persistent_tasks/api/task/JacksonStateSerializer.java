@@ -5,8 +5,8 @@ import java.io.Serializable;
 import org.springframework.lang.NonNull;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,7 +27,7 @@ public class JacksonStateSerializer<T extends Serializable> implements StateSeri
 
         try {
             return mapper.writeValueAsBytes(obj);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new SerializationFailedException(obj, e);
         }
     }

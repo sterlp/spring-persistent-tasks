@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.10</version>
+        <version>4.1.0</version>
         <relativePath /> <!-- lookup parent from repository -->
     </parent>
 
@@ -14,10 +14,8 @@
     <description>Sample project for the Spring Persistent Tasks</description>
 
     <properties>
-        <!--
-        <spt.version>2.1.2</spt.version>
-        -->
-        <spt.version>2.3.1-SNAPSHOT</spt.version>
+        <!-- Boot 3.x → 2.4.x; Boot 4.x → 4.x (major tracks Spring Boot major, see ADR 0001). -->
+        <spt.version>4.0.0-SNAPSHOT</spt.version>
     </properties>
 
     <dependencies>
@@ -60,10 +58,12 @@
             <version>8.0.1.RELEASE</version>
         </dependency>
 
+        <!-- springdoc 3.x targets Spring Boot 4 / Spring Framework 7 (2.x breaks on Boot 4, e.g. its
+             QueryDSL OpenAPI customizer). -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.8.13</version>
+            <version>3.0.3</version>
         </dependency>
 
         <dependency>
