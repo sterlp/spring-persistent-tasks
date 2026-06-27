@@ -36,7 +36,7 @@ A lightweight and simple task management framework for **Spring Boot** designed 
 
 ## Setup with AI
 
-
+[integrate-persistent-tasks](https://github.com/sterlp/spring-persistent-tasks/blob/main/skills/integrate-persistent-tasks/SKILL.md)
 
 ## Setup with Maven
 
@@ -46,7 +46,7 @@ A lightweight and simple task management framework for **Spring Boot** designed 
 <dependency>
     <groupId>org.sterl.spring</groupId>
     <artifactId>spring-persistent-tasks-core</artifactId>
-    <version>2.x.x</version>
+    <version>4.x.x</version>
 </dependency>
 ```
 

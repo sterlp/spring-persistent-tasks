@@ -81,11 +81,13 @@ The framework briefly locks a row or trigger to ensure that each trigger is star
 
 ## Setup with Maven
 
+Consider using the AI skill -- if you improve it please create a PR.
+
 ```xml
 <dependency>
     <groupId>org.sterl.spring</groupId>
     <artifactId>spring-persistent-tasks-core</artifactId>
-    <version>2.x.x</version>
+    <version>4.x.x</version>
 </dependency>
 ```
 
