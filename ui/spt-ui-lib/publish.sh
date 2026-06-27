@@ -19,6 +19,7 @@ npm version "$VERSION"
 npm run build
 
 # Publish the package publicly
+npm login
 npm publish --access public
 
 echo "Published version $VERSION successfully!"
