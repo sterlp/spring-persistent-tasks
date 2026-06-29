@@ -50,13 +50,59 @@ static class Config {
 
 This class adds some test methods to wait, run or assert triggers.
 
+### Run & assert with PersistentTaskTestService
+
+For the common synchronous case (scheduler disabled) these helpers are usually all you need — they run
+triggers one-by-one (so a trigger that queues another is picked up) and assert the outcome, without
+hand-rolling loops over `TriggerService`:
+
+```java
+@Autowired
+private PersistentTaskTestService taskTest;
+
+@Test
+void testTaskRuns() {
+    // GIVEN something queued a trigger (e.g. an event listener, a scheduler's planner, ...)
+    myService.doSomethingThatQueuesATrigger();
+
+    // run every trigger due up to a point in time (use a future instant to also run staggered/retry ones)
+    taskTest.runAllDueTrigger(OffsetDateTime.now());
+
+    // ...or run just the next due trigger and assert its final status (and optionally its key)
+    taskTest.assertHasNextTask(TriggerStatus.SUCCESS, TriggerKey.of("my-id", MyTask.ID));
+    taskTest.assertNextTaskSuccess(); // shorthand for the next trigger ending SUCCESS
+    taskTest.assertNoMoreTriggers();  // nothing left to run
+}
+```
+
+Available helpers (see `PersistentTaskTestService`):
+
+| Method | Purpose |
+|--------|---------|
+| `runNextTrigger()` | Run the next due trigger; returns it as `Optional<RunningTriggerEntity>`. |
+| `runAllDueTrigger(OffsetDateTime dueUntil)` | Run all triggers due up to `dueUntil`, one by one (new ones are picked up). |
+| `assertHasNextTask()` | Run the next trigger and assert one existed. |
+| `assertHasNextTask(TriggerStatus status, TriggerKey key)` | Run the next trigger and assert its status (and key, if given). |
+| `assertNextTaskSuccess()` | Run the next trigger and assert it ended `SUCCESS`. |
+| `assertNoMoreTriggers()` | Assert there is no further trigger to run. |
+| `hasRunningTriggers()` / `countRunningTriggers()` | Inspect what the schedulers are currently running (async setups). |
+
+::: tip Single-flight per key is testable without threads
+A trigger keyed by a stable business id (`.id("invoices")`) means the engine keeps **at most one
+trigger per key**: re-queuing a *waiting* one updates it in place, queuing while it is *running* throws
+`IllegalStateException`. So "the same work never runs twice concurrently" is a property you can assert
+by triggering the producer twice and checking there is still exactly **one** trigger for that key — no
+concurrency in the test. To make a producer idempotent, skip when `tasks.getLastTriggerData(key)` is in
+`TriggerStatus.ACTIVE_STATES`, or just queue and catch the `IllegalStateException`.
+:::
+
 ## Manually run one task
 
 Now you can run any trigger manually using the `TriggerService`
 
-!!! note
-
-    Using the `TriggerService` is recommended to see any errors which might arise.
+::: tip
+Using the `TriggerService` is recommended to see any errors which might arise.
+:::
 
 ```java
     @Autowired
@@ -137,9 +183,9 @@ protected int waitForDbSchedulerTasks(OffsetDateTime thenToRun) {
 
 It is also possible to define a test scheduler and use the async way to execute any triggers (without the spring scheduler which would trigger them automatically).
 
-!!! note
-
-    Any errors are now in the log and are handled by the framework with retries etc.
+::: info
+Any errors are now in the log and are handled by the framework with retries etc.
+:::
 
 ```java
 @Configuration

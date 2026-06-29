@@ -45,9 +45,9 @@ PersistentTask<String> savePersonInTrx(PersonRepository personRepository) {
 }
 ```
 
-!!! note
-
-    A `@Transactional` annotation will overwrite `isTransactional` flag
+::: tip
+A `@Transactional` annotation will overwrite `isTransactional` flag
+:::
 
 ## Define Timeouts for the default TransactionTemplate
 

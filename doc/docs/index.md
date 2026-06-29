@@ -19,7 +19,7 @@ tags:
 
 A lightweight and simple task management framework for **Spring Boot** designed to queue and execute **asynchronous tasks** with support for **database persistence** and a user-friendly interface. Perfect for implementing scheduling patterns, outbound patterns, and background job processing in distributed systems.
 
-**Built for Spring Boot 3.x with JPA** - seamlessly integrates with your existing Spring application.
+**Built for Spring Boot with JPA** - seamlessly integrates with your existing Spring application.
 
 ![Dashboard](/assets/dashboard.png)
 
@@ -42,11 +42,23 @@ A lightweight and simple task management framework for **Spring Boot** designed 
 
 -   [Maven Central spring-persistent-tasks-core](https://central.sonatype.com/artifact/org.sterl.spring/spring-persistent-tasks-core/versions)
 
+### Spring 4
+
 ```xml
 <dependency>
     <groupId>org.sterl.spring</groupId>
     <artifactId>spring-persistent-tasks-core</artifactId>
     <version>4.x.x</version>
+</dependency>
+```
+
+### Spring 3
+
+```xml
+<dependency>
+    <groupId>org.sterl.spring</groupId>
+    <artifactId>spring-persistent-tasks-core</artifactId>
+    <version>2.4.x</version>
 </dependency>
 ```
 

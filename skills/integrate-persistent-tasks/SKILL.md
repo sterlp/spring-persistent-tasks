@@ -210,6 +210,8 @@ the backend.
 
 ## 9. Testing
 
+> Reference: <https://spring-persistent-task.sterl.org/test/junit-test>.
+
 Use in-memory H2 and disable the scheduler so tests stay deterministic; drive tasks explicitly:
 
 ```yaml
@@ -220,6 +222,60 @@ spring:
     scheduler-enabled: false
     timers-enabled: false
 ```
+
+Add the **test artifact** — it provides `PersistentTaskTestService`, the deterministic driver:
+
+```xml
+<dependency>
+  <groupId>org.sterl.spring</groupId>
+  <artifactId>spring-persistent-tasks-test</artifactId>
+  <version>${spt.version}</version>
+  <scope>test</scope>
+</dependency>
+```
+
+Drive and assert queued work with it instead of sleeping or hitting the live scheduler:
+
+```java
+@Autowired PersistentTaskService tasks;            // queue / runOrQueue, getLastTriggerData
+@Autowired TriggerService triggerService;          // searchTriggers, countTriggers, deleteAll
+@Autowired HistoryService historyService;          // finished runs, deleteAll
+@Autowired PersistentTaskTestService taskTest;     // the test driver
+
+// queue, then run everything due now — runs one-by-one so freshly queued triggers are picked up
+events.publishEvent(new ThreadClosedEvent(1L, "alpha", 123L));
+taskTest.runAllDueTrigger(OffsetDateTime.now());
+
+// run the next due trigger AND assert its final status / key in one call
+taskTest.assertHasNextTask(TriggerStatus.SUCCESS, TriggerKey.of("alpha", MyTask.ID));
+taskTest.assertNextTaskSuccess();                  // run next, assert SUCCESS
+taskTest.assertNoMoreTriggers();                   // nothing left to run
+```
+
+**Reset state between methods.** The Spring context (and its H2) is cached across test methods, so
+triggers/history leak from one test into the next. Clear them in `@BeforeEach`:
+
+```java
+@BeforeEach void clean() { triggerService.deleteAll(); historyService.deleteAll(); }
+```
+
+**Test the single-flight-per-key guarantee.** Keying a trigger by a stable business id means the engine
+keeps **at most one trigger per key** — re-queuing a *waiting* one updates it in place, and queuing
+while it is *running* throws `IllegalStateException`. So "the same work never runs twice concurrently"
+is a property you can assert without threads: trigger the producer twice and check there is still
+exactly one trigger for that key.
+
+```java
+scheduler.scan();                                   // queues id="alpha"
+scheduler.scan();                                   // sees it already queued → no duplicate
+assertThat(triggerService.searchTriggers(taskNamed(MyTask.NAME), PageRequest.of(0, 50))
+        .getContent()).extracting(t -> t.getData().getKey().getId())
+        .containsExactly("alpha");                  // still one, not two
+```
+
+To make a producer idempotent, check before queuing with
+`tasks.getLastTriggerData(key).map(t -> TriggerStatus.ACTIVE_STATES.contains(t.status())).orElse(false)`
+(waiting/running) and skip if already active — or just queue and catch the `IllegalStateException`.
 
 Never hit a real database server in tests.
 

@@ -52,6 +52,34 @@ public void buildVehicle() {
 }
 ```
 
+## Priority
+
+Use priority to let important work win the worker. Every trigger has a **priority** (`0-9`, higher is picked earlier — same idea as JMS). It defaults to
+`TriggerRequest.DEFAULT_PRIORITY` (**4**). When several triggers are due and a worker thread frees up,
+the engine picks the **highest-priority waiting** trigger next.
+
+```java
+var trigger = TriggerBuilder
+        .<Folder>newTrigger("index-folder")
+        .id(folder.id())     // single-flight per folder
+        .priority(1)         // below the default 4 → background, yields to other work
+        .build();
+
+persistentTaskService.runOrQueue(trigger);
+```
+
+This matters most when worker threads are scarce (e.g. `persistent-tasks.max-threads: 1`, a single
+in-flight task at a time). Give long-running **background** jobs a **low** priority so latency-sensitive
+or short tasks are picked first. For example, a bulk re-indexing job set to `priority(1)` lets a
+freshly queued user-triggered task (default priority `4`) jump ahead of any not-yet-started index work.
+
+::: warning Priority orders, it does not preempt
+A higher priority only decides which **waiting** trigger is picked **next**; it never interrupts a
+trigger that is already running. With a single worker, a long task already in flight still has to
+finish before the next one starts — so prioritise by keeping background units small and frequent
+rather than expecting them to be paused mid-run.
+:::
+
 ## Using a Spring Application Event
 
 ```java

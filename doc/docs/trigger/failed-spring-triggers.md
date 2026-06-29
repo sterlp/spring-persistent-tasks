@@ -49,10 +49,10 @@ return new PersistentTask<>() {
 
 Each trigger goes through a trigger lifecycle with the [corresponding events](./life-cycle-events.md). One of these events, `TriggerFailedEvent`, allows you to hook into a trigger’s error handling.
 
-!!! info
-
-    - Events are fired for all triggers, so a filter is needed to ensure the event corresponds to the current trigger.
-    - Events are fired even if a trigger will retry; a check is needed to determine whether the handler should only execute when no retries are planned.
+::: info
+- Events are fired for all triggers, so a filter is needed to ensure the event corresponds to the current trigger.
+- Events are fired even if a trigger will retry; a check is needed to determine whether the handler should only execute when no retries are planned.
+:::
 
 ### Events which indicate problems
 

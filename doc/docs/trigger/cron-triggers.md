@@ -155,13 +155,23 @@ dailyCleanupTask.newCron()
 
 ### Priority
 
-Set priority for trigger execution (0-9, higher = more important):
+Set the priority of the triggers this cron creates (`0-9`, higher = picked earlier; the default is
+**4**). Use a high value for time-critical schedules and a low value for background ones so they yield
+the worker to more important work — see [Priority](../tasks/queue-a-spring-task.md#priority) for the
+full semantics (it orders waiting triggers, it does not preempt a running one).
 
 ```java
 criticalTask.newCron()
     .id("critical-sync")
     .every(Duration.ofMinutes(5))
-    .priority(9)
+    .priority(9)        // ahead of default-priority work
+    .build();
+
+// ...or a background maintenance cron that should never delay important tasks:
+cleanupTask.newCron()
+    .id("nightly-cleanup")
+    .cron("0 0 2 * * *")
+    .priority(1)        // below the default 4
     .build();
 ```
 
