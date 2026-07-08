@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: "Spring Persistent Tasks",
   description: "A lightweight task management framework for Spring Boot with JPA persistence, clustering support, and retry mechanisms for asynchronous task execution",
-  srcDir: './docs',
+  srcDir: './src',
   base: '/',
   lastUpdated: true,
   cleanUrls: true,
