@@ -25,6 +25,7 @@ import org.sterl.spring.persistent_tasks.history.repository.HistoryTriggerReposi
 import org.sterl.spring.persistent_tasks.shared.QueryHelper;
 import org.sterl.spring.persistent_tasks.shared.model.HasTrigger;
 import org.sterl.spring.persistent_tasks.shared.stereotype.TransactionalService;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.querydsl.jpa.impl.JPAQuery;
 
@@ -54,6 +55,12 @@ public class HistoryService {
         historyTriggerRepository.deleteAllInBatch();
     }
     
+    /**
+     * Housekeeping delete: prunes both history tables by {@code created_time}. On large tables the
+     * default 10s service timeout is not enough, so we allow up to 5 minutes here.
+     * See {@code docs/housekeeping.md} / ADR 0002.
+     */
+    @Transactional(timeout = 300)
     public long deleteAllOlderThan(OffsetDateTime age) {
         var result = historyTriggerRepository.deleteOlderThan(age);
         result += completedTriggerRepository.deleteOlderThan(age);

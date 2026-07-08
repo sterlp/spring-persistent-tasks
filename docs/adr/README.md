@@ -7,3 +7,4 @@ Consequences**. One decision per file, written once. When a decision is replaced
 | ADR | Decision | Status |
 |-----|----------|--------|
 | [0001](0001-spring-boot-4.md) | Upgrade to Spring Boot 4 / Jackson 3; `JacksonStateSerializer` moves to the `tools.jackson` API | Accepted |
+| [0002](0002-housekeeping-delete-strategy.md) | History housekeeping: add missing `created_time` index + raise delete tx timeout to 5 min | Accepted |

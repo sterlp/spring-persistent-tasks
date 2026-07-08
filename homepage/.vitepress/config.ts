@@ -54,6 +54,12 @@ export default defineConfig({
           ]
         },
         {
+          text: 'History',
+          items: [
+            { text: 'Housekeeping', link: '/history/housekeeping' }
+          ]
+        },
+        {
           text: 'Test',
           items: [
             { text: 'JUnit Test', link: '/test/junit-test' }

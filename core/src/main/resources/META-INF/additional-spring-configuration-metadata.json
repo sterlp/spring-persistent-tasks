@@ -57,12 +57,14 @@
     {
       "name": "spring.persistent-tasks.history.delete-rate",
       "type": "java.lang.Integer",
-      "description": "The interval at which old triggers are deleted, in hours. Default 24h."
+      "description": "The interval at which old triggers are deleted, in hours. Default 24h.",
+      "defaultValue": 24
     },
     {
       "name": "spring.persistent-tasks.history.delete-after",
-      "type": "java.lang.Duration",
-      "description": "The max age for a trigger in the hstory. Default is PT72H, 30 days."
+      "type": "java.time.Duration",
+      "description": "The max age for a trigger in the history. Default is PT720H, 30 days.",
+      "defaultValue": "PT720H"
     }
   ]
 }

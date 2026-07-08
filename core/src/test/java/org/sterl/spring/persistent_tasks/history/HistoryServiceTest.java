@@ -18,6 +18,8 @@ import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerRequest;
 import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.history.component.TriggerHistoryComponent;
+import org.sterl.spring.persistent_tasks.history.repository.CompletedTriggerRepository;
+import org.sterl.spring.persistent_tasks.history.repository.HistoryTriggerRepository;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
 
 import com.github.f4b6a3.uuid.UuidCreator;
@@ -32,6 +34,10 @@ class HistoryServiceTest extends AbstractSpringTest {
     
     @Autowired
     private TriggerHistoryComponent triggerHistory;
+    @Autowired
+    private CompletedTriggerRepository completedTriggerRepository;
+    @Autowired
+    private HistoryTriggerRepository historyTriggerRepository;
 
     @Test
     void testReQueueTrigger() {
@@ -126,5 +132,42 @@ class HistoryServiceTest extends AbstractSpringTest {
         count = subject.deleteAllOlderThan(now.plusSeconds(30));
         // THEN
         assertThat(count).isEqualTo(3);
+    }
+
+    /**
+     * Regression: {@code deleteAllOlderThan} must prune BOTH history tables (pt_trigger_history and
+     * pt_completed_triggers). Previously the two bulk deletes shared one 10s transaction; the first
+     * delete could exhaust the budget so the second table was left uncleaned. See docs/housekeeping.md.
+     */
+    @Test
+    void testDeleteOlderThanClearsBothTables() {
+        // GIVEN
+        subject.deleteAll();
+        var now = OffsetDateTime.now();
+        var task = UuidCreator.getTimeOrderedEpochFast().toString();
+        var instanceId = random.nextLong(0, 99999) + now.toEpochSecond();
+
+        trx.executeWithoutResult(t -> {
+            // an old entry that must be deleted
+            triggerHistory.execute(instanceId, TriggerEntity.builder()
+                    .key(new TriggerKey("old", task))
+                    .createdTime(now.minusDays(10))
+                    .build(), true);
+            // a recent entry that must be kept
+            triggerHistory.execute(instanceId + 1, TriggerEntity.builder()
+                    .key(new TriggerKey("new", task))
+                    .createdTime(now)
+                    .build(), true);
+        });
+        assertThat(completedTriggerRepository.count()).isEqualTo(2);
+        assertThat(historyTriggerRepository.count()).isPositive();
+
+        // WHEN
+        subject.deleteAllOlderThan(now.minusDays(1));
+
+        // THEN only the recent entry survives in BOTH tables
+        assertThat(completedTriggerRepository.count()).isEqualTo(1);
+        assertThat(historyTriggerRepository.findAll())
+            .allSatisfy(h -> assertThat(h.getCreatedTime()).isAfterOrEqualTo(now.minusDays(1)));
     }
 }
