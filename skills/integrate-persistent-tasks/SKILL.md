@@ -1,80 +1,94 @@
 ---
 name: integrate-persistent-tasks
-description: Integrate spring-persistent-tasks into a Spring Boot 4 app — detect an existing DataSource (else wire H2), add core/db/ui, register a task, queue triggers, read running triggers and history, and embed the /task-ui dashboard. Use when adding durable background jobs/tasks to a Spring Boot app.
+description: Integrate org.sterl.spring:spring-persistent-tasks into a Spring Boot app — setup, task design, retry classification, and tests that can actually fail.
 ---
 
 # Integrate spring-persistent-tasks
 
-A guide for adding [spring-persistent-tasks](https://spring-persistent-task.sterl.org/) — durable,
-DB-backed, retryable background tasks — to a **Spring Boot 4 / Java 21** application. The DB is the
-queue: triggers survive restarts and are retried on failure, so no in-memory queue or `@Scheduled`
-backstop is needed.
+> **Fork of the global skill**, extended with field experience from FORgE (Slice 3.1, 2026-08-17),
+> MaPa and us4g. Sections marked ** Field note** are the additions — they are the parts that cost
+> time when nobody wrote them down.
+> Official docs: <https://spring-persistent-task.sterl.org/> · Testing:
+> <https://spring-persistent-task.sterl.org/test/junit-test>
+
+** Field note — read this first.** It is a **library**, not a pattern to copy. FORgE planned to
+"port the task framework from us4g" and wasted a planning cycle before noticing that us4g simply
+declares a dependency. Check `central.sonatype.com` before writing a single class.
+
+---
 
 ## 0. Decide the database (do this first)
 
 Inspect the host app's persistence before adding anything:
 
-1. **Is a `DataSource` already configured?** Look for `spring.datasource.*` in
-   `application.yml`/`.properties`, a JPA starter on the classpath, or an existing Liquibase/Flyway
-   setup. If yes → **reuse it**. The library just adds its own tables via its Liquibase changelog.
-2. **No DataSource?** → wire **H2**. Prefer a **file-backed** H2 (`jdbc:h2:file:./state/spt`) so
-   task state survives restarts; use in-memory (`jdbc:h2:mem:…`) only for tests.
+1. **Is a `DataSource` already configured?** Look for `spring.datasource.*`, a JPA starter, or an
+   existing Liquibase/Flyway setup. If yes → **reuse it**. The library only adds its own tables.
+2. **No DataSource?** → wire **H2**. Prefer file-backed (`jdbc:h2:file:./state/spt`) so task state
+   survives restarts; in-memory only for tests.
 
-Supported DBs: PostgreSQL, MariaDB, MS SQL, H2. **Not** MySQL (no sequences).
+Supported DBs: PostgreSQL, MariaDB, MS SQL, H2 — check the current docs, the support matrix moves.
 
 ## 1. Pick the version (match your Spring Boot major)
 
-The library's **major version tracks Spring Boot's major version** so compatibility is obvious:
+The library's **major version tracks Spring Boot's major** so compatibility is obvious:
 
 | Spring Boot | spring-persistent-tasks | Notes |
 |-------------|-------------------------|-------|
 | 3.x         | **2.4.x**               | Jackson 2; the original line. |
-| 4.x         | **4.x**                 | Jackson 3 + moved auto-config packages (ADR 0001). The 3.x slot is skipped so the major matches Boot 4. |
+| 4.x         | **4.x**                 | Jackson 3 + moved auto-config packages. The 3.x slot is skipped so the major matches Boot 4. |
 
-Latest releases: <https://central.sonatype.com/artifact/org.sterl.spring/spring-persistent-tasks-core/versions>.
 Use a property (`${spt.version}`) and set it to the line matching your Boot major.
 
 > **springdoc-openapi users:** the library pulls QueryDSL transitively, which activates springdoc's
 > QueryDSL OpenAPI customizer. On Spring Boot 4 use **springdoc 3.x** — springdoc 2.x breaks there.
+
+** Field note — verify the exact Boot minor, and stop if it fails.** "Boot 4.x ⇒ spt 4.x" is a
+rule of thumb, not a guarantee: FORgE runs Boot 4.0.6 while the reference project ran 4.1.0. Make
+the first increment *"context starts, existing tests still green"* and treat a failure there as a
+**stop-and-report**, never as licence to bump Spring Boot. Upgrading the framework to satisfy a
+library is a separate decision with a separate blast radius.
 
 ## 2. Dependencies
 
 ```xml
 <properties>
   <!-- Boot 3.x → 2.4.x; Boot 4.x → 4.x -->
-  <spt.version>4.0.0</spt.version>
+  <spt.version>4.0.1</spt.version>
 </properties>
 
-<!-- the task engine -->
 <dependency>
   <groupId>org.sterl.spring</groupId>
   <artifactId>spring-persistent-tasks-core</artifactId>
   <version>${spt.version}</version>
 </dependency>
-<!-- Liquibase changelog that creates the task tables (also pulls the Boot-4 Liquibase auto-config) -->
 <dependency>
   <groupId>org.sterl.spring</groupId>
-  <artifactId>spring-persistent-tasks-db</artifactId>
+  <artifactId>spring-persistent-tasks-db</artifactId>   <!-- Liquibase changelog -->
   <version>${spt.version}</version>
 </dependency>
-<!-- optional: the /task-ui dashboard -->
 <dependency>
   <groupId>org.sterl.spring</groupId>
-  <artifactId>spring-persistent-tasks-ui</artifactId>
+  <artifactId>spring-persistent-tasks-ui</artifactId>   <!-- optional dashboard -->
   <version>${spt.version}</version>
 </dependency>
-
-<!-- JPA + a driver (only if the host app doesn't already have them) -->
 <dependency>
-  <groupId>org.springframework.boot</groupId>
-  <artifactId>spring-boot-starter-data-jpa</artifactId>
-</dependency>
-<dependency>
-  <groupId>com.h2database</groupId>
-  <artifactId>h2</artifactId>
-  <scope>runtime</scope>
+  <groupId>org.sterl.spring</groupId>
+  <artifactId>spring-persistent-tasks-test</artifactId>
+  <version>${spt.version}</version>
+  <scope>test</scope>                                   <!-- do not forget the scope -->
 </dependency>
 ```
+
+** Field note — split the artefacts along your module boundaries.** In a multi-module build the
+artefacts do **not** all belong in one POM:
+
+| Artefact | Belongs in |
+|---|---|
+| `-core`, `-test` | the module that owns the tasks (usually `…-backend`) |
+| `-db` | the module that owns the schema (`…-database`), next to your other Liquibase parts |
+| `-ui` | only where the dashboard is served — and only when you actually ship it |
+
+Putting `-db` in the backend works until someone builds the schema module standalone.
 
 ## 3. Enable it
 
@@ -85,202 +99,257 @@ Use a property (`${spt.version}`) and set it to the line matching your Boot majo
 public class MyApplication { … }
 ```
 
-If the host app uses a custom `@EntityScan`/`@EnableJpaRepositories`, also add
-`@EnableSpringPersistentTasksEntityScan` and `@EnableSpringPersistentTasksJpaRepositories` so the
-library's entities/repositories are still picked up.
+With a custom `@EntityScan`/`@EnableJpaRepositories`, also add
+`@EnableSpringPersistentTasksEntityScan` and `@EnableSpringPersistentTasksJpaRepositories`.
 
 ## 4. Configuration
 
 ```yaml
 spring:
-  datasource:                     # only if not already present
-    url: jdbc:h2:file:./state/spt;AUTO_SERVER=TRUE
-    username: sa
-    password: ""
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: none              # schema is owned by Liquibase, never Hibernate
-  liquibase:
-    change-log: classpath:spring-persistent-tasks/db.changelog-master.xml
   persistent-tasks:
-    max-threads: 1                # worker threads; keep low to bound parallel work (e.g. LLM calls)
+    max-threads: 1                # keep low to bound parallel work
     poll-rate: 30                 # seconds between polls
     history:
       delete-after: PT72H         # how long completed triggers are kept
 ```
 
-If you already have your own Liquibase master changelog, include the library's instead of pointing
-`change-log` at it directly:
+If you already own a Liquibase master changelog, **include** the library's:
 
 ```xml
 <include file="spring-persistent-tasks/db.changelog-master.xml" />
 ```
 
-## 5. Register a task
+** Field note — include position matters.** Put it **after** your base schema and **before** any
+changeset that depends on it. There is no universally correct slot; anchor it relative to your own
+files, not at the top or bottom by habit.
 
-A task is a typed unit of work. The `state` (payload) is serialized into the trigger row.
+** Field note — retention and de-duplication are coupled.** If you guard against reprocessing by
+looking into the history (see §7), then `history.delete-after` *is* your de-duplication window.
+Set it to 72 h and a message redelivered on day four is processed a second time — silently. Decide
+both numbers together and write the reasoning down.
+
+
+---
+
+## 5. Register a task
 
 ```java
 @Component(MyTask.NAME)
-@RequiredArgsConstructor
 public class MyTask implements PersistentTask<MyState> {
-    public static final String NAME = "myTask";
-    public static final TaskId<MyState> ID = new TaskId<>(NAME);
+    public static final String NAME = "MyTask";
+    public static final TaskId<MyState> ID = TaskId.of(NAME);
 
-    private final SomeService service;
+    @Override public void accept(MyState state) { … }
 
-    @Override
-    public void accept(MyState state) {
-        service.doWork(state);          // throwing => the framework retries per RetryStrategy
+    @Override public RetryStrategy retryStrategy() {
+        return new MultiplicativeRetryStrategy(3, ChronoUnit.MINUTES, 1);  // 1, 2, 3 min
     }
 
-    @Override
-    public RetryStrategy retryStrategy() {
-        return RetryStrategy.THREE_RETRIES;   // default
-    }
+    @Override public void afterTriggerFailed(MyState state, Exception e) { … }  // final failure only
 }
 ```
 
-`MyState` must be `Serializable`. Trivial tasks can be a `PersistentTask<String>` bean (a lambda).
+** Field note — the task is a vehicle, not a new home for business logic.** Make it an adapter
+that calls the code you already have. If a task grows its own rules, you have two places to change
+and one of them will be forgotten.
+
+** Field note — cut the task at the boundary to the foreign system.** That is where the retry
+belongs. A task wrapping *the whole* processing retries everything after a remote 500 — including
+the parts that already succeeded. One task per outbound dependency keeps the retry proportional.
+
+### Choosing the trigger key
+
+| Field | Use it for |
+|---|---|
+| `id` | the **technical** identity — the message/event id. This is the de-duplication key. |
+| `correlationId` | the **business** identity a human searches by (an order number, a metering point). |
+| `tag` | the source or target system, for filtering in the dashboard. |
+| `state` | the payload needed to redo the work. |
+
+** Field note — the key must be unique in the same space as the work.** Two traps we hit:
+
+- **Too coarse:** keying a per-customer task on the *event* id breaks as soon as one event carries
+  several customers — the second trigger overwrites the first and that work vanishes silently.
+- **Not qualified enough:** a business id is often unique only *within its system*. Key on
+  `<systemId>-<businessId>`, never the bare id, or two tenants collide.
+
+Keying a write-back task per business object is a feature: at most one pending update per object,
+last state wins.
+
+### Field note — the `state` is a published contract, treat it like one
+
+By default the state is serialised with **Java binary serialisation** into a `@Lob byte[]`. That is
+**not** a freeze: Java serialisation tolerates *compatible* changes — adding a field, removing one,
+widening a type — as long as `serialVersionUID` stays put. Only **incompatible** changes break
+stored triggers: renaming or retyping a field, changing the class hierarchy.
+
+Treat the state exactly like any other API you publish — because that is what it is, a contract
+with your own database:
+
+- **Give the task its own dedicated state class.** Never hand it a domain entity, a JPA entity or a
+  DTO borrowed from another layer. Those change for reasons that have nothing to do with the task,
+  and every such change becomes a migration nobody planned.
+- **Manage it deliberately:** explicit `serialVersionUID`, a Javadoc note that it is persisted, and
+  a conscious call at each change whether it is compatible or not.
+- **Keep it small.** Fewer fields, fewer ways to break it. Store what is needed to redo the work —
+  for evidence-style payloads, the raw message and nothing else.
+- **The escape hatch:** old triggers can simply be **deleted**. An incompatible change is not a
+  dead end — decide whether the pending work still matters, drop the stale triggers, move on. Know
+  this before you fear a broken deserialisation.
+- Expecting frequent evolution? Use `JacksonStateSerializer<T>` from the start; retrofitting it
+  does not rescue existing rows.
+
+---
 
 ## 6. Queue / trigger a task
 
 ```java
-@RequiredArgsConstructor
-class Caller {
-    private final PersistentTaskService persistentTaskService;
-
-    void run(MyState state) {
-        persistentTaskService.runOrQueue(
-            TriggerBuilder.newTrigger(MyTask.NAME)
-                .state(state)
-                .id("optional-idempotency-key")   // dedupes a logical job
-                .correlationId("chain-123")        // group related triggers
-                .runAfter(Duration.ofMinutes(5))   // optional delay
-                .build());
-    }
-}
+persistentTaskService.queue(TriggerBuilder
+    .<MyState>newTrigger(MyTask.NAME, state)
+    .id(eventId)
+    .correlationId(pointOfDelivery)
+    .tag(sourceSystem)
+    .build());
 ```
 
-`runOrQueue` runs immediately if a worker is free, else persists for the next poll. Use `queue(…)`
-to always defer. You can also publish `TriggerTaskCommand.of(trigger)` as a Spring event.
+** Field note — persist the trigger in the same transaction as the state that caused it.**
+Use `BEFORE_COMMIT`, not `AFTER_COMMIT`: all-or-nothing. With `AFTER_COMMIT` the task can start
+before the causing commit is visible and a retry then reads stale data — or finds nothing at all.
+The trigger must exist exactly when the business fact exists.
 
-## 7. Read running triggers & history (build agent/ops tools on this)
+** Field note — classify errors before you retry.** Not every failure deserves three attempts:
 
-- `TriggerService` — live/pending triggers:
-  - `searchTriggers(TriggerSearch, Pageable)` — filter by task name, status, tag, correlationId.
-  - `get(TriggerKey)`, `hasPendingTriggers()`, `countTriggers(...)`.
-- `HistoryService` — completed/failed triggers:
-  - `searchTriggers(TriggerSearch, Pageable)`, `findLastKnownStatus(TriggerKey)`,
-    `findAllDetailsForInstance(instanceId, Pageable)`, `taskStatusHistory()`, `reQueue(id, when)`.
-- `TriggerSearch.byCorrelationId(...)`, `byStatus(TriggerStatus...)` build common filters.
-- REST equivalents under `/spring-tasks-api/{triggers,history,...}` (also what `/task-ui` consumes).
+| Symptom | Retry? |
+|---|---|
+| `401`, `403`, `429`, `5xx`, timeout, connection reset | **yes** — transient |
+| `404`, validation error, unparsable payload | **no** — `FailTaskNoRetryException` |
 
-Expose these as read-only tools (e.g. `task_list_triggers`, `task_history`) so an agent can inspect
-what it scheduled.
+Retrying a permanently broken payload burns time and delays the clearing case that a human needs.
+Detect the cause **by exception type**, never by string-matching a message.
+
+** Field note — raise the human-visible case only in `afterTriggerFailed`.** While the task is
+still retrying there is nothing to clear; a case that resolves itself on the next attempt only
+steals attention. If several causes end in the same hook, branch there — and make sure exactly
+**one** case per incident is created, never two.
+
+---
+
+## 7. Read running triggers & history
+
+```java
+persistentTaskService.getLastTriggerData(TriggerKey.of(id, MyTask.ID));  // includes history
+triggerService.searchTriggers(…);                                       // active only
+historyService…                                                         // completed runs
+```
+
+** Field note — a key is unique only among *live* triggers.** Once a trigger completes it moves to
+`pt_completed_triggers` and the key is free again; the same key may appear there several times. So:
+
+- Re-queuing a **waiting** trigger overwrites it in place.
+- Queuing while the same key is **running** throws `IllegalStateException`.
+- After completion, nothing stops a duplicate — the library does not remember "already done".
+
+If you need "this message was already processed", query `getLastTriggerData` (which reads the
+history) and guard **at the entry point** only. Do not put that guard inside the task: its own
+retries are not new work and would block themselves.
+
+---
 
 ## 8. Embed the dashboard
 
-With `@EnableSpringPersistentTasksUI`, the React dashboard is served at **`/task-ui`** (same origin,
-no frame-busting headers). Embed it in your app via an `<iframe src="/task-ui">`, or just link to it
-in a new tab. In a dev setup with a separate frontend, proxy `/task-ui` and `/spring-tasks-api` to
-the backend.
-
-> **Gotcha — don't let your own SPA fallback swallow `/task-ui`.** The dashboard is a separate
-> React app with its **own** client-side router, so the library forwards `/task-ui` and
-> `/task-ui/**` to **its** `/task-ui/index.html` (see `SpringPersistentTasksUIConfig`, which
-> registers `addViewControllers` + `addResourceHandlers`). If your host app has a catch-all that
-> forwards unknown paths to *your* `index.html` for *your* SPA router, it will **hijack
-> `/task-ui`** — because a `@Controller`/`@RequestMapping` handler **outranks** the library's
-> `ViewController` registrations. The iframe then loads *your* app instead of the dashboard:
-> **doubled header, empty body, no error**. Fix: exclude `/task-ui` (and `/spring-tasks-api`) from
-> your fallback so the library serves them. With a regex view controller:
+> **Gotcha — don't let your own SPA fallback swallow `/task-ui`.** The dashboard is a separate React
+> app with its own client-side router; the library forwards `/task-ui` and `/task-ui/**` to **its**
+> `index.html`. A catch-all `@Controller` in the host app **outranks** the library's
+> `ViewController` registrations and hijacks the path — the iframe then loads *your* app: doubled
+> header, empty body, no error. Exclude `/task-ui` and `/spring-tasks-api` from your fallback:
 >
 > ```java
-> // app SPA fallback — note the negative lookahead excluding the library's paths
 > @GetMapping({"/", "/{p:(?!task-ui$|spring-tasks-api$)[^\\.]*}",
 >              "/{p:^(?!task-ui$|spring-tasks-api$).*}/{s:[^\\.]*}"})
 > String forward() { return "forward:/index.html"; }
 > ```
 >
-> Regression-test it with MockMvc: `GET /task-ui` must be `forwardedUrl("/task-ui/index.html")`,
-> not your app's `/index.html`. (On Spring Boot 4 build MockMvc from the `WebApplicationContext`
-> via `MockMvcBuilders.webAppContextSetup(ctx)` — the `@AutoConfigureMockMvc` slice was split out.)
+> Regression-test with MockMvc: `GET /task-ui` must be `forwardedUrl("/task-ui/index.html")`. On
+> Spring Boot 4 build MockMvc via `MockMvcBuilders.webAppContextSetup(ctx)`.
+
+---
 
 ## 9. Testing
 
-> Reference: <https://spring-persistent-task.sterl.org/test/junit-test>.
-
-Use in-memory H2 and disable the scheduler so tests stay deterministic; drive tasks explicitly:
+Disable the scheduler and drive tasks explicitly — deterministic, no sleeping:
 
 ```yaml
 spring:
   datasource: { url: "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1" }
-  liquibase: { change-log: classpath:spring-persistent-tasks/db.changelog-master.xml }
   persistent-tasks:
     scheduler-enabled: false
     timers-enabled: false
 ```
 
-Add the **test artifact** — it provides `PersistentTaskTestService`, the deterministic driver:
-
-```xml
-<dependency>
-  <groupId>org.sterl.spring</groupId>
-  <artifactId>spring-persistent-tasks-test</artifactId>
-  <version>${spt.version}</version>
-  <scope>test</scope>
-</dependency>
-```
-
-Drive and assert queued work with it instead of sleeping or hitting the live scheduler:
-
 ```java
-@Autowired PersistentTaskService tasks;            // queue / runOrQueue, getLastTriggerData
-@Autowired TriggerService triggerService;          // searchTriggers, countTriggers, deleteAll
-@Autowired HistoryService historyService;          // finished runs, deleteAll
-@Autowired PersistentTaskTestService taskTest;     // the test driver
+@Autowired PersistentTaskService tasks;
+@Autowired TriggerService triggerService;
+@Autowired PersistentTaskTestService taskTest;
 
-// queue, then run everything due now — runs one-by-one so freshly queued triggers are picked up
-events.publishEvent(new ThreadClosedEvent(1L, "alpha", 123L));
-taskTest.runAllDueTrigger(OffsetDateTime.now());
-
-// run the next due trigger AND assert its final status / key in one call
+taskTest.runAllDueTrigger(OffsetDateTime.now().plusHours(1));  // also picks up future retries
 taskTest.assertHasNextTask(TriggerStatus.SUCCESS, TriggerKey.of("alpha", MyTask.ID));
-taskTest.assertNextTaskSuccess();                  // run next, assert SUCCESS
-taskTest.assertNoMoreTriggers();                   // nothing left to run
+taskTest.assertNoMoreTriggers();
 ```
 
-**Reset state between methods.** The Spring context (and its H2) is cached across test methods, so
-triggers/history leak from one test into the next. Clear them in `@BeforeEach`:
+**Reset state between methods** — the context and its H2 are cached across test classes:
 
 ```java
 @BeforeEach void clean() { triggerService.deleteAll(); historyService.deleteAll(); }
+@AfterEach  void tidy()  { triggerService.deleteAll(); }
 ```
 
-**Test the single-flight-per-key guarantee.** Keying a trigger by a stable business id means the engine
-keeps **at most one trigger per key** — re-queuing a *waiting* one updates it in place, and queuing
-while it is *running* throws `IllegalStateException`. So "the same work never runs twice concurrently"
-is a property you can assert without threads: trigger the producer twice and check there is still
-exactly one trigger for that key.
+** Field note — clean *after* as well as before.** Cleaning only in `@BeforeEach` leaves the last
+test's triggers alive for whatever unrelated class runs next. The failure surfaces far away from
+its cause and looks like flakiness.
 
-```java
-scheduler.scan();                                   // queues id="alpha"
-scheduler.scan();                                   // sees it already queued → no duplicate
-assertThat(triggerService.searchTriggers(taskNamed(MyTask.NAME), PageRequest.of(0, 50))
-        .getContent()).extracting(t -> t.getData().getKey().getId())
-        .containsExactly("alpha");                  // still one, not two
-```
+** Field note — `plusHours(1)` is what makes retry tests instant.** `runAllDueTrigger` takes the
+"due until" instant, so a trigger scheduled three minutes out runs immediately. Never
+`Thread.sleep` a real backoff.
 
-To make a producer idempotent, check before queuing with
-`tasks.getLastTriggerData(key).map(t -> TriggerStatus.ACTIVE_STATES.contains(t.status())).orElse(false)`
-(waiting/running) and skip if already active — or just queue and catch the `IllegalStateException`.
+** Field note — never install a synchronous executor that runs the task inline on enqueue.** It
+tests away the very asynchrony that breaks in production. Disabling the scheduler and driving
+explicitly is *not* the same thing: the trigger is still really persisted, the caller still returns
+before the work happens, transactions still separate.
 
-Never hit a real database server in tests.
+###  Field note — the tests that lie
 
-## Future / extension ideas
+Async changes turn passing tests into decoration. Three failure modes we actually hit:
 
-- **Tool-backed tasks:** a task that invokes the app's tool layer (web fetch, document parse, …).
-- **Agent-spawns-agent:** a task whose work is "run agent X"; with `correlationId` chaining, an agent
-  can launch follow-up agents as durable, retryable tasks and watch them via the history tools above.
+1. **A key that cannot exist.** A test asserted "no trigger with id `abc`" for a broken payload —
+   but the id was never parsed from that payload, so a wrongly created trigger would have carried
+   `null`. Both assertions were tautologies, green regardless of the code.
+   → When asserting absence, **count** (`countTriggers()` before/after) instead of probing a key
+   that the failure path cannot produce.
+2. **Asserting the wrong rule.** After adding an entry-point guard, "same message three times ⇒ one
+   result" silently stopped testing state-based idempotency and started testing the guard. If you
+   want the former, give each delivery its **own** message id.
+3. **Log-or-throw checked only halfway.** If the rule is "log *and* rethrow", asserting the throw
+   leaves the logging untested — someone deletes the log line and everything stays green. Attach a
+   logback `ListAppender` and assert the ERROR entry.
+
+**The only proof that a test can fail: break the fix and watch it go red.** Re-introduce the bug,
+run the test, capture the real tool output, restore. Store that evidence in a file — a claim in a
+chat message is gone after the next compaction.
+
+---
+
+## Migration checklist (existing app, first task)
+
+1. Version + dependencies + `@EnableSpringPersistentTasks`; **existing test suite still green.**
+   Nothing else in this step.
+2. Task class + state, driven directly by a test — production path untouched.
+3. Switch the caller to enqueue; migrate the affected tests to the explicit driver.
+4. Entry-point guard (§7), if you need de-duplication.
+5. Error split: no-retry vs. retry, and the case in `afterTriggerFailed`.
+
+Each step green on its own. If step 1 turns something red, it is the framework, not your design —
+the value of doing it alone is that you know which of the two it was.
