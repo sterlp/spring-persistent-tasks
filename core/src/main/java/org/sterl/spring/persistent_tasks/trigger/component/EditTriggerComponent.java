@@ -178,17 +178,18 @@ public class EditTriggerComponent {
         return foundTriggers.isEmpty() ? Optional.empty() : Optional.of(foundTriggers.getContent().get(0));
     }
     
-    public RunningTriggerEntity expireTrigger(RunningTriggerEntity t) {
-        t.getData().setStatus(TriggerStatus.EXPIRED_SIGNAL);
-        t.getData().setStart(null);
-        t.getData().setEnd(null);
-        t.getData().updateRunningDuration();
-        
-        publisher.publishEvent(new TriggerExpiredEvent(
-                t.getId(), t.copyData(),
-                toTriggerData.getStateSerialization().deserializeOrNull(t.getData())
-            )
-        );
+    /**
+     * Expires a trigger which was waiting for a signal that never arrived.
+     * This is a terminal end state: the trigger is finished with status
+     * {@link TriggerStatus#EXPIRED_SIGNAL}, historized (the event is done) and removed
+     * from the active table, analog to the other end states.
+     */
+    public RunningTriggerEntity expireTrigger(RunningTriggerEntity t, Serializable state, Exception e) {
+        t.finishTriggerWithStatus(TriggerStatus.EXPIRED_SIGNAL, e);
+
+        publisher.publishEvent(new TriggerExpiredEvent(t.getId(), t.copyData(), state));
+
+        triggerRepository.delete(t);
         return t;
     }
 

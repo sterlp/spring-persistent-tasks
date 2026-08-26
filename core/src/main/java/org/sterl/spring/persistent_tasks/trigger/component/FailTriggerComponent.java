@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
 import org.sterl.spring.persistent_tasks.task.exception.CancelTaskException;
 import org.sterl.spring.persistent_tasks.task.exception.FailTaskNoRetryException;
+import org.sterl.spring.persistent_tasks.task.exception.TriggerSignalExpiredException;
 import org.sterl.spring.persistent_tasks.trigger.model.RunTaskWithStateCommand;
 import org.sterl.spring.persistent_tasks.trigger.model.RunningTriggerEntity;
 
@@ -52,6 +53,27 @@ public class FailTriggerComponent {
             result = triggerFailed(task, trigger, state, e);
         }
         return result;
+    }
+
+    /**
+     * Expires a trigger which was waiting for a signal that did not arrive in time.
+     * Handled as a terminal failure (no retry): the trigger keeps the status
+     * {@link org.sterl.spring.persistent_tasks.api.TriggerStatus#EXPIRED_SIGNAL}, is historized,
+     * removed from the active table and the task's {@code afterTriggerFailed} callback is invoked
+     * with a {@link TriggerSignalExpiredException}.
+     */
+    public <T extends Serializable> Optional<RunningTriggerEntity> expire(
+            @Nullable PersistentTask<T> task,
+            RunningTriggerEntity trigger,
+            @Nullable T state) {
+
+        final var e = new TriggerSignalExpiredException(
+                "Trigger " + trigger.getKey() + " expired while waiting for a signal.");
+
+        editTrigger.expireTrigger(trigger, state, e);
+        invokeTriggerErrorCallback(task, null, state, e); // retryAt == null -> afterTriggerFailed fires
+
+        return Optional.of(trigger);
     }
 
     private <T extends Serializable> Optional<RunningTriggerEntity> triggerFailed(

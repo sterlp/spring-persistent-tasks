@@ -19,6 +19,11 @@ Any trigger follows a particular life cycle having the status:
 1. FAILED => TriggerFailedEvent
 1. CANCELED => TriggerCanceledEvent
 
+Triggers scheduled with `waitForSignal(...)` additionally use:
+
+1. AWAITING_SIGNAL => waiting for an external signal
+1. EXPIRED_SIGNAL => TriggerExpiredEvent (terminal, `isDone() == true`) — the signal did not arrive in time
+
 ![TriggerLifeCycleEvent](/assets/trigger-life-cycle-events.png)
 
 # Create a custom life cycle listener

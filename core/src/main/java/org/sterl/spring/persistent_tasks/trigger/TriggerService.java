@@ -234,10 +234,14 @@ public class TriggerService {
     }
     
     public List<RunningTriggerEntity> expireTimeoutTriggers() {
-        return readTrigger.findTriggersTimeoutOut(20)
-                          .stream()
-                          .map(editTrigger::expireTrigger)
-                          .toList();
+        final var timedOut = readTrigger.findTriggersTimeoutOut(20);
+        timedOut.forEach(t -> {
+            final var task = taskService.get(t.newTaskId());
+            final var state = stateSerialization.deserializeOrNull(
+                    t.key().toTaskId(), t.getData().getState());
+            failTrigger.expire(task.orElse(null), t, state);
+        });
+        return timedOut;
     }
 
     public long countTriggers() {
