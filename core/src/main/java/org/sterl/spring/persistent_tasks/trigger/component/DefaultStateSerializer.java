@@ -9,7 +9,7 @@ import org.springframework.core.serializer.DefaultDeserializer;
 import org.springframework.core.serializer.DefaultSerializer;
 import org.springframework.core.serializer.Deserializer;
 import org.springframework.core.serializer.Serializer;
-import org.springframework.lang.NonNull;
+import org.jspecify.annotations.NonNull;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.api.task.StateSerializer;
 

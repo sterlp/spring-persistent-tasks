@@ -3,8 +3,8 @@ package org.sterl.spring.persistent_tasks.shared;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.SimpleExpression;

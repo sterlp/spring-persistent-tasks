@@ -3,7 +3,7 @@ package org.sterl.spring.persistent_tasks.api;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

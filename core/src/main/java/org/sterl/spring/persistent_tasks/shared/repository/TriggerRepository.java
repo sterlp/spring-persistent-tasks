@@ -12,8 +12,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.query.Param;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.sterl.spring.persistent_tasks.api.TriggerGroup;
 import org.sterl.spring.persistent_tasks.api.TriggerKey;
 import org.sterl.spring.persistent_tasks.api.TriggerSearch;
@@ -27,6 +27,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 
@@ -80,9 +81,14 @@ public interface TriggerRepository<T extends HasTrigger> extends JpaRepository<T
             final var filter = buildSearch(data, search);
             query = query.where(filter);
         }
+        final Long totalCount = query
+                .select(groupByField.countDistinct()
+                        .add(new CaseBuilder()
+                                .when(groupByField.isNull()).then(1L)
+                                .otherwise(0L)
+                                .max()))
+                .fetchOne();
         query = query.groupBy(groupByField);
-
-        final var totalCount = query.fetchCount();
         var q = query.select(Projections.constructor(TriggerGroup.class, 
                 data.key.id.count(), groupByField,
                 data.runningDurationInMs.sum(), data.executionCount.sum(),

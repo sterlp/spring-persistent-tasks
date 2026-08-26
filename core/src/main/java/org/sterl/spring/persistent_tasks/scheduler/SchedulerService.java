@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.concurrent.Future;
 
 import org.slf4j.event.Level;
-import org.springframework.lang.NonNull;
+import org.jspecify.annotations.NonNull;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;

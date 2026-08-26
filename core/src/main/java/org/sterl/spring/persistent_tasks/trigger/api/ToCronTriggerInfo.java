@@ -1,6 +1,6 @@
 package org.sterl.spring.persistent_tasks.trigger.api;
 
-import org.springframework.lang.NonNull;
+import org.jspecify.annotations.NonNull;
 import org.sterl.spring.persistent_tasks.api.CronTriggerInfo;
 import org.sterl.spring.persistent_tasks.shared.ExtendetConvert;
 import org.sterl.spring.persistent_tasks.trigger.model.CronTriggerEntity;

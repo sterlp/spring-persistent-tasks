@@ -1,6 +1,6 @@
 ---
-name: integrate-persistent-tasks
-description: Integrate org.sterl.spring:spring-persistent-tasks into a Spring Boot app — setup, task design, retry classification, and tests that can actually fail.
+name: use-persistent-tasks
+description: Integrate and Use org.sterl.spring:spring-persistent-tasks into a Spring Boot app — setup, task design, retry classification, and tests that can actually fail.
 ---
 
 # Integrate spring-persistent-tasks
@@ -149,15 +149,24 @@ public class MyTask implements PersistentTask<MyState> {
         return new MultiplicativeRetryStrategy(3, ChronoUnit.MINUTES, 1);  // 1, 2, 3 min
     }
 
-    @Override public void afterTriggerFailed(MyState state, Exception e) { … }  // final failure only
+    @Override public void afterTriggerFailed(MyState state, Exception e) { … }  // final failure, incl. expired signal (TriggerSignalExpiredException)
 }
 ```
 
-** Field note — the task is a vehicle, not a new home for business logic.** Make it an adapter
+**Field note — the task is a vehicle, not a new home for business logic.** Make it an adapter
 that calls the code you already have. If a task grows its own rules, you have two places to change
 and one of them will be forgotten.
 
-** Field note — cut the task at the boundary to the foreign system.** That is where the retry
+**The task state is its continuation command.** It deliberately carries every known transient value
+the task needs to resume the process — this is a core purpose of persistent tasks, and the state is
+visible to operators in the task UI. Create one dedicated state class per task; do not artificially
+reduce it to two IDs if that would force the task to reconstruct or guess process context.
+
+**Never put entities into task state.** Carry only their strong IDs and load the current entity when
+the task runs. Likewise, never reuse a REST DTO, connector DTO or domain object as task state: each
+has a different owner and evolution cycle.
+
+**Field note — cut the task at the boundary to the foreign system.** That is where the retry
 belongs. A task wrapping *the whole* processing retries everything after a remote 500 — including
 the parts that already succeeded. One task per outbound dependency keeps the retry proportional.
 
@@ -195,8 +204,12 @@ with your own database:
   and every such change becomes a migration nobody planned.
 - **Manage it deliberately:** explicit `serialVersionUID`, a Javadoc note that it is persisted, and
   a conscious call at each change whether it is compatible or not.
-- **Keep it small.** Fewer fields, fewer ways to break it. Store what is needed to redo the work —
-  for evidence-style payloads, the raw message and nothing else.
+- **Parse at the connector boundary.** Only queue work once the external message is readable; map it
+  into the task's typed state/command so every operationally relevant value is visible in the task
+  UI. A raw XML/JSON string is normally debug input, not a useful continuation state.
+- **Keep it complete but focused.** Carry all known transient values required to continue, and no
+  entity snapshots. A raw payload belongs in state only when parsing is itself the task's explicit
+  responsibility or an audit requirement says so.
 - **The escape hatch:** old triggers can simply be **deleted**. An incompatible change is not a
   dead end — decide whether the pending work still matters, drop the stale triggers, move on. Know
   this before you fear a broken deserialisation.
@@ -214,6 +227,21 @@ persistentTaskService.queue(TriggerBuilder
     .correlationId(pointOfDelivery)
     .tag(sourceSystem)
     .build());
+```
+
+** Field note — reach for `runOrQueue`, not bare `queue`, as the default enqueue.** `queue` throws
+`IllegalStateException` the moment a trigger with the same key is already **running** (§7).
+`runOrQueue(TriggerBuilder…)` is the idempotent sibling the projects use everywhere (RAG scan,
+memory-gc, manual re-index): run now if the engine can, otherwise queue — still at most one trigger
+per key. It does **not** fully close the race, though: a tick that fires exactly as the engine picks
+the trigger up can still throw, so the callers that must not die wrap it defensively:
+
+```java
+try {
+    tasks.runOrQueue(TriggerBuilder.newTrigger(MyTask.NAME, state).id(businessId).build());
+} catch (IllegalStateException alreadyRunning) {
+    // a concurrent worker already took it — nothing to do
+}
 ```
 
 ** Field note — persist the trigger in the same transaction as the state that caused it.**
@@ -235,6 +263,67 @@ Detect the cause **by exception type**, never by string-matching a message.
 still retrying there is nothing to clear; a case that resolves itself on the next attempt only
 steals attention. If several causes end in the same hook, branch there — and make sure exactly
 **one** case per incident is created, never two.
+
+### Recurring work — a timer that *plans*, a task that *works*
+
+The library queues triggers; it is not itself a cron scheduler. For periodic maintenance (GC, scans,
+polls) the pattern is a **thin Spring timer that enqueues, and a durable task that does the work** —
+never the work inline on the timer thread. The timer is a *planner*; the task owns ordering, retry
+and restart-recovery.
+
+```java
+public final class ScanScheduler implements SchedulingConfigurer {
+    private final PersistentTaskService tasks;
+    // ...ctor...
+    @Override public void configureTasks(ScheduledTaskRegistrar registrar) {
+        // fixed *delay* (gap after completion), not fixed *rate* — a slow tick never piles up
+        registrar.addFixedDelayTask(new FixedDelayTask(this::tick, interval, INITIAL_DELAY));
+    }
+    void tick() {
+        try {
+            for (Source s : sources) {
+                TriggerKey key = TriggerKey.of(s.id(), ScanTask.ID);
+                if (isActive(key)) continue;                 // already queued/running → don't re-pile
+                tasks.runOrQueue(TriggerBuilder
+                    .newTrigger(ScanTask.NAME, new ScanState(s.id()))
+                    .id(s.id())                              // single-flight per subject
+                    .runAfter(OFFSET.multipliedBy(n++))      // stagger due times, don't thunder
+                    .priority(ScanTask.PRIORITY)             // background: yield to foreground tasks
+                    .build());
+            }
+        } catch (RuntimeException e) {
+            log.warn("scan tick failed", e);                 // a tick must NEVER kill the scheduler thread
+        }
+    }
+    private boolean isActive(TriggerKey key) {
+        return tasks.getLastTriggerData(key)
+            .map(t -> TriggerStatus.ACTIVE_STATES.contains(t.status()))  // waiting/running, not a history row
+            .orElse(false);
+    }
+}
+```
+
+Register the configurer as a bean (e.g. only when the feature is active, and disabled under the
+`test` profile so tests drive triggers explicitly per §9).
+
+** Field note — the timer must not do the work, and must not throw.** Two independent rules:
+- **Enqueue, don't process.** A tick that indexes inline puts you back on the scheduler thread with
+  no retry and no restart-recovery — exactly what the durable task exists to provide. The old
+  in-thread burst it replaces also hammered the downstream (embedding endpoint) with no back-pressure.
+- **Swallow tick exceptions.** An uncaught throwable from the scheduled method kills the Spring
+  scheduler thread and *silently* stops every future tick. Wrap the body, log, move on.
+
+** Field note — the enqueue key is what makes the timer and a manual button idempotent.** Key the
+trigger on the *subject* (folder id, entity id), not on the time or a fresh uuid. Then the periodic
+tick, a manual "re-run now" button and a startup catch-up all collapse onto one trigger per subject —
+at most one run in flight, whoever asked. Pre-check `getLastTriggerData` for `ACTIVE_STATES` to skip
+re-piling, and still catch `IllegalStateException` for the race (see §6 `runOrQueue` note).
+
+** Field note — stagger and prioritise, or one tick starves the rest.** Queuing N subjects that all
+come due at the same instant lets the engine's few workers fill up with one job type and starve
+higher-value work (e.g. a memory-gc that just got queued). `runAfter(offset·index)` spreads due times;
+a lower `priority` lets background scans yield to foreground tasks. Don't rely on `max-threads: 1` for
+correctness — it's a bound, not a scheduler.
 
 ---
 
@@ -259,22 +348,142 @@ retries are not new work and would block themselves.
 
 ---
 
-## 8. Embed the dashboard
+## 8. Surface the dashboard
+
+The library serves a full React dashboard at **`/task-ui`** (talking to **`/spring-tasks-api`**) once
+`@EnableSpringPersistentTasksUI` is on the app class. There is no JS SDK to call; it is a whole app,
+so you *host* it rather than render its pieces. Two integration options — pick per how "part of the
+app" the dashboard should feel:
+
+| Option | What the user sees | Use when |
+|---|---|---|
+| **A. Embed as iframe** | A "Tasks" tab *inside* the app; dashboard fills the content area. | The dashboard is a first-class view; you want it in the app frame, one click away. |
+| **B. Link out to a new tab** | A menu entry / button that opens `/task-ui` in a **new browser tab**. | The dashboard is an occasional admin/ops surface; you don't want it in the app chrome, or framing is blocked (foreign origin, `X-Frame-Options`). |
+
+Both need the same backend (`@EnableSpringPersistentTasksUI`) and the same SPA-fallback exclusion
+(the Gotcha below). They differ only in the frontend entry.
+
+### Option A — embed as an in-app iframe
+
+**The whole page is one iframe.** Same origin means no CSP/CORS work — in the packaged jar the iframe
+and `/spring-tasks-api` share the host. Let the iframe fill the content area (flex/100% height), no
+border:
+
+```tsx
+// pages/tasks/tasks.page.tsx — reached from the top-menu "Tasks" entry.
+// Same origin: iframe + task REST API (/spring-tasks-api) share the host in the packaged jar;
+// in dev, Vite proxies both to Spring Boot (see below).
+export function TasksPage() {
+  return (
+    <iframe
+      title="Tasks"
+      src="/task-ui"
+      style={{ flex: 1, width: '100%', height: '100%', border: 'none' }}
+    />
+  )
+}
+```
+
+**Register it as one more view.** In a registry-driven shell it is a single entry — no router library
+needed if navigation is hash-based:
+
+```ts
+export const PAGES: Page[] = [
+  { key: 'chat',  label: 'Chat',  Component: ChatPage },
+  { key: 'tasks', label: 'Tasks', Component: TasksPage },  // ← the whole integration, FE-side
+]
+```
+
+### Option B — link out to a new tab
+
+No iframe, no embedded view — a plain menu entry / button whose target is `/task-ui`, opened in a new
+browser tab. This is the right choice when the dashboard is an occasional ops surface rather than a
+first-class view, or when the dashboard's origin refuses framing (foreign origin, `X-Frame-Options` /
+CSP `frame-src`). It is also the natural **fallback** to pair with Option A when framing might fail.
+
+```tsx
+// A menu item that leaves the app frame instead of mounting a page.
+// rel="noreferrer" with target="_blank": no window.opener handle back into your app, no referrer leak.
+<a href="/task-ui" target="_blank" rel="noreferrer">
+  Tasks ↗
+</a>
+```
+
+In a registry-driven menu, model it as an external link rather than a mounted `Component` — e.g. a
+`href?: string` field the shell renders as an `<a target="_blank">` instead of switching the active
+view. Same-origin `/task-ui` works as a relative href; a foreign-origin dashboard needs the absolute
+URL. In dev, the new tab still hits the Vite dev server, so it needs the same proxy as Option A.
+
+**Combine them.** Option A embedded, with a small "open in new tab ↗" link beside the iframe, is the
+robust default: the iframe covers the happy path, the link rescues the case where a (possibly future,
+foreign-origin) dashboard won't frame. That is exactly how the sibling Docs view does it.
+
+### Both options — backend & dev wiring
+
+**Dev mode: proxy both paths to the backend.** The Vite dev server serves your SPA, but `/task-ui`
+and `/spring-tasks-api` live on Spring Boot — forward them so the dashboard (and its API calls)
+resolve, whether it is framed (A) or opened in a tab (B):
+
+```ts
+// vite.config.ts
+server: {
+  proxy: {
+    '/api': 'http://localhost:8080',
+    '/task-ui': 'http://localhost:8080',
+    '/spring-tasks-api': 'http://localhost:8080',
+  },
+},
+```
+
+Forget the second proxy entry and the iframe loads but every dashboard row stays empty — the SPA
+renders, its `/spring-tasks-api` XHRs 404 against Vite. Proxy the API path, not just `/task-ui`.
 
 > **Gotcha — don't let your own SPA fallback swallow `/task-ui`.** The dashboard is a separate React
 > app with its own client-side router; the library forwards `/task-ui` and `/task-ui/**` to **its**
 > `index.html`. A catch-all `@Controller` in the host app **outranks** the library's
 > `ViewController` registrations and hijacks the path — the iframe then loads *your* app: doubled
-> header, empty body, no error. Exclude `/task-ui` and `/spring-tasks-api` from your fallback:
+> header, empty body, no error. Exclude `/task-ui` **and** `/spring-tasks-api` (and your own `/api`)
+> from the fallback regex:
 >
 > ```java
-> @GetMapping({"/", "/{p:(?!task-ui$|spring-tasks-api$)[^\\.]*}",
->              "/{p:^(?!task-ui$|spring-tasks-api$).*}/{s:[^\\.]*}"})
-> String forward() { return "forward:/index.html"; }
+> @Controller
+> public class SpaForwardController {
+>     private static final String EXCLUDED = "api|task-ui|spring-tasks-api";
+>     @GetMapping(value = {
+>             "/",
+>             "/{path:(?!" + EXCLUDED + "$)[^\\.]*}",
+>             "/{path:^(?!" + EXCLUDED + "$).*}/{sub:[^\\.]*}"
+>     })
+>     public String forward() { return "forward:/index.html"; }
+> }
 > ```
 >
-> Regression-test with MockMvc: `GET /task-ui` must be `forwardedUrl("/task-ui/index.html")`. On
-> Spring Boot 4 build MockMvc via `MockMvcBuilders.webAppContextSetup(ctx)`.
+> Regression-test with MockMvc — this is the exact bug (doubled header, no dashboard) and its guard:
+>
+> ```java
+> mockMvc.perform(get("/task-ui")).andExpect(forwardedUrl("/task-ui/index.html")); // library SPA
+> mockMvc.perform(get("/task-ui/triggers")).andExpect(forwardedUrl("/task-ui/index.html")); // deep link
+> mockMvc.perform(get("/chat")).andExpect(forwardedUrl("/index.html"));            // app shell still works
+> mockMvc.perform(get("/api/does-not-exist")).andExpect(status().isNotFound());    // API not swallowed
+> ```
+>
+> On Spring Boot 4 build MockMvc via `MockMvcBuilders.webAppContextSetup(ctx)` — the
+> `@AutoConfigureMockMvc` slice was split out.
+
+** Field note — same origin is the whole trick; a different-origin dashboard costs you the iframe.**
+Serving `/task-ui` from the *same* host is what makes the plain `src="/task-ui"` iframe (Option A) work
+with zero CORS/CSP/cookie config. If the dashboard ever moves to another origin (e.g. an external tool
+proxied in), the iframe needs an absolute URL, the origin must allow framing (`X-Frame-Options` /
+`frame-src` CSP), and framing may simply be refused — at which point Option B (new tab) is not a
+fallback but the only option. Keep it co-hosted unless you have a reason not to.
+
+** Field note — the dashboard is an *admin surface*; decide its access explicitly.** `/task-ui` and
+`/spring-tasks-api` let anyone reaching them **re-run, cancel and delete** triggers — not read-only.
+On a single-user local tool that is fine and no auth is the right call. The moment the app is
+multi-user or network-reachable, put both paths behind the same Spring Security rules as the rest of
+the app (or don't enable `@EnableSpringPersistentTasksUI` in that deployment at all). Make it a
+conscious decision and write down which one you took — an embedded iframe makes the dashboard feel
+like "part of the app UI" and hides that it is a privileged control panel.
 
 ---
 

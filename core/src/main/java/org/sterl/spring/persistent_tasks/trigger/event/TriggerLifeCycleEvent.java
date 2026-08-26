@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.sterl.spring.persistent_tasks.api.event.PersistentTasksEvent;
 import org.sterl.spring.persistent_tasks.shared.model.HasTrigger;
 import org.sterl.spring.persistent_tasks.shared.model.TriggerEntity;
@@ -30,9 +30,10 @@ public interface TriggerLifeCycleEvent extends HasTrigger, PersistentTasksEvent 
     Serializable state();
     
     /**
-     * If a trigger is done, it finished it's execution either successfully or with an final error without retries left.
-     * 
-     * @return <code>true</code> if the trigger was completed, either with success, error or canceled.
+     * If a trigger is done, it reached a terminal end state and will not run again.
+     *
+     * @return <code>true</code> if the trigger ended, either with success, final error,
+     *         canceled or an expired signal.
      */
     boolean isDone();
     

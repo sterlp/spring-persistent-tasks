@@ -2,7 +2,7 @@ package org.sterl.spring.persistent_tasks.api.task;
 
 import java.io.Serializable;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.sterl.spring.persistent_tasks.api.RetryStrategy;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.task.exception.FailTaskNoRetryException;
@@ -58,10 +58,13 @@ public interface PersistentTask<T extends Serializable> {
      * <ul>
      * <li> if the trigger is finally failed
      * <li> or the trigger is abandoned
+     * <li> or a trigger waiting for a signal expired before the signal arrived
      * </ul>
      * <br>
-     * This method is not invoked for expired triggers waiting for an signal.
-     * 
+     * For an expired signal the reason {@code e} is a
+     * {@link org.sterl.spring.persistent_tasks.task.exception.TriggerSignalExpiredException},
+     * so it can be distinguished from a regular failure.
+     *
      * @param state the state, could be <code>null</code> if the state could be parsed
      * @param e the exception reason - could also be a {@link FailTaskNoRetryException}
      * @see <a href="https://spring-persistent-task.sterl.org/failed-spring-triggers/">Failed trigger</a>

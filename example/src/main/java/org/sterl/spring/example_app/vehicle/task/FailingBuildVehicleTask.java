@@ -2,7 +2,7 @@ package org.sterl.spring.example_app.vehicle.task;
 
 import java.util.Random;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 import org.sterl.spring.example_app.vehicle.model.Vehicle;
 import org.sterl.spring.example_app.vehicle.repository.VehicleRepository;

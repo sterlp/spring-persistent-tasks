@@ -29,16 +29,22 @@ return new PersistentTask<>() {
          * <ul>
          * <li> if the trigger is finally failed
          * <li> or the trigger is abandoned
+         * <li> or a trigger waiting for a signal expired before the signal arrived
          * </ul>
          * <br>
-         * This method is not invoked for expired triggers waiting for an signal.
+         * For an expired signal the reason {@code e} is a
+         * {@link TriggerSignalExpiredException}, so it can be told apart from a regular failure.
          *
          * @param state the state, could be <code>null</code> if the state could be parsed
          * @param e the exception reason - could also be a {@link FailTaskNoRetryException}
          * @see <a href="https://spring-persistent-task.sterl.org/failed-spring-triggers/">Failed trigger</a>
          */
         public void afterTriggerFailed(String state, Exception e) {
-            // custom error handler
+            if (e instanceof TriggerSignalExpiredException) {
+                // the trigger waited for a signal which never arrived
+            } else {
+                // a regular, final failure
+            }
         }
     }
 }
@@ -59,6 +65,15 @@ Each trigger goes through a trigger lifecycle with the [corresponding events](./
 1. TriggerFailedEvent
 1. TriggerExpiredEvent
 1. TriggerCanceledEvent
+
+::: info Expired signal triggers
+A trigger scheduled with `waitForSignal(timeout)` whose signal never arrives now ends as a
+**terminal failure**: it is removed from the active table, historized (its status stays
+`EXPIRED_SIGNAL`) and the task's `afterTriggerFailed` callback is invoked with a
+`TriggerSignalExpiredException`. It is **not retried**. The corresponding `TriggerExpiredEvent`
+now reports `isDone() == true`. If you react via events, listen for `TriggerExpiredEvent` in
+addition to `TriggerFailedEvent`.
+:::
 
 ### Hook into a Failed Trigger
 

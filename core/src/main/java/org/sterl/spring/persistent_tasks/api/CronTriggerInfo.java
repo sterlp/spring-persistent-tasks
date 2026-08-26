@@ -1,6 +1,6 @@
 package org.sterl.spring.persistent_tasks.api;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Data;
 

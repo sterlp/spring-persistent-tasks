@@ -8,11 +8,13 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.sterl.spring.persistent_tasks.AbstractSpringTest;
 import org.sterl.spring.persistent_tasks.api.TaskId;
+import org.sterl.spring.persistent_tasks.api.TriggerStatus;
 import org.sterl.spring.persistent_tasks.api.task.PersistentTask;
+import org.sterl.spring.persistent_tasks.task.exception.TriggerSignalExpiredException;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerExpiredEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerFailedEvent;
 import org.sterl.spring.persistent_tasks.trigger.event.TriggerRunningEvent;
@@ -62,7 +64,19 @@ class TriggerLifeCycleTest extends AbstractSpringTest {
     @Test
     void testExpireTimeoutTriggers() {
         // GIVEN
-        TaskId<String> taskId = taskService.replace("foo", asserts::info);
+        final AtomicInteger afterTriggerFailedCalled = new AtomicInteger(0);
+        final AtomicReference<Exception> exRef = new AtomicReference<>();
+        TaskId<String> taskId = taskService.replace("foo", new PersistentTask<>() {
+            @Override
+            public void accept(@Nullable String state) {
+                asserts.info(state);
+            }
+
+            public void afterTriggerFailed(String state, Exception e) {
+                afterTriggerFailedCalled.incrementAndGet();
+                exRef.set(e);
+            }
+        });
         subject.queue(
                 taskId.newTrigger().waitForSignal(OffsetDateTime.now().plusMinutes(1)).state("old state").build());
         var trigger = subject
@@ -70,13 +84,24 @@ class TriggerLifeCycleTest extends AbstractSpringTest {
 
         // WHEN
         var expired = subject.expireTimeoutTriggers();
+        awaitHistoryThreads();
 
-        // WHEN
+        // THEN
         assertThat(expired).hasSize(1);
         assertThat(trigger).isEqualTo(expired.get(0));
-        // AND
+        // AND the expired signal is now a terminal, done end state
         assertThat(events.stream(TriggerExpiredEvent.class).count()).isOne();
+        assertThat(events.stream(TriggerExpiredEvent.class).allMatch(TriggerExpiredEvent::isDone)).isTrue();
         assertThat(events.stream(TriggerFailedEvent.class).count()).isZero();
+        // AND it is removed from the active table (only the still waiting trigger remains)
+        assertThat(triggerService.get(trigger.getKey())).isEmpty();
+        assertThat(triggerService.countTriggers()).isOne();
+        // AND it is historized with its own status
+        assertThat(historyService.findLastKnownStatus(trigger.getKey()).get().status())
+                .isEqualTo(TriggerStatus.EXPIRED_SIGNAL);
+        // AND the owning task is notified once, terminally, with a distinguishable exception
+        assertThat(afterTriggerFailedCalled.get()).isOne();
+        assertThat(exRef.get()).isInstanceOf(TriggerSignalExpiredException.class);
     }
 
     @Test
