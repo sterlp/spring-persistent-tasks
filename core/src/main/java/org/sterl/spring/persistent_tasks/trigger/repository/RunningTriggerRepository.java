@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import org.hibernate.LockOptions;
+import org.hibernate.Timeouts;
 import org.hibernate.jpa.SpecHints;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Lock;
@@ -29,7 +29,7 @@ public interface RunningTriggerRepository extends TriggerRepository<RunningTrigg
     // https://jakarta.ee/specifications/persistence/3.0/jakarta-persistence-spec-3.0.html#a2132
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @QueryHints({
-        @QueryHint(name = SpecHints.HINT_SPEC_LOCK_TIMEOUT, value = "" + LockOptions.SKIP_LOCKED),
+        @QueryHint(name = SpecHints.HINT_SPEC_LOCK_TIMEOUT, value = "" + Timeouts.SKIP_LOCKED_MILLI),
         @QueryHint(name = SpecHints.HINT_SPEC_QUERY_TIMEOUT, value = "4500")
     })
     @Query("""
@@ -45,7 +45,7 @@ public interface RunningTriggerRepository extends TriggerRepository<RunningTrigg
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @QueryHints({
-        @QueryHint(name = SpecHints.HINT_SPEC_LOCK_TIMEOUT, value = "" + LockOptions.SKIP_LOCKED),
+        @QueryHint(name = SpecHints.HINT_SPEC_LOCK_TIMEOUT, value = "" + Timeouts.SKIP_LOCKED_MILLI),
         @QueryHint(name = SpecHints.HINT_SPEC_QUERY_TIMEOUT, value = "4500")
     })
     @Query("""

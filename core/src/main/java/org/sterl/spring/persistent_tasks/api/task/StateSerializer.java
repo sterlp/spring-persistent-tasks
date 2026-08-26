@@ -2,7 +2,7 @@ package org.sterl.spring.persistent_tasks.api.task;
 
 import java.io.Serializable;
 
-import org.springframework.lang.NonNull;
+import org.jspecify.annotations.NonNull;
 import org.sterl.spring.persistent_tasks.api.TaskId;
 import org.sterl.spring.persistent_tasks.exception.SpringPersistentTaskException;
 

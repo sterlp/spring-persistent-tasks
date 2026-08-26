@@ -3,7 +3,7 @@ package org.sterl.spring.persistent_tasks.trigger.component;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;

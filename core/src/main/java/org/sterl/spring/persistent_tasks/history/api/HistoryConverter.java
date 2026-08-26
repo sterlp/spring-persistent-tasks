@@ -1,7 +1,7 @@
 package org.sterl.spring.persistent_tasks.history.api;
 
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.sterl.spring.persistent_tasks.api.HistoryTrigger;
 import org.sterl.spring.persistent_tasks.history.model.HistoryTriggerEntity;
 import org.sterl.spring.persistent_tasks.shared.ExtendetConvert;

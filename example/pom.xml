@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.1.0</version>
+        <version>4.1.1</version>
         <relativePath /> <!-- lookup parent from repository -->
     </parent>
 
@@ -15,7 +15,7 @@
 
     <properties>
         <!-- Boot 3.x → 2.4.x; Boot 4.x → 4.x (major tracks Spring Boot major, see ADR 0001). -->
-        <spt.version>4.0.0-SNAPSHOT</spt.version>
+        <spt.version>4.0.2-SNAPSHOT</spt.version>
     </properties>
 
     <dependencies>

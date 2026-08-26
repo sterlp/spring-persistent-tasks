@@ -2,7 +2,7 @@ package org.sterl.spring.persistent_tasks.api.task;
 
 import java.io.Serializable;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.sterl.spring.persistent_tasks.api.RetryStrategy;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.task.exception.FailTaskNoRetryException;

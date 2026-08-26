@@ -1,6 +1,6 @@
 package org.sterl.spring.persistent_tasks.trigger.api;
 
-import org.springframework.lang.NonNull;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 import org.sterl.spring.persistent_tasks.api.Trigger;
 import org.sterl.spring.persistent_tasks.shared.ExtendetConvert;
