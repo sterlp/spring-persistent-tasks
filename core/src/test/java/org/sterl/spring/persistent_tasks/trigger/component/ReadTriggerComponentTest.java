@@ -35,4 +35,22 @@ class ReadTriggerComponentTest extends AbstractSpringTest {
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getTotalPages()).isEqualTo(2);
     }
+    
+    @Test
+    void testNullCorrelationIdIsCountedAsGroup() {
+        TaskId<String> taskId = taskService.replace("foo", c -> asserts.info("foo"));
+        triggerService.queue(taskId.newTrigger().id("1").correlationId("a1").build());
+        triggerService.queue(taskId.newTrigger().id("2").build());
+
+        // WHEN
+        var result = trx.execute(t -> subject.searchGroupedTriggers(null, PageRequest.of(0, 10)));
+        // THEN
+        assertThat(result.getTotalElements()).isEqualTo(2);
+        // AND
+        assertThat(result.getContent()).hasSize(2);
+        // AND
+        assertThat(result.getContent().stream()
+                .filter(g -> g.groupByValue() == null)
+                .findFirst().orElseThrow().count()).isEqualTo(1);
+    }
 }

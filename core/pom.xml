@@ -165,6 +165,7 @@
                     <optionalAnnotations>
                         <annotation>jakarta.annotation.Nullable</annotation>
                         <annotation>org.springframework.lang.Nullable</annotation>
+                        <annotation>org.jspecify.annotations.Nullable</annotation>
                     </optionalAnnotations>
                 </configuration>
             </plugin>

@@ -20,7 +20,7 @@ export interface CronTriggerInfo {
     id: string;
     taskName: string;
     schedule: string;
-    tag: string;
+    tag?: string;
     priority: number;
     suspended: boolean;
     hasStateProvider: boolean;
@@ -31,10 +31,10 @@ export interface HistoryTrigger {
     instanceId: number;
     key: TriggerKey;
     createdTime: string;
-    start: string;
+    start?: string;
     executionCount: number;
     status: TriggerStatus;
-    message: string;
+    message?: string;
 }
 
 export interface TaskStatusHistoryOverview {
@@ -53,21 +53,21 @@ export interface Trigger {
     id: number;
     instanceId: number;
     key: TriggerKey;
-    tag: string;
-    correlationId: string;
-    runningOn: string;
+    tag?: string;
+    correlationId?: string;
+    runningOn?: string;
     createdTime: string;
     runAt: string;
-    lastPing: string;
-    start: string;
-    end: string;
+    lastPing?: string;
+    start?: string;
+    end?: string;
     executionCount: number;
     priority: number;
     status: TriggerStatus;
-    runningDurationInMs: number;
-    state: any;
-    exceptionName: string;
-    lastException: string;
+    runningDurationInMs?: number;
+    state?: any;
+    exceptionName?: string;
+    lastException?: string;
 }
 
 export interface TriggerGroup {

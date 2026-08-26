@@ -27,6 +27,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 
@@ -80,7 +81,13 @@ public interface TriggerRepository<T extends HasTrigger> extends JpaRepository<T
             final var filter = buildSearch(data, search);
             query = query.where(filter);
         }
-        final Long totalCount = query.select(groupByField.countDistinct()).fetchOne();
+        final Long totalCount = query
+                .select(groupByField.countDistinct()
+                        .add(new CaseBuilder()
+                                .when(groupByField.isNull()).then(1L)
+                                .otherwise(0L)
+                                .max()))
+                .fetchOne();
         query = query.groupBy(groupByField);
         var q = query.select(Projections.constructor(TriggerGroup.class, 
                 data.key.id.count(), groupByField,
