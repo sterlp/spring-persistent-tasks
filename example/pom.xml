@@ -15,7 +15,7 @@
 
     <properties>
         <!-- Boot 3.x → 2.4.x; Boot 4.x → 4.x (major tracks Spring Boot major, see ADR 0001). -->
-        <spt.version>4.0.2-SNAPSHOT</spt.version>
+        <spt.version>4.0.2</spt.version>
     </properties>
 
     <dependencies>
