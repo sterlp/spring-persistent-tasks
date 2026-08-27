@@ -149,9 +149,26 @@ public class MyTask implements PersistentTask<MyState> {
         return new MultiplicativeRetryStrategy(3, ChronoUnit.MINUTES, 1);  // 1, 2, 3 min
     }
 
-    @Override public void afterTriggerFailed(MyState state, Exception e) { … }  // final failure, incl. expired signal (TriggerSignalExpiredException)
+    @Override public void afterTriggerFailed(MyState state, Exception e) { … }  // final failure only
 }
 ```
+
+**Field note — `PersistentTask` vs `TransactionalTask`: pick by what the *body* does, and don't
+confuse it with the enqueue phase.** There are two interfaces:
+
+| Interface | `isTransactional()` | Use when |
+|---|---|---|
+| `PersistentTask<T>` | `false` (default) | The task body wraps a **foreign-system call** (HTTP/connector, queue publish) or otherwise does no local DB write that must be atomic with the trigger. **This is the default.** |
+| `TransactionalTask<T>` | `true` | The task body **writes to your DB** and that write must be atomic with the trigger's state update + the `TriggerRunning`/`TriggerSuccess` events (all-or-nothing per run). |
+
+`TransactionalTask` wraps `accept(...)` in the default transaction template *together with* the
+state update and those two events. So a `TransactionalTask` around an HTTP call would hold a DB
+connection open across network I/O — the exact anti-pattern a connector-in-transaction is. Wrapping
+a remote call ⇒ `PersistentTask`, full stop.
+
+This axis is **orthogonal** to the enqueue phase (§6, `BEFORE_COMMIT` vs `AFTER_COMMIT`): that
+decides how the trigger is *created* (atomic with the business fact or not); `isTransactional()`
+decides how the task *runs* (in a DB tx or not). Decide both, separately.
 
 **Field note — the task is a vehicle, not a new home for business logic.** Make it an adapter
 that calls the code you already have. If a task grows its own rules, you have two places to change
